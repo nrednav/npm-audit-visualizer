@@ -1,0 +1,26 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Production
+build/
+
+# Misc
+.DS_Store
+*.pem
+
+# Dependencies
+node_modules/
+
+# Env Files
+.env*
+*.env
+!.env.example
+
+# Typescript Cache
+*.tsbuildinfo
+
+# ESLint Cache
+.eslintcache
+
