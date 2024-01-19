@@ -21,7 +21,11 @@
     "security",
     "vulnerability",
     "severity",
-    "dependency"
+    "dependency",
+    "graph",
+    "table",
+    "summary",
+    "tool"
   ],
   "author": "Vandern Rodrigues <nrednav@gmail.com> (https://vandern.com)",
   "license": "MIT",
