@@ -2,8 +2,8 @@
   "name": "npm-audit-visualizer",
   "version": "1.0.0",
   "description": "a web-based tool to visualize npm audit data",
-  "main": "index.js",
   "scripts": {
+    "dev": "tsx src/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,5 +24,13 @@
   "bugs": {
     "url": "https://github.com/nrednav/npm-audit-visualizer/issues"
   },
-  "homepage": "https://github.com/nrednav/npm-audit-visualizer#readme"
+  "homepage": "https://github.com/nrednav/npm-audit-visualizer#readme",
+  "devDependencies": {
+    "tsx": "4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "fp-ts": "^2.16.2",
+    "zod": "^3.22.4"
+  }
 }
