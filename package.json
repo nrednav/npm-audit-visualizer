@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "tsx src/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "biome format --write --no-errors-on-unmatched --files-ignore-unknown=true",
+    "lint": "biome lint --apply --no-errors-on-unmatched --files-ignore-unknown=true",
+    "check": "biome check --apply --no-errors-on-unmatched --files-ignore-unknown=true",
     "prepare": "husky install"
   },
   "repository": {
