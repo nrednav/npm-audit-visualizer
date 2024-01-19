@@ -4,7 +4,8 @@
   "description": "a web-based tool to visualize npm audit data",
   "scripts": {
     "dev": "tsx src/main.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -26,11 +27,19 @@
   },
   "homepage": "https://github.com/nrednav/npm-audit-visualizer#readme",
   "devDependencies": {
+    "@biomejs/biome": "1.5.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
     "tsx": "4.7.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
     "fp-ts": "^2.16.2",
     "zod": "^3.22.4"
+  },
+  "lint-staged": {
+    "**/*.{js,ts,cjs,mjs,jsx,tsx,json}": [
+      "biome check --apply --no-errors-on-unmatched --files-ignore-unknown=true"
+    ]
   }
 }
