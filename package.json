@@ -2,7 +2,8 @@
   "name": "npm-audit-visualizer",
   "version": "1.0.0",
   "description": "a web-based tool to visualize data from npm audit",
-  "main": "build/main.js",
+  "exports": "./build/main.js",
+  "type": "module",
   "author": "Vandern Rodrigues <nrednav@gmail.com> (https://vandern.com)",
   "license": "MIT",
   "engines": {
@@ -47,6 +48,7 @@
     "postinstall": "cd ./src/web-app && pnpm install && pnpm run build"
   },
   "dependencies": {
+    "chalk": "^5.3.0",
     "fp-ts": "^2.16.2",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"

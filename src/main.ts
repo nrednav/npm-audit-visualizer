@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
-import { exec } from "child_process";
+import { exec } from "node:child_process";
+import chalk from "chalk";
 import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
-const argv = yargs
+const argv = yargs(hideBin(process.argv))
   .option("run", {
     describe: "Run the application",
     type: "boolean",
@@ -13,7 +15,7 @@ const argv = yargs
   .parseSync();
 
 const run = () => {
-  console.log("npm-audit-visualizer");
+  console.log(chalk.green("npm-audit-visualizer"));
 
   // Start the React application
   exec("cd src/web-app && pnpm run dev", (error, stdout, stderr) => {
