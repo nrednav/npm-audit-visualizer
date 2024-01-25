@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "author": "Vandern Rodrigues <nrednav@gmail.com> (https://vandern.com)",
   "scripts": {
     "dev": "vite --open",
     "build": "tsc && vite build",

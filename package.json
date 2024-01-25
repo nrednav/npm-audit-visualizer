@@ -1,14 +1,15 @@
 {
   "name": "npm-audit-visualizer",
   "version": "1.0.0",
-  "description": "a web-based tool to visualize npm audit data",
+  "description": "a web-based tool to visualize data from npm audit",
   "scripts": {
     "dev": "tsx src/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "biome format --write --no-errors-on-unmatched --files-ignore-unknown=true",
     "lint": "biome lint --apply --no-errors-on-unmatched --files-ignore-unknown=true",
     "check": "biome check --apply --no-errors-on-unmatched --files-ignore-unknown=true",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "postinstall": "cd src/web-app && pnpm install && pnpm run build"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,7 @@
   "keywords": [
     "npm",
     "audit",
+    "data",
     "visualizer",
     "security",
     "vulnerability",
@@ -33,6 +35,10 @@
     "url": "https://github.com/nrednav/npm-audit-visualizer/issues"
   },
   "homepage": "https://github.com/nrednav/npm-audit-visualizer#readme",
+  "dependencies": {
+    "fp-ts": "^2.16.2",
+    "zod": "^3.22.4"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.5.2",
     "husky": "^8.0.3",
@@ -40,9 +46,8 @@
     "tsx": "4.7.0",
     "typescript": "^5.3.3"
   },
-  "dependencies": {
-    "fp-ts": "^2.16.2",
-    "zod": "^3.22.4"
+  "engines": {
+    "node": ">=20"
   },
   "lint-staged": {
     "**/*.{js,ts,cjs,mjs,jsx,tsx,json}": [
