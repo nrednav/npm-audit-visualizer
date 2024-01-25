@@ -1,9 +1,10 @@
 {
   "name": "npm-audit-visualizer/web-app",
-  "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "description": "The web-app component of the npm-audit-visualizer",
   "author": "Vandern Rodrigues <nrednav@gmail.com> (https://vandern.com)",
+  "type": "module",
+  "private": true,
   "scripts": {
     "dev": "vite --open",
     "build": "tsc && vite build",
