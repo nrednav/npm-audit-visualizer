@@ -1,7 +1,7 @@
 {
   "name": "npm-audit-visualizer/web-app",
   "version": "1.0.0",
-  "description": "The web-app component of the npm-audit-visualizer",
+  "description": "The web-app component of npm-audit-visualizer",
   "author": "Vandern Rodrigues <nrednav@gmail.com> (https://vandern.com)",
   "type": "module",
   "private": true,
