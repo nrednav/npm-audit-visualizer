@@ -24,7 +24,7 @@ module.exports = {
     project: ["./tsconfig.json", "./tsconfig.node.json"],
     tsconfigRootDir: __dirname,
   },
-  plugins: ["react-refresh"],
+  plugins: ["react-refresh", "jest-dom", "testing-library"],
   rules: {
     "react-refresh/only-export-components": [
       "warn",
