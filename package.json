@@ -38,7 +38,7 @@
     "dev": "tsx ./src/main.ts",
     "dev:watch": "tsx watch ./src/main.ts",
     "start": "node ./build/main.js",
-    "build": "pnpm run clean && tsc && chmod +x ./build/main.js",
+    "build": "pnpm run clean && tsup ./src/main.ts && chmod +x ./build/main.js",
     "clean": "pnpm exec del ./build/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "biome format --write --no-errors-on-unmatched --files-ignore-unknown=true",
@@ -60,6 +60,7 @@
     "del-cli": "^5.1.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
+    "tsup": "^8.0.1",
     "tsx": "4.7.0",
     "typescript": "^5.3.3"
   },
@@ -67,5 +68,10 @@
     "**/*.{js,ts,cjs,mjs,jsx,tsx,json}": [
       "biome check --apply --no-errors-on-unmatched --files-ignore-unknown=true"
     ]
+  },
+  "tsup": {
+    "target": "es2020",
+    "format": ["esm"],
+    "outDir": "./build/"
   }
 }
