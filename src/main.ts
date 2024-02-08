@@ -6,6 +6,8 @@ import chalk from "chalk";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
+const __filename = fileURLToPath(import.meta.url);
+
 export const main = () => {
   console.log(chalk.green("npm-audit-visualizer"));
 
@@ -35,8 +37,7 @@ export const main = () => {
     // Start the React application
     exec("cd src/web-app && pnpm run dev", (error, stdout, stderr) => {
       if (error) {
-        console.error(`exec error: ${error}`);
-        return;
+        return console.error(`exec error: ${error}`);
       }
       console.log(`stdout: ${stdout}`);
       console.error(`stderr: ${stderr}`);
@@ -44,6 +45,6 @@ export const main = () => {
   }
 };
 
-if (fileURLToPath(import.meta.url) === process.argv[1]) {
+if (__filename === process.argv[1]) {
   main();
 }
