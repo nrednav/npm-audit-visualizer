@@ -1,5 +1,4 @@
-import { afterEach } from "node:test";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { main } from "./main.js";
 
 describe("main", () => {
