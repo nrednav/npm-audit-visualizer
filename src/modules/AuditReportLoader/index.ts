@@ -1,19 +1,21 @@
 import fs from "fs";
 import * as E from "fp-ts/Either";
 import { AppError } from "src/shared/errors.js";
-
-type RawJson = Record<string, unknown>;
+import { RawJson } from "src/shared/types.js";
 
 type LoadAuditReport = (filePath: string) => E.Either<AppError, RawJson>;
 
-export const loadAuditReport: LoadAuditReport = (filePath: string) => {
+export const loadAuditReport: LoadAuditReport = (filePath) => {
   if (!fs.existsSync(filePath)) {
-    const error = new AppError("LoadAuditReportFailed", {
-      reason: `File does not exist at path: ${filePath}`,
-      file: "modules/AuditReportLoader/index.ts",
-      functionName: "loadAuditReport",
-      data: { filePath },
-    });
+    const error = new AppError(
+      "LoadAuditReportFailed",
+      `File does not exist at path: ${filePath}`,
+      {
+        file: "modules/AuditReportLoader/index.ts",
+        functionName: "loadAuditReport",
+        data: { filePath },
+      },
+    );
     return E.left(error);
   }
 

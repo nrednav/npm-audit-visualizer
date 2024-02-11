@@ -6,16 +6,19 @@ import { loadAuditReport } from "./index.js";
 describe("AuditReportLoader", () => {
   describe("loadAuditReport", () => {
     it("can load audit report as raw JSON", () => {
-      const filePath = path.join(__dirname, "test-audit-report.json");
+      const filePath = path.resolve(
+        __dirname,
+        "../../shared/fixtures/valid-audit-report.json",
+      );
       const auditReport = loadAuditReport(filePath);
-      expect(isRight(auditReport)).toEqual(true);
+      expect(isRight(auditReport)).toStrictEqual(true);
       expectTypeOf(auditReport).toBeObject();
     });
 
     it("returns error when audit report does not exist at file path", () => {
       const filePath = path.join(__dirname, "non-existent-report.json");
       const auditReport = loadAuditReport(filePath);
-      expect(isLeft(auditReport)).toEqual(true);
+      expect(isLeft(auditReport)).toStrictEqual(true);
     });
   });
 });

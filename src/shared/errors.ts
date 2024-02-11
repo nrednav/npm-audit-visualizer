@@ -1,6 +1,6 @@
 export class AppError extends Error {
+  public readonly summary: string;
   public readonly context: {
-    reason: string;
     timestamp: string;
     file: string;
     functionName: string;
@@ -8,10 +8,12 @@ export class AppError extends Error {
   };
 
   constructor(
+    summary: string,
     message: string,
     context: Omit<AppError["context"], "timestamp">,
   ) {
     super(message);
+    this.summary = summary;
     this.context = { ...context, timestamp: new Date().toISOString() };
   }
 }
