@@ -20,7 +20,7 @@ export const validateAuditReport: ValidateAuditReport = (
     assertIsError(error);
     return E.left(
       new AppError("ValidateAuditReportFailed", error.message, {
-        file: "modules/AuditReportValidator/index.ts",
+        file: "modules/AuditReport/Validator/index.ts",
         functionName: "validateAuditReport",
         data: {
           auditReport: JSON.stringify(auditReport),

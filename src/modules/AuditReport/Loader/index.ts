@@ -11,7 +11,7 @@ export const loadAuditReport: LoadAuditReport = (filePath) => {
       "LoadAuditReportFailed",
       `File does not exist at path: ${filePath}`,
       {
-        file: "modules/AuditReportLoader/index.ts",
+        file: "modules/AuditReport/Loader/index.ts",
         functionName: "loadAuditReport",
         data: { filePath },
       },
