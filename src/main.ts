@@ -36,7 +36,7 @@ export const main = () => {
 
   if (argv.web) {
     // Start the React application
-    exec("cd src/web-app && pnpm run dev", (error, stdout, stderr) => {
+    exec("cd web-app && pnpm run dev", (error, stdout, stderr) => {
       if (error) {
         return console.error(`exec error: ${error}`);
       }

@@ -41,7 +41,7 @@
     "dev:watch": "tsx watch ./src/main.ts",
     "start": "node ./build/main.js",
     "build": "pnpm run clean && tsup ./src/main.ts && chmod +x ./build/main.js",
-    "build:web-app": "cd ./src/web-app && pnpm install && pnpm run build",
+    "build:web-app": "cd ./web-app && pnpm install && pnpm run build",
     "clean": "pnpm exec del ./build/",
     "test": "vitest run",
     "test:watch": "vitest",
