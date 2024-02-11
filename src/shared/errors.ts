@@ -1,5 +1,6 @@
 export class AppError extends Error {
   public readonly context: {
+    reason: string;
     timestamp: string;
     file: string;
     functionName: string;
