@@ -1,6 +1,6 @@
 import path from "path";
-import { fold, isLeft, isRight } from "fp-ts/lib/Either.js";
-import type { RawJson } from "src/shared/types.js";
+import * as E from "fp-ts/lib/Either.js";
+import { pipe } from "fp-ts/lib/function.js";
 import { describe, expect, it, test } from "vitest";
 import { loadAuditReport } from "../Loader/index.js";
 import { validateAuditReport } from "./index.js";
@@ -15,15 +15,13 @@ describe("AuditReport", () => {
       ])("can validate %s", (fileName) => {
         const filePath = path.resolve(__dirname, "./fixtures", fileName);
 
-        fold(
-          (error) => {
-            throw error;
-          },
-          (rawAuditReport: RawJson) => {
-            const validationResult = validateAuditReport(rawAuditReport);
-            expect(isRight(validationResult)).toStrictEqual(true);
-          },
-        )(loadAuditReport(filePath));
+        const result = pipe(
+          filePath,
+          loadAuditReport,
+          E.flatMap(validateAuditReport),
+        );
+
+        expect(E.isRight(result)).toStrictEqual(true);
       });
 
       it("can invalidate an audit report", () => {
@@ -32,15 +30,13 @@ describe("AuditReport", () => {
           "./fixtures/invalid-audit-report.json",
         );
 
-        fold(
-          (error) => {
-            throw error;
-          },
-          (rawAuditReport: RawJson) => {
-            const validationResult = validateAuditReport(rawAuditReport);
-            expect(isLeft(validationResult)).toStrictEqual(true);
-          },
-        )(loadAuditReport(filePath));
+        const result = pipe(
+          filePath,
+          loadAuditReport,
+          E.flatMap(validateAuditReport),
+        );
+
+        expect(E.isLeft(result)).toStrictEqual(true);
       });
     });
   });
