@@ -20,7 +20,7 @@
   "keywords": [
     "npm",
     "audit",
-    "data",
+    "report",
     "visualizer",
     "json",
     "security",
@@ -30,7 +30,6 @@
     "graph",
     "table",
     "summary",
-    "report",
     "tool"
   ],
   "bin": {
