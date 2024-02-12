@@ -9,6 +9,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { loadAuditReport } from "./modules/AuditReport/Loader/index.js";
 import { validateAuditReport } from "./modules/AuditReport/Validator/index.js";
+import { AppError } from "./shared/errors.js";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -29,6 +30,12 @@ export const main = () => {
         describe: "Runs the web app",
         alias: "w",
       },
+      debug: {
+        type: "boolean",
+        describe: "Runs the app in debug mode with verbose logging",
+        alias: "d",
+        default: false,
+      },
     })
     .help()
     .alias("help", "h")
@@ -40,7 +47,7 @@ export const main = () => {
       argv.file,
       loadAuditReport,
       E.flatMap(validateAuditReport),
-      E.match(console.error, console.log),
+      E.match(handleError(argv.debug), console.log),
     );
   }
 
@@ -54,6 +61,12 @@ export const main = () => {
       console.error(`stderr: ${stderr}`);
     });
   }
+};
+
+const handleError = (isDebugMode: boolean) => (error: AppError) => {
+  isDebugMode
+    ? console.error(error)
+    : console.error("AppError ::", error.message);
 };
 
 if (__filename === process.argv[1]) {
