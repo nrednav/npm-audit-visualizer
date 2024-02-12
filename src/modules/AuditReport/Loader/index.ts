@@ -1,11 +1,11 @@
 import fs from "fs";
-import * as E from "fp-ts/Either";
+import * as E from "fp-ts/lib/Either.js";
 import { AppError } from "src/shared/errors.js";
-import { RawJson } from "src/shared/types.js";
+import type { RawJson } from "src/shared/types.js";
 
-type LoadAuditReport = (filePath: string) => E.Either<AppError, RawJson>;
-
-export const loadAuditReport: LoadAuditReport = (filePath) => {
+export const loadAuditReport = (
+  filePath: string,
+): E.Either<AppError, RawJson> => {
   if (!fs.existsSync(filePath)) {
     const error = new AppError(
       "LoadAuditReportFailed",

@@ -10,7 +10,12 @@ describe("main", () => {
   });
 
   it("logs the name of the application & input file path", () => {
-    process.argv = ["node", appName, "-f", "test-audit-report.json"];
+    process.argv = [
+      "node",
+      appName,
+      "-f",
+      "src/shared/fixtures/valid-audit-report.json",
+    ];
 
     main();
 
@@ -20,6 +25,6 @@ describe("main", () => {
 
     const secondLog = logSpy.mock.calls[1];
     expect(secondLog).toBeDefined();
-    expect(secondLog?.[0]).toContain("test-audit-report.json");
+    expect(secondLog?.[0]).toContain("valid-audit-report.json");
   });
 });

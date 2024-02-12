@@ -1,20 +1,14 @@
-import * as E from "fp-ts/Either";
+import * as E from "fp-ts/lib/Either.js";
 import { AppError } from "src/shared/errors.js";
 import type { RawJson } from "src/shared/types.js";
 import { assertIsError } from "src/shared/utils.js";
 import { AuditReport, AuditReportSchema } from "./audit-report-schema.js";
 
-type ValidateAuditReport = (
+export const validateAuditReport = (
   auditReport: RawJson,
-  auditReportSchema: typeof AuditReportSchema,
-) => E.Either<AppError, AuditReport>;
-
-export const validateAuditReport: ValidateAuditReport = (
-  auditReport,
-  auditReportSchema,
-) => {
+): E.Either<AppError, AuditReport> => {
   try {
-    const validatedAuditReport = auditReportSchema.parse(auditReport);
+    const validatedAuditReport = AuditReportSchema.parse(auditReport);
     return E.right(validatedAuditReport);
   } catch (error) {
     assertIsError(error);
@@ -22,10 +16,7 @@ export const validateAuditReport: ValidateAuditReport = (
       new AppError("ValidateAuditReportFailed", error.message, {
         file: "modules/AuditReport/Validator/index.ts",
         functionName: "validateAuditReport",
-        data: {
-          auditReport: JSON.stringify(auditReport),
-          auditReportSchema: JSON.stringify(auditReportSchema),
-        },
+        data: { auditReport: JSON.stringify(auditReport) },
       }),
     );
   }

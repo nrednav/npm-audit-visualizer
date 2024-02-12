@@ -3,8 +3,12 @@
 import { exec } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import chalk from "chalk";
+import * as E from "fp-ts/lib/Either.js";
+import { pipe } from "fp-ts/lib/function.js";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import { loadAuditReport } from "./modules/AuditReport/Loader/index.js";
+import { validateAuditReport } from "./modules/AuditReport/Validator/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -31,7 +35,13 @@ export const main = () => {
     .parseSync();
 
   if (argv.file) {
-    console.log(`Audit Report File: ${chalk.blueBright(argv.file)}`);
+    console.log(`Audit report file: ${chalk.blueBright(argv.file)}`);
+    pipe(
+      argv.file,
+      loadAuditReport,
+      E.flatMap(validateAuditReport),
+      E.match(console.error, console.log),
+    );
   }
 
   if (argv.web) {
