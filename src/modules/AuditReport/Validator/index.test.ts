@@ -3,7 +3,6 @@ import { fold, isLeft, isRight } from "fp-ts/lib/Either.js";
 import type { RawJson } from "src/shared/types.js";
 import { describe, expect, it, test } from "vitest";
 import { loadAuditReport } from "../Loader/index.js";
-import { AuditReportSchema } from "./audit-report-schema.js";
 import { validateAuditReport } from "./index.js";
 
 describe("AuditReport", () => {
@@ -21,10 +20,7 @@ describe("AuditReport", () => {
             throw error;
           },
           (rawAuditReport: RawJson) => {
-            const validationResult = validateAuditReport(
-              rawAuditReport,
-              AuditReportSchema,
-            );
+            const validationResult = validateAuditReport(rawAuditReport);
             expect(isRight(validationResult)).toStrictEqual(true);
           },
         )(loadAuditReport(filePath));
@@ -41,10 +37,7 @@ describe("AuditReport", () => {
             throw error;
           },
           (rawAuditReport: RawJson) => {
-            const validationResult = validateAuditReport(
-              rawAuditReport,
-              AuditReportSchema,
-            );
+            const validationResult = validateAuditReport(rawAuditReport);
             expect(isLeft(validationResult)).toStrictEqual(true);
           },
         )(loadAuditReport(filePath));
