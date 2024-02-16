@@ -64,9 +64,7 @@ export const main = () => {
 };
 
 const handleError = (isDebugMode: boolean) => (error: AppError) => {
-  isDebugMode
-    ? console.error(error)
-    : console.error("AppError ::", error.message);
+  isDebugMode ? console.error(error) : console.error(error.message);
 };
 
 if (__filename === process.argv[1]) {

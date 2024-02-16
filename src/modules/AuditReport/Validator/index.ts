@@ -13,11 +13,15 @@ export const validateAuditReport = (
   } catch (error) {
     assertIsError(error);
     return E.left(
-      new AppError("ValidateAuditReportFailed", error.message, {
-        file: "modules/AuditReport/Validator/index.ts",
-        functionName: "validateAuditReport",
-        data: { auditReport: JSON.stringify(auditReport) },
-      }),
+      new AppError(
+        "Failed to validate audit report",
+        {
+          file: "modules/AuditReport/Validator/index.ts",
+          functionName: "validateAuditReport",
+          data: { auditReport },
+        },
+        error,
+      ),
     );
   }
 };

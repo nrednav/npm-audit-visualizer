@@ -1,19 +1,29 @@
 export class AppError extends Error {
-  public readonly summary: string;
   public readonly context: {
     timestamp: string;
     file: string;
     functionName: string;
-    data: Record<string, string>;
+    data: Record<string, unknown>;
   };
 
   constructor(
-    summary: string,
     message: string,
     context: Omit<AppError["context"], "timestamp">,
+    error?: Error,
   ) {
-    super(message);
-    this.summary = summary;
+    const compositeErrorMessage = [
+      error?.message,
+      error instanceof AppError
+        ? `Context:\n${JSON.stringify(error.context, null, 2)}`
+        : null,
+      "----",
+      message,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    super(compositeErrorMessage);
+
     this.context = { ...context, timestamp: new Date().toISOString() };
   }
 }
