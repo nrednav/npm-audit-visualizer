@@ -2,7 +2,7 @@ import * as E from "fp-ts/lib/Either.js";
 import { AppError } from "src/shared/errors.js";
 import type { RawJson } from "src/shared/types.js";
 import { assertIsError } from "src/shared/utils.js";
-import { AuditReport, AuditReportSchema } from "./audit-report-schema.js";
+import { AuditReport, AuditReportSchema } from "./schema.js";
 
 export const validateAuditReport = (
   auditReport: RawJson,

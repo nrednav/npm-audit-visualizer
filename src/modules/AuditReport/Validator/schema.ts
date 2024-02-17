@@ -14,13 +14,13 @@ const DependencySchema = z.union([
     cwe: z.array(z.string()),
     cvss: z.object({
       score: z.number(),
-      vectorString: z.string(),
+      vectorString: z.string().nullable(),
     }),
     range: z.string(),
   }),
 ]);
 
-const VulnerabilitySchema = z.object({
+export const VulnerabilitySchema = z.object({
   name: z.string(),
   severity: SeveritySchema,
   isDirect: z.boolean(),
@@ -40,7 +40,9 @@ const VulnerabilitySchema = z.object({
     .optional(),
 });
 
-const MetadataSchema = z.object({
+export type Vulnerability = z.infer<typeof VulnerabilitySchema>;
+
+export const MetadataSchema = z.object({
   vulnerabilities: z.object({
     info: z.number(),
     low: z.number(),

@@ -8,6 +8,7 @@ import { pipe } from "fp-ts/lib/function.js";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { loadAuditReport } from "./modules/AuditReport/Loader/index.js";
+import { parseAuditReport } from "./modules/AuditReport/Parser/index.js";
 import { validateAuditReport } from "./modules/AuditReport/Validator/index.js";
 import { AppError } from "./shared/errors.js";
 
@@ -47,6 +48,7 @@ export const main = () => {
       argv.file,
       loadAuditReport,
       E.flatMap(validateAuditReport),
+      E.map(parseAuditReport),
       E.match(handleError(argv.debug), console.log),
     );
   }

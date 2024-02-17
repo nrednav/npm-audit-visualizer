@@ -13,7 +13,7 @@ describe("AuditReport", () => {
         "one-vulnerability-audit-report.json",
         "many-vulnerabilities-audit-report.json",
       ])("can validate %s", (fileName) => {
-        const filePath = path.resolve(__dirname, "./fixtures", fileName);
+        const filePath = path.resolve("src/shared/fixtures", fileName);
 
         const result = pipe(
           filePath,
@@ -26,8 +26,8 @@ describe("AuditReport", () => {
 
       it("can invalidate an audit report", () => {
         const filePath = path.resolve(
-          __dirname,
-          "./fixtures/invalid-audit-report.json",
+          "src/shared/fixtures",
+          "invalid-audit-report.json",
         );
 
         const result = pipe(
