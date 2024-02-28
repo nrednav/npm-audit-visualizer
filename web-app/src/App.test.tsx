@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import App from "./App";
 
 describe("App", () => {
-  it("renders", () => {
+  it("renders a title", () => {
     render(<App />);
-    expect(screen.getByText(/app/i)).toBeVisible();
+    expect(
+      screen.getByRole("heading", { name: "npm-audit-visualizer" }),
+    ).toBeVisible();
   });
 });
