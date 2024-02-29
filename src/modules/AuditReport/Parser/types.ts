@@ -5,7 +5,11 @@ import type {
   SerializedNode,
 } from "graphology-types";
 import { z } from "zod";
-import { AuditReport, Vulnerability } from "../Validator/schema.js";
+import {
+  MetadataSchema,
+  Vulnerability,
+  VulnerabilitySchema,
+} from "../Validator/schema.js";
 
 export const VulnerabilityGraphSchema = z.object({
   attributes: z.custom<Attributes>(),
@@ -15,12 +19,15 @@ export const VulnerabilityGraphSchema = z.object({
 });
 
 export type VulnerabilityGraph = z.infer<typeof VulnerabilityGraphSchema>;
+
 export type VulnerabilityTable = Vulnerability[];
 
-export type ParsedAuditReport = {
-  metadata: AuditReport["metadata"];
-  vulnerability: {
-    graph: VulnerabilityGraph;
-    table: VulnerabilityTable;
-  };
-};
+export const ParsedAuditReportSchema = z.object({
+  metadata: MetadataSchema,
+  vulnerability: z.object({
+    graph: VulnerabilityGraphSchema,
+    table: z.array(VulnerabilitySchema),
+  }),
+});
+
+export type ParsedAuditReport = z.infer<typeof ParsedAuditReportSchema>;

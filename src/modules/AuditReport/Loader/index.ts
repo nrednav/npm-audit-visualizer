@@ -1,12 +1,15 @@
 import fs from "fs";
 import * as E from "fp-ts/lib/Either.js";
 import { AppError } from "src/shared/errors.js";
+import { logger } from "src/shared/modules/logger.js";
 import type { RawJson } from "src/shared/types.js";
 import { assertIsError } from "src/shared/utils.js";
 
 export const loadAuditReport = (
   filePath: string,
 ): E.Either<AppError, RawJson> => {
+  logger.debug("Loading audit report");
+
   const context = {
     file: "modules/AuditReport/Loader/index.ts",
     functionName: "loadAuditReport",
