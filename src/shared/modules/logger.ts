@@ -9,13 +9,7 @@ class Logger {
   }
 
   static getInstance(debugMode = false) {
-    if (Logger.instance) {
-      return Logger.instance;
-    }
-
-    Logger.instance = new Logger(debugMode);
-
-    return Logger.instance;
+    return Logger.instance ? Logger.instance : new Logger(debugMode);
   }
 
   enableDebugMode() {
