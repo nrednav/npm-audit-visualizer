@@ -6,7 +6,7 @@ import * as E from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { loadAuditReport } from "./modules/AuditReport/Loader/index.js";
+import { importAuditReport } from "./modules/AuditReport/Importer/index.js";
 import { parseAuditReport } from "./modules/AuditReport/Parser/index.js";
 import { validateAuditReport } from "./modules/AuditReport/Validator/index.js";
 import { visualizeAuditReport } from "./modules/AuditReport/Visualizer/index.js";
@@ -46,7 +46,7 @@ export const main = () => {
     logger.info(`Audit report file: ${chalk.blueBright(argv.file)}`);
     pipe(
       argv.file,
-      loadAuditReport,
+      importAuditReport,
       E.flatMap(validateAuditReport),
       E.map(parseAuditReport),
       E.map(visualizeAuditReport),

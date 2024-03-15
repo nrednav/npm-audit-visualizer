@@ -2,7 +2,7 @@ import path from "path";
 import * as E from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { describe, expect, it, test } from "vitest";
-import { loadAuditReport } from "../Loader/index.js";
+import { importAuditReport } from "../Importer/index.js";
 import { validateAuditReport } from "./index.js";
 
 describe("AuditReport", () => {
@@ -17,7 +17,7 @@ describe("AuditReport", () => {
 
         const result = pipe(
           filePath,
-          loadAuditReport,
+          importAuditReport,
           E.flatMap(validateAuditReport),
         );
 
@@ -32,7 +32,7 @@ describe("AuditReport", () => {
 
         const result = pipe(
           filePath,
-          loadAuditReport,
+          importAuditReport,
           E.flatMap(validateAuditReport),
         );
 

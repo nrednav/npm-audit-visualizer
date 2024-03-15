@@ -5,14 +5,14 @@ import { logger } from "src/shared/modules/logger.js";
 import type { RawJson } from "src/shared/types.js";
 import { assertIsError } from "src/shared/utils.js";
 
-export const loadAuditReport = (
+export const importAuditReport = (
   filePath: string,
 ): E.Either<AppError, RawJson> => {
-  logger.debug("Loading audit report");
+  logger.debug("Importing audit report");
 
   const context = {
-    file: "modules/AuditReport/Loader/index.ts",
-    functionName: "loadAuditReport",
+    file: "modules/AuditReport/Importer/index.ts",
+    functionName: "importAuditReport",
     data: { filePath },
   };
 
@@ -28,6 +28,8 @@ export const loadAuditReport = (
     return E.right(auditReport);
   } catch (error) {
     assertIsError(error);
-    return E.left(new AppError("Failed to load audit report", context, error));
+    return E.left(
+      new AppError("Failed to import audit report", context, error),
+    );
   }
 };
