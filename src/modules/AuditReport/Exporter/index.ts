@@ -1,17 +1,14 @@
-import { writeFile } from "node:fs";
+import fs from "node:fs";
 import path from "node:path";
-import { promisify } from "node:util";
-import * as TE from "fp-ts/lib/TaskEither.js";
+import * as E from "fp-ts/lib/Either.js";
 import { ParsedAuditReport } from "src/modules/AuditReport/Parser/types.js";
 import { AppError } from "src/shared/errors.js";
 import { logger } from "src/shared/modules/logger.js";
 import { assertIsError } from "src/shared/utils.js";
 
-const writeFileAsync = promisify(writeFile);
-
 export const exportParsedAuditReport = (
   parsedAuditReport: ParsedAuditReport,
-): TE.TaskEither<AppError, ParsedAuditReport> => {
+): E.Either<AppError, ParsedAuditReport> => {
   logger.debug("Exporting parsed audit report");
 
   const serializedReport = JSON.stringify(parsedAuditReport, null, 2);
@@ -22,9 +19,9 @@ export const exportParsedAuditReport = (
     filename,
   );
 
-  return TE.tryCatchK(
-    async () => {
-      await writeFileAsync(outputPath, serializedReport, "utf-8");
+  return E.tryCatchK(
+    () => {
+      fs.writeFileSync(outputPath, serializedReport, "utf-8");
       return parsedAuditReport;
     },
     (error: unknown) => {

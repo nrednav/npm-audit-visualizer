@@ -51,8 +51,8 @@ export const main = () => {
       importAuditReport,
       E.flatMap(validateAuditReport),
       E.map(parseAuditReport),
+      E.flatMap(exportParsedAuditReport),
       TE.fromEither,
-      TE.flatMap(exportParsedAuditReport),
       TE.flatMap(visualizeAuditReport),
       TE.match(handleError(argv.debug), () => {}),
     );
