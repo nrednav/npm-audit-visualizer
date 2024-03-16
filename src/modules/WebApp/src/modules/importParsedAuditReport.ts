@@ -5,6 +5,6 @@ import {
 
 import parsedAuditReport from "@/data/parsed-audit-report.json";
 
-export const loadParsedAuditReport = (): ParsedAuditReport => {
+export const importParsedAuditReport = (): ParsedAuditReport => {
   return ParsedAuditReportSchema.parse(parsedAuditReport);
 };

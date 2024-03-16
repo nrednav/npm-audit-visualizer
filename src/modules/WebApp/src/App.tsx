@@ -1,8 +1,8 @@
 import AuditReportMetadata from "./components/AuditReportMetadata";
-import { loadParsedAuditReport } from "./modules/loadParsedAuditReport";
+import { importParsedAuditReport } from "./modules/importParsedAuditReport";
 
 const App = () => {
-  const auditReport = loadParsedAuditReport();
+  const auditReport = importParsedAuditReport();
   return (
     <>
       <header>
