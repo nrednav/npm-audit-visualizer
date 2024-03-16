@@ -3,9 +3,11 @@
 import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 import * as E from "fp-ts/lib/Either.js";
+import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import { exportParsedAuditReport } from "./modules/AuditReport/Exporter/index.js";
 import { importAuditReport } from "./modules/AuditReport/Importer/index.js";
 import { parseAuditReport } from "./modules/AuditReport/Parser/index.js";
 import { validateAuditReport } from "./modules/AuditReport/Validator/index.js";
@@ -44,14 +46,17 @@ export const main = () => {
 
   if (argv.file) {
     logger.info(`Audit report file: ${chalk.blueBright(argv.file)}`);
-    pipe(
+    const run = pipe(
       argv.file,
       importAuditReport,
       E.flatMap(validateAuditReport),
       E.map(parseAuditReport),
-      E.map(visualizeAuditReport),
-      E.match(handleError(argv.debug), () => {}),
+      TE.fromEither,
+      TE.flatMap(exportParsedAuditReport),
+      TE.flatMap(visualizeAuditReport),
+      TE.match(handleError(argv.debug), () => {}),
     );
+    run();
   }
 };
 
