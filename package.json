@@ -35,6 +35,7 @@
   "bin": {
     "npm-audit-visualizer": "build/main.js"
   },
+  "files": ["build/"],
   "scripts": {
     "dev": "tsx ./src/main.ts",
     "dev:watch": "tsx watch ./src/main.ts",
