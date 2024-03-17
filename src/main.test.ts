@@ -2,8 +2,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { main } from "./main.js";
 import { logger } from "./shared/modules/logger.js";
 
-vi.mock("./modules/AuditReport/Visualizer/index.js", () => {
-  return { visualizeAuditReport: () => {} };
+vi.mock("./modules/AuditReport/Visualizer/index.js", async () => {
+  const TE = await import("fp-ts/lib/TaskEither.js");
+  return {
+    visualizeAuditReport: () => TE.right(true),
+  };
 });
 
 describe("main", () => {
