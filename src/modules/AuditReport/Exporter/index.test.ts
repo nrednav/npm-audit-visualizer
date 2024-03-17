@@ -24,8 +24,8 @@ describe("AuditReport", () => {
       test.each([
         "no-vulnerabilities-audit-report.json",
         "one-vulnerability-audit-report.json",
-        "many-vulnerabilities-audit-report.json",
         "few-vulnerabilities-audit-report.json",
+        "many-vulnerabilities-audit-report.json",
       ])("can export a parsed version of %s", (fileName) => {
         const filePath = path.resolve("src/shared/fixtures", fileName);
 
