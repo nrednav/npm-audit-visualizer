@@ -6,35 +6,36 @@ import { AppError } from "src/shared/errors.js";
 import { logger } from "src/shared/modules/logger.js";
 import { assertIsError } from "src/shared/utils.js";
 
-export const exportParsedAuditReport = (
-  parsedAuditReport: ParsedAuditReport,
-): E.Either<AppError, ParsedAuditReport> => {
-  logger.debug("Exporting parsed audit report");
+const DEFAULT_OUTPUT_DIR = path.resolve(
+  process.cwd(),
+  "src/modules/WebApp/src/data",
+);
 
-  const serializedReport = JSON.stringify(parsedAuditReport, null, 2);
-  const filename = "parsed-audit-report.json";
-  const outputPath = path.resolve(
-    process.cwd(),
-    "src/modules/WebApp/src/data",
-    filename,
-  );
+export const exportParsedAuditReport =
+  (outputDir: string = DEFAULT_OUTPUT_DIR) =>
+  (parsedAuditReport: ParsedAuditReport) => {
+    logger.debug(`Exporting parsed audit report to ${outputDir}`);
 
-  return E.tryCatchK(
-    () => {
-      fs.writeFileSync(outputPath, serializedReport, "utf-8");
-      return parsedAuditReport;
-    },
-    (error: unknown) => {
-      assertIsError(error);
-      return new AppError(
-        "Failed to export parsed audit report",
-        {
-          file: "modules/AuditReport/Exporter/index.ts",
-          functionName: "exportParsedAuditReport",
-          data: { parsedAuditReport },
-        },
-        error,
-      );
-    },
-  )();
-};
+    const serializedReport = JSON.stringify(parsedAuditReport, null, 2);
+    const filename = "parsed-audit-report.json";
+    const outputPath = path.resolve(outputDir, filename);
+
+    return E.tryCatchK(
+      () => {
+        fs.writeFileSync(outputPath, serializedReport, "utf-8");
+        return parsedAuditReport;
+      },
+      (error: unknown) => {
+        assertIsError(error);
+        return new AppError(
+          "Failed to export parsed audit report",
+          {
+            file: "modules/AuditReport/Exporter/index.ts",
+            functionName: "exportParsedAuditReport",
+            data: { parsedAuditReport, outputDir },
+          },
+          error,
+        );
+      },
+    )();
+  };
