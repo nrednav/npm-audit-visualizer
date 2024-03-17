@@ -23,3 +23,6 @@ build
 *.njsproj
 *.sln
 *.sw?
+
+# Generated artifacts
+src/data/parsed-audit-report.json

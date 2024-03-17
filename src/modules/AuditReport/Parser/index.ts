@@ -1,4 +1,5 @@
 import graphology from "graphology";
+import { logger } from "src/shared/modules/logger.js";
 import { AuditReport } from "../Validator/schema.js";
 import type {
   ParsedAuditReport,
@@ -10,6 +11,7 @@ const { MultiDirectedGraph } = graphology;
 export const parseAuditReport = (
   auditReport: AuditReport,
 ): ParsedAuditReport => {
+  logger.debug("Parsing audit report");
   return {
     metadata: auditReport.metadata,
     vulnerability: {
@@ -22,6 +24,7 @@ export const parseAuditReport = (
 const createVulnerabilityGraph = (
   vulnerabilities: AuditReport["vulnerabilities"],
 ): VulnerabilityGraph => {
+  logger.debug("Creating vulnerability graph");
   const graph = new MultiDirectedGraph({ allowSelfLoops: true });
 
   if (Object.keys(vulnerabilities).length === 0) {
@@ -57,5 +60,6 @@ const createVulnerabilityGraph = (
 const createVulnerabilityTable = (
   vulnerabilities: AuditReport["vulnerabilities"],
 ): VulnerabilityTable => {
+  logger.debug("Creating vulnerability table");
   return Object.values(vulnerabilities);
 };

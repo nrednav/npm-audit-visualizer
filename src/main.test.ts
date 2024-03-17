@@ -1,15 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { main } from "./main.js";
+import { logger } from "./shared/modules/logger.js";
+
+vi.mock("./modules/AuditReport/Visualizer/index.js", async () => {
+  const TE = await import("fp-ts/lib/TaskEither.js");
+  return {
+    visualizeAuditReport: () => TE.right(true),
+  };
+});
 
 describe("main", () => {
   const appName = "npm-audit-visualizer";
-  const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+  const logSpy = vi.spyOn(logger, "info").mockImplementation(() => undefined);
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("logs the name of the application & input file path", () => {
+  it("logs the name of the tool & the audit report file path", () => {
     process.argv = [
       "node",
       appName,

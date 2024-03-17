@@ -1,0 +1,68 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "nodemon": {
+      "name": "nodemon",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": ["simple-update-notifier"],
+      "effects": [],
+      "range": "2.0.19 - 2.0.22",
+      "nodes": ["node_modules/nodemon"],
+      "fixAvailable": true
+    },
+    "semver": {
+      "name": "semver",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1096482,
+          "name": "semver",
+          "dependency": "semver",
+          "title": "semver vulnerable to Regular Expression Denial of Service",
+          "url": "https://github.com/advisories/GHSA-c2qf-rxjj-qqgw",
+          "severity": "moderate",
+          "cwe": ["CWE-1333"],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=7.0.0 <7.5.2"
+        }
+      ],
+      "effects": ["simple-update-notifier"],
+      "range": "7.0.0 - 7.5.1",
+      "nodes": ["node_modules/simple-update-notifier/node_modules/semver"],
+      "fixAvailable": true
+    },
+    "simple-update-notifier": {
+      "name": "simple-update-notifier",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["semver"],
+      "effects": ["nodemon"],
+      "range": "1.0.7 - 1.1.0",
+      "nodes": ["node_modules/simple-update-notifier"],
+      "fixAvailable": true
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 3,
+      "high": 0,
+      "critical": 0,
+      "total": 3
+    },
+    "dependencies": {
+      "prod": 81,
+      "dev": 732,
+      "optional": 6,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 812
+    }
+  }
+}
