@@ -68,7 +68,7 @@ const handleError = (isDebugMode: boolean) => (error: AppError) => {
 if (
   __filename === process.argv[1] ||
   process.argv[1]?.endsWith(PACKAGE_NAME) ||
-  process.argv[1]?.endsWith(PACKAGE_ENTRY_POINT)
+  process.argv[1]?.endsWith(PACKAGE_ENTRY_POINT.relative)
 ) {
   main();
 
