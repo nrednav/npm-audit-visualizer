@@ -35,34 +35,39 @@
   "bin": {
     "npm-audit-visualizer": "build/main.js"
   },
-  "files": ["build/"],
+  "files": [
+    "build/"
+  ],
   "scripts": {
     "dev": "tsx ./src/main.ts",
     "dev:watch": "tsx watch ./src/main.ts",
     "start": "node ./build/main.js",
-    "start:web-app": "cd src/modules/WebApp && pnpm run dev",
+    "prebuild": "pnpm run build:web-app",
     "build": "pnpm run clean && pnpm run type-check && tsup ./src/main.ts && chmod +x ./build/main.js",
     "build:web-app": "cd src/modules/WebApp && pnpm install && pnpm run build",
     "clean": "pnpm exec del ./build/",
-    "test": "vitest run && npm --prefix src/modules/WebApp run test",
+    "test": "vitest run && npm run test:web-app",
+    "test:web-app": "pnpm --prefix src/modules/WebApp run test",
     "test:watch": "vitest",
     "type-check": "pnpm exec tsc --noEmit",
     "format": "biome format --write --no-errors-on-unmatched --files-ignore-unknown=true",
     "lint": "biome lint --apply --no-errors-on-unmatched --files-ignore-unknown=true",
     "check": "biome check --apply --no-errors-on-unmatched --files-ignore-unknown=true",
     "prepare": "husky install",
-    "postinstall": "pnpm run build && pnpm run build:web-app"
+    "prepack": "npm run build"
   },
   "dependencies": {
     "chalk": "^5.3.0",
     "fp-ts": "^2.16.2",
     "graphology": "^0.25.4",
+    "serve-handler": "^6.1.5",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@biomejs/biome": "1.5.2",
     "@types/node": "^20.11.6",
+    "@types/serve-handler": "^6.1.4",
     "@types/yargs": "^17.0.32",
     "del-cli": "^5.1.0",
     "graphology-types": "0.24.7",
@@ -84,6 +89,7 @@
     "format": [
       "esm"
     ],
-    "outDir": "./build/"
+    "outDir": "./build/",
+    "onSuccess": "cp -r ./src/modules/WebApp/build/ ./build/web-app/"
   }
 }

@@ -2,17 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import * as E from "fp-ts/lib/Either.js";
 import { ParsedAuditReport } from "src/modules/AuditReport/Parser/types.js";
+import { WEB_APP_BUILD_DIR } from "src/shared/constants.js";
 import { AppError } from "src/shared/errors.js";
 import { logger } from "src/shared/modules/logger.js";
 import { assertIsError } from "src/shared/utils.js";
 
-const DEFAULT_OUTPUT_DIR = path.resolve(
-  process.cwd(),
-  "src/modules/WebApp/src/data",
-);
-
 export const exportParsedAuditReport =
-  (outputDir: string = DEFAULT_OUTPUT_DIR) =>
+  (outputDir: string = WEB_APP_BUILD_DIR) =>
   (parsedAuditReport: ParsedAuditReport) => {
     logger.debug(`Exporting parsed audit report to ${outputDir}`);
 

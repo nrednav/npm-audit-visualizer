@@ -12,6 +12,7 @@ import { importAuditReport } from "./modules/AuditReport/Importer/index.js";
 import { parseAuditReport } from "./modules/AuditReport/Parser/index.js";
 import { validateAuditReport } from "./modules/AuditReport/Validator/index.js";
 import { visualizeAuditReport } from "./modules/AuditReport/Visualizer/index.js";
+import { PACKAGE_ENTRY_POINT, PACKAGE_NAME } from "./shared/constants.js";
 import { AppError } from "./shared/errors.js";
 import { logger } from "./shared/modules/logger.js";
 
@@ -64,7 +65,11 @@ const handleError = (isDebugMode: boolean) => (error: AppError) => {
   logger.error(isDebugMode ? error : error.message);
 };
 
-if (__filename === process.argv[1]) {
+if (
+  __filename === process.argv[1] ||
+  process.argv[1]?.endsWith(PACKAGE_NAME) ||
+  process.argv[1]?.endsWith(PACKAGE_ENTRY_POINT)
+) {
   main();
 
   process.on("SIGINT", () => {
