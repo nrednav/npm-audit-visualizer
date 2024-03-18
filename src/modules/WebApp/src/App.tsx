@@ -1,8 +1,32 @@
+import { useEffect, useState } from "react";
+import { ParsedAuditReport } from "../../AuditReport/Parser/types";
 import AuditReportMetadata from "./components/AuditReportMetadata";
 import { importParsedAuditReport } from "./modules/importParsedAuditReport";
 
 const App = () => {
-  const auditReport = importParsedAuditReport();
+  const [isLoading, setIsLoading] = useState(false);
+  const [auditReport, setAuditReport] = useState<ParsedAuditReport | null>(
+    null,
+  );
+
+  useEffect(() => {
+    setIsLoading(true);
+    importParsedAuditReport()
+      .then((auditReport) => {
+        setAuditReport(auditReport);
+        setIsLoading(false);
+      })
+      .catch(console.error);
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!auditReport) {
+    return <div>Error: Could not read parsed audit report</div>;
+  }
+
   return (
     <>
       <header>

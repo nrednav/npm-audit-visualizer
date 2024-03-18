@@ -1,13 +1,15 @@
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
+import http from "http";
 import chalk from "chalk";
 import * as TE from "fp-ts/lib/TaskEither.js";
+import handler from "serve-handler";
 import { ParsedAuditReport } from "src/modules/AuditReport/Parser/types.js";
+import {
+  WEB_APP_BUILD_DIR,
+  WEB_APP_SERVER_PORT,
+} from "src/shared/constants.js";
 import { AppError } from "src/shared/errors.js";
 import { logger } from "src/shared/modules/logger.js";
 import { assertIsError } from "src/shared/utils.js";
-
-const execAsync = promisify(exec);
 
 export const visualizeAuditReport = (
   parsedAuditReport: ParsedAuditReport,
@@ -30,10 +32,21 @@ export const visualizeAuditReport = (
 
 const startWebApp = async () => {
   logger.debug("Starting web app");
-  const script = "pnpm run start:web-app";
-  const process = execAsync(script);
-  process.child.stdout?.once("data", () => {
-    logger.info("Web app started at", chalk.green("http://localhost:1248"));
+
+  const server = http.createServer((request, response) => {
+    return handler(request, response, { public: WEB_APP_BUILD_DIR });
   });
-  await process;
+
+  server.listen(WEB_APP_SERVER_PORT, () => {
+    logger.info(
+      "Web app started at",
+      chalk.green(`http://localhost:${WEB_APP_SERVER_PORT}`),
+    );
+  });
+
+  server.on("error", (error) => {
+    logger.error(error);
+    server.close().once("close", () => logger.info("Web app stopped"));
+    process.exit(1);
+  });
 };
