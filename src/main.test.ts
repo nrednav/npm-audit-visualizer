@@ -5,7 +5,7 @@ import { logger } from "./shared/modules/logger.js";
 vi.mock("./modules/AuditReport/Visualizer/index.js", async () => {
   const TE = await import("fp-ts/lib/TaskEither.js");
   return {
-    visualizeAuditReport: () => TE.right(true),
+    visualizeAuditReport: () => () => TE.right(true),
   };
 });
 
