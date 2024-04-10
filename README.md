@@ -33,10 +33,9 @@ Then, run the tool on the generated audit report:
 npm-audit-visualizer -f audit.json
 ```
 
-This should automatically open a new page in your web browser at the URL:
-`http://localhost:1248`
-
-If it does not automatically open, please navigate to that URL manually.
+By default, this should automatically open a new page in your web browser at the
+URL: `http://localhost:1248`. If it does not, please try navigating to that URL
+manually.
 
 ## About
 
