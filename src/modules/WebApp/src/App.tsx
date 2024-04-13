@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ParsedAuditReport } from "../../AuditReport/Parser/types";
 import AuditReportMetadata from "./components/AuditReportMetadata";
-import { importParsedAuditReport } from "./modules/importParsedAuditReport";
+import { importParsedAuditReport } from "./modules/audit-report";
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);

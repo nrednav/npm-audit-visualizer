@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import App from "./App";
 
-vi.mock("./modules/importParsedAuditReport.ts", async () => {
+vi.mock("./modules/audit-report.ts", async () => {
   const auditReportFixture = await import(
     "./fixtures/parsed-audit-report.json"
   );
