@@ -1,6 +1,6 @@
-import parsedAuditReport from "@/fixtures/parsed-audit-report.json";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import parsedAuditReport from "src/fixtures/parsed-audit-report.json";
 import { beforeAll, describe, expect, it } from "vitest";
 import AuditReportMetadata from "./AuditReportMetadata";
 
