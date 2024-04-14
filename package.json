@@ -83,13 +83,5 @@
     "**/*.{js,ts,cjs,mjs,jsx,tsx,json}": [
       "biome check --apply --no-errors-on-unmatched --files-ignore-unknown=true"
     ]
-  },
-  "tsup": {
-    "target": "es2020",
-    "format": [
-      "esm"
-    ],
-    "outDir": "./build/",
-    "onSuccess": "cp -r ./src/modules/WebApp/build/ ./build/web-app/"
   }
 }
