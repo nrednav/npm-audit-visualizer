@@ -1,13 +1,19 @@
-import { useState } from "react";
-import { ParsedAuditReport } from "root/src/modules/AuditReport/Parser/types";
+import { useEffect, useState } from "react";
+import {
+  ParsedAuditReport,
+  VulnerabilityGraph,
+} from "root/src/modules/AuditReport/Parser/types";
 import { TabList } from "./TabList";
+
+import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
+import "@react-sigma/core/lib/react-sigma.min.css";
+import { MultiDirectedGraph } from "graphology";
 
 type VisualizerProps = {
   parsedAuditReport: ParsedAuditReport;
 };
 
 const Visualizer = (props: VisualizerProps) => {
-  console.log("rendered visualizer", props);
   const [selectedTab, setSelectedTab] = useState(0);
   const selectedMode = modes[selectedTab];
 
@@ -18,17 +24,41 @@ const Visualizer = (props: VisualizerProps) => {
         selectedTab={selectedTab}
         onTabSelected={setSelectedTab}
       />
-      <selectedMode.Component />
+      <selectedMode.Component data={props.parsedAuditReport} />
     </section>
   );
 };
 
 const modes: {
   name: keyof ParsedAuditReport["vulnerability"];
-  Component: () => JSX.Element;
+  Component: (props: { data: ParsedAuditReport }) => JSX.Element;
 }[] = [
-  { name: "graph", Component: () => <div>Graph Mode</div> },
+  {
+    name: "graph",
+    Component: ({ data }: { data: ParsedAuditReport }) => {
+      return (
+        <SigmaContainer
+          style={{ height: "500px", width: "500px" }}
+          settings={{ renderLabels: false }}
+        >
+          <LoadGraph graphData={data.vulnerability.graph} />
+        </SigmaContainer>
+      );
+    },
+  },
   { name: "table", Component: () => <div>Table Mode</div> },
 ];
+
+export const LoadGraph = ({ graphData }: { graphData: VulnerabilityGraph }) => {
+  const loadGraph = useLoadGraph();
+
+  useEffect(() => {
+    const graph = new MultiDirectedGraph({ allowSelfLoops: true });
+    graph.import(graphData);
+    loadGraph(graph);
+  }, [loadGraph, graphData]);
+
+  return null;
+};
 
 export default Visualizer;

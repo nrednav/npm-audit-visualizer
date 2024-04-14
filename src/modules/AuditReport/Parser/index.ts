@@ -32,11 +32,17 @@ const createVulnerabilityGraph = (
   }
 
   // First Pass: Add Nodes
-  for (const entry of Object.entries(vulnerabilities)) {
+  for (const [index, entry] of Object.entries(vulnerabilities).entries()) {
     const [name, vulnerability] = entry;
 
     if (!graph.hasNode(name)) {
-      graph.addNode(name, vulnerability);
+      graph.addNode(name, {
+        x: index,
+        y: vulnerability.via.length,
+        label: name,
+        size: 2 * vulnerability.via.length,
+        vulnerability: vulnerability,
+      });
     }
   }
 
