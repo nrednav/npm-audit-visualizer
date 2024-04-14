@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useState } from "react";
-import type { ParsedAuditReport } from "../../../AuditReport/Parser/types";
+import type { ParsedAuditReport } from "root/src/modules/AuditReport/Parser/types";
 
 type AuditReportMetadataProps = {
   metadata: ParsedAuditReport["metadata"];

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ParsedAuditReport } from "../../AuditReport/Parser/types";
+import { ParsedAuditReport } from "root/src/modules/AuditReport/Parser/types";
 import AuditReportMetadata from "./components/AuditReportMetadata";
 import { importParsedAuditReport } from "./modules/audit-report";
 

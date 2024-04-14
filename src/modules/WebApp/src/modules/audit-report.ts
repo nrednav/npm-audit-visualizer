@@ -1,7 +1,7 @@
 import {
   ParsedAuditReport,
   ParsedAuditReportSchema,
-} from "../../../AuditReport/Parser/types";
+} from "root/src/modules/AuditReport/Parser/types";
 
 export const importParsedAuditReport =
   async (): Promise<ParsedAuditReport | null> => {
