@@ -3,8 +3,13 @@ import {
   ParsedAuditReportSchema,
 } from "../../../AuditReport/Parser/types";
 
-export const importParsedAuditReport = async (): Promise<ParsedAuditReport> => {
-  const res = await fetch("/parsed-audit-report.json");
-  const parsedAuditReport = (await res.json()) as unknown;
-  return ParsedAuditReportSchema.parse(parsedAuditReport);
-};
+export const importParsedAuditReport =
+  async (): Promise<ParsedAuditReport | null> => {
+    try {
+      const res = await fetch("/parsed-audit-report.json");
+      const parsedAuditReport = (await res.json()) as unknown;
+      return ParsedAuditReportSchema.parse(parsedAuditReport);
+    } catch (error) {
+      return null;
+    }
+  };
