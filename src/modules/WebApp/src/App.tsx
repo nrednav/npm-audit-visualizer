@@ -1,29 +1,14 @@
-import { useEffect, useState } from "react";
-import { ParsedAuditReport } from "root/src/modules/AuditReport/Parser/types";
 import AuditReportMetadata from "./components/AuditReportMetadata";
-import { importParsedAuditReport } from "./modules/audit-report";
+import { useParsedAuditReport } from "./hooks/use-parsed-audit-report";
 
 const App = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [auditReport, setAuditReport] = useState<ParsedAuditReport | null>(
-    null,
-  );
+  const { parsedAuditReport, loading } = useParsedAuditReport();
 
-  useEffect(() => {
-    setIsLoading(true);
-    importParsedAuditReport()
-      .then((auditReport) => {
-        setAuditReport(auditReport);
-        setIsLoading(false);
-      })
-      .catch(console.error);
-  }, []);
-
-  if (isLoading) {
+  if (loading) {
     return <div>Loading...</div>;
   }
 
-  if (!auditReport) {
+  if (!parsedAuditReport) {
     return <div>Error: Could not read parsed audit report</div>;
   }
 
@@ -33,7 +18,7 @@ const App = () => {
         <h1 className="text-2xl font-bold text-center">npm-audit-visualizer</h1>
       </header>
       <main>
-        <AuditReportMetadata metadata={auditReport.metadata} />
+        <AuditReportMetadata metadata={parsedAuditReport.metadata} />
       </main>
       <footer />
     </>
