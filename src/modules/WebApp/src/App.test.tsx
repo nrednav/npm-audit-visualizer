@@ -2,12 +2,15 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import App from "./App";
 
-vi.mock("./modules/audit-report.ts", async () => {
+vi.mock("./hooks/use-parsed-audit-report.ts", async () => {
   const auditReportFixture = await import(
     "./fixtures/parsed-audit-report.json"
   );
   return {
-    importParsedAuditReport: () => Promise.resolve(auditReportFixture),
+    useParsedAuditReport: () => ({
+      parsedAuditReport: auditReportFixture,
+      loading: false,
+    }),
   };
 });
 
