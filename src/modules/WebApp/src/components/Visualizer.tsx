@@ -37,10 +37,7 @@ const modes: {
     name: "graph",
     Component: ({ data }: { data: ParsedAuditReport }) => {
       return (
-        <SigmaContainer
-          style={{ height: "500px", width: "500px" }}
-          settings={{ renderLabels: false }}
-        >
+        <SigmaContainer style={{ height: "1024px", width: "1024px" }}>
           <LoadGraph graphData={data.vulnerability.graph} />
         </SigmaContainer>
       );
