@@ -5,7 +5,16 @@ import {
 } from "root/src/modules/AuditReport/Parser/types";
 import { TabList } from "./TabList";
 
-import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
+import {
+  ControlsContainer,
+  FullScreenControl,
+  SigmaContainer,
+  ZoomControl,
+  useLoadGraph,
+  useRegisterEvents,
+  useSetSettings,
+  useSigma,
+} from "@react-sigma/core";
 import "@react-sigma/core/lib/react-sigma.min.css";
 import { MultiDirectedGraph } from "graphology";
 
@@ -37,8 +46,15 @@ const modes: {
     name: "graph",
     Component: ({ data }: { data: ParsedAuditReport }) => {
       return (
-        <SigmaContainer style={{ height: "1024px", width: "1024px" }}>
-          <LoadGraph graphData={data.vulnerability.graph} />
+        <SigmaContainer
+          style={{ width: "1024px", height: "1024px" }}
+          settings={{ allowInvalidContainer: true }}
+        >
+          <VulnerabilityGraphComponent graphData={data.vulnerability.graph} />
+          <ControlsContainer position={"bottom-right"}>
+            <ZoomControl />
+            <FullScreenControl />
+          </ControlsContainer>
         </SigmaContainer>
       );
     },
@@ -46,14 +62,68 @@ const modes: {
   { name: "table", Component: () => <div>Table Mode</div> },
 ];
 
-export const LoadGraph = ({ graphData }: { graphData: VulnerabilityGraph }) => {
+export const VulnerabilityGraphComponent = ({
+  graphData,
+  disableHoverEffect,
+}: { graphData: VulnerabilityGraph; disableHoverEffect?: boolean }) => {
+  const sigma = useSigma();
+  const registerEvents = useRegisterEvents();
+  const setSettings = useSetSettings();
   const loadGraph = useLoadGraph();
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
   useEffect(() => {
     const graph = new MultiDirectedGraph({ allowSelfLoops: true });
     graph.import(graphData);
     loadGraph(graph);
-  }, [loadGraph, graphData]);
+    registerEvents({
+      enterNode: (event) => setHoveredNode(event.node),
+      leaveNode: () => setHoveredNode(null),
+    });
+  }, [loadGraph, graphData, registerEvents]);
+
+  useEffect(() => {
+    setSettings({
+      nodeReducer: (node, data) => {
+        const graph = sigma.getGraph();
+        const newData: { highlighted: boolean; color?: string } = {
+          ...data,
+          highlighted: Boolean(data.highlighted) || false,
+        };
+
+        if (!disableHoverEffect && hoveredNode) {
+          if (
+            node === hoveredNode ||
+            graph.neighbors(hoveredNode).includes(node)
+          ) {
+            newData.highlighted = true;
+          } else {
+            newData.color = "#E2E2E2";
+            newData.highlighted = false;
+          }
+        }
+
+        return newData;
+      },
+      edgeReducer: (edge, data) => {
+        const graph = sigma.getGraph();
+        const newData: { hidden: boolean; color?: string } = {
+          ...data,
+          hidden: false,
+        };
+
+        if (
+          !disableHoverEffect &&
+          hoveredNode &&
+          !graph.extremities(edge).includes(hoveredNode)
+        ) {
+          newData.hidden = true;
+        }
+
+        return newData;
+      },
+    });
+  }, [hoveredNode, setSettings, sigma, disableHoverEffect]);
 
   return null;
 };

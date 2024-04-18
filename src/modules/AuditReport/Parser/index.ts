@@ -31,81 +31,21 @@ const createVulnerabilityGraph = (
     return graph.export();
   }
 
-  // let prevX = 0;
-  let prevY = 0;
-
-  // const entries = Object.entries(vulnerabilities).sort((a, b) => {
-  //   let a_vulnerability = a[1];
-  //   let b_vulnerability = b[1];
-  //
-  //   return b_vulnerability.via.length - a_vulnerability.via.length;
-  // });
-
   // First Pass: Add Nodes
-  for (const [outerIndex, entry] of Object.entries(vulnerabilities).entries()) {
-    // for (const [index, entry] of entries.entries()) {
+  for (const [index, entry] of Object.entries(vulnerabilities).entries()) {
     const [name, vulnerability] = entry;
 
-    if (!graph.hasNode(name)) {
-      if (name === "react-scripts") {
-        logger.info(vulnerability);
-      }
-      graph.addNode(name, {
-        x: 0,
-        y: prevY,
-        label: vulnerability.name,
-        size: 4,
-        vulnerability: vulnerability,
-      });
-
-      if (vulnerability.via.length > 0) {
-        vulnerability.via.forEach((vulnerablePackage, index) => {
-          if (typeof vulnerablePackage === "string") {
-            if (!graph.hasNode(vulnerablePackage)) {
-              graph.addNode(vulnerablePackage, {
-                x: (index + 1) * 10,
-                y: prevY,
-                label: vulnerablePackage,
-                size: 4,
-                vulnerability: {},
-              });
-            } else {
-              // if (vulnerability.name === vulnerablePackage) return;
-              // graph.updateNode(vulnerablePackage, () => {
-              //   return {
-              //     x: (index + 1) * 10,
-              //     y: prevY,
-              //     label: vulnerablePackage,
-              //     vulnerability: {},
-              //   };
-              // });
-            }
-          } else {
-            if (!graph.hasNode(vulnerablePackage.name)) {
-              graph.addNode(vulnerablePackage.name, {
-                x: (index + 1) * 10,
-                y: prevY,
-                label: vulnerablePackage.name,
-                size: 4,
-                vulnerability: vulnerablePackage,
-              });
-            } else {
-              // if (vulnerability.name === vulnerablePackage.name) return;
-              // graph.updateNode(vulnerablePackage.name, () => {
-              //   return {
-              //     x: (index + 1) * 10,
-              //     y: prevY,
-              //     label: vulnerablePackage.name,
-              //     vulnerability: vulnerablePackage,
-              //   };
-              // });
-            }
-          }
-        });
-      }
-
-      prevY--;
+    if (graph.hasNode(name)) {
+      continue;
     }
+
+    graph.addNode(name, {
+      x: 0,
+      y: index * -100,
+      label: vulnerability.name,
+      size: 4,
+      vulnerability: vulnerability,
+    });
   }
 
   // Second Pass: Add Edges
@@ -117,13 +57,21 @@ const createVulnerabilityGraph = (
         typeof dependency === "string" ? dependency : dependency.name;
 
       if (!graph.hasEdge(vulnerability.name, dependencyName)) {
-        graph.addEdge(vulnerability.name, dependencyName, {
+        graph.addDirectedEdge(vulnerability.name, dependencyName, {
           type: "arrow",
           size: 2,
         });
       }
     }
   }
+
+  // Third Pass: Move most vulnerable packages to right
+  graph.mapNodes((node, _) => {
+    const causes = graph.outboundNeighbors(node).filter((x) => x !== node);
+    const effects = graph.inboundNeighbors(node).filter((x) => x !== node);
+    const newX = (causes.length + effects.length) * -1000;
+    graph.setNodeAttribute(node, "x", newX);
+  });
 
   return graph.export();
 };
