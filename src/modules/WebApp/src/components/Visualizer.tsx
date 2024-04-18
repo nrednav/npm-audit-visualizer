@@ -97,6 +97,16 @@ export const VulnerabilityGraphComponent = ({
             graph.neighbors(hoveredNode).includes(node)
           ) {
             newData.highlighted = true;
+            const outgoing = graph.outboundEdges(hoveredNode);
+            const incoming = graph.inboundEdges(hoveredNode);
+
+            outgoing.forEach((outgoingEdge) => {
+              graph.setEdgeAttribute(outgoingEdge, "color", "#ff0000");
+            });
+
+            incoming.forEach((incomingEdge) => {
+              graph.setEdgeAttribute(incomingEdge, "color", "#0000ff");
+            });
           } else {
             newData.color = "#E2E2E2";
             newData.highlighted = false;
