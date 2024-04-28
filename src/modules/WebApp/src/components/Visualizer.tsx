@@ -39,10 +39,12 @@ const Visualizer = (props: VisualizerProps) => {
   );
 };
 
-const modes: {
+type VisualizerMode = {
   name: keyof ParsedAuditReport["vulnerability"];
   Component: (props: { data: ParsedAuditReport }) => JSX.Element;
-}[] = [
+};
+
+const modes: VisualizerMode[] = [
   {
     name: "graph",
     Component: ({ data }: { data: ParsedAuditReport }) => {
