@@ -17,6 +17,7 @@ import {
 } from "@react-sigma/core";
 import "@react-sigma/core/lib/react-sigma.min.css";
 import { MultiDirectedGraph } from "graphology";
+import { COLORS } from "src/constants";
 
 type VisualizerProps = {
   parsedAuditReport: ParsedAuditReport;
@@ -64,56 +65,72 @@ const modes: {
 
 export const VulnerabilityGraphComponent = ({
   graphData,
-  disableHoverEffect,
-}: { graphData: VulnerabilityGraph; disableHoverEffect?: boolean }) => {
+}: { graphData: VulnerabilityGraph }) => {
   const sigma = useSigma();
   const registerEvents = useRegisterEvents();
   const setSettings = useSetSettings();
   const loadGraph = useLoadGraph();
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [previouslyHoveredNode, setPreviouslyHoveredNode] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     const graph = new MultiDirectedGraph({ allowSelfLoops: true });
     graph.import(graphData);
     loadGraph(graph);
     registerEvents({
-      enterNode: (event) => setHoveredNode(event.node),
-      leaveNode: () => setHoveredNode(null),
+      enterNode: (event) => {
+        setPreviouslyHoveredNode(null);
+        setHoveredNode(event.node);
+      },
+      leaveNode: (event) => {
+        setPreviouslyHoveredNode(event.node);
+        setHoveredNode(null);
+      },
     });
   }, [loadGraph, graphData, registerEvents]);
 
   useEffect(() => {
     setSettings({
-      nodeReducer: (node, data) => {
+      nodeReducer: (node, nodeAttributes) => {
         const graph = sigma.getGraph();
-        const newData: { highlighted: boolean; color?: string } = {
-          ...data,
-          highlighted: Boolean(data.highlighted) || false,
+
+        const newNodeAttributes: { highlighted: boolean; color?: string } = {
+          ...nodeAttributes,
+          highlighted: Boolean(nodeAttributes.highlighted) || false,
         };
 
-        if (!disableHoverEffect && hoveredNode) {
-          if (
-            node === hoveredNode ||
-            graph.neighbors(hoveredNode).includes(node)
-          ) {
-            newData.highlighted = true;
-            const outgoing = graph.outboundEdges(hoveredNode);
-            const incoming = graph.inboundEdges(hoveredNode);
+        if (hoveredNode && hoveredNode === node) {
+          newNodeAttributes.highlighted = true;
 
-            outgoing.forEach((outgoingEdge) => {
-              graph.setEdgeAttribute(outgoingEdge, "color", "#ff0000");
-            });
+          for (const outboundEdge of graph.outboundEdges(hoveredNode)) {
+            graph.setEdgeAttribute(outboundEdge, "color", COLORS.coral);
+          }
 
-            incoming.forEach((incomingEdge) => {
-              graph.setEdgeAttribute(incomingEdge, "color", "#0000ff");
-            });
-          } else {
-            newData.color = "#E2E2E2";
-            newData.highlighted = false;
+          for (const inboundEdge of graph.inboundEdges(hoveredNode)) {
+            graph.setEdgeAttribute(inboundEdge, "color", COLORS.indigo);
+          }
+        } else {
+          newNodeAttributes.highlighted = false;
+          newNodeAttributes.color = COLORS.black;
+
+          if (previouslyHoveredNode) {
+            for (const outboundEdge of graph.outboundEdges(
+              previouslyHoveredNode,
+            )) {
+              graph.setEdgeAttribute(outboundEdge, "color", COLORS.black);
+            }
+
+            for (const inboundEdge of graph.inboundEdges(
+              previouslyHoveredNode,
+            )) {
+              graph.setEdgeAttribute(inboundEdge, "color", COLORS.black);
+            }
           }
         }
 
-        return newData;
+        return newNodeAttributes;
       },
       edgeReducer: (edge, data) => {
         const graph = sigma.getGraph();
@@ -122,18 +139,14 @@ export const VulnerabilityGraphComponent = ({
           hidden: false,
         };
 
-        if (
-          !disableHoverEffect &&
-          hoveredNode &&
-          !graph.extremities(edge).includes(hoveredNode)
-        ) {
+        if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
           newData.hidden = true;
         }
 
         return newData;
       },
     });
-  }, [hoveredNode, setSettings, sigma, disableHoverEffect]);
+  }, [hoveredNode, setSettings, sigma, previouslyHoveredNode]);
 
   return null;
 };

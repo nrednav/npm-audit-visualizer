@@ -57,9 +57,11 @@ const createVulnerabilityGraph = (
         typeof dependency === "string" ? dependency : dependency.name;
 
       if (!graph.hasEdge(vulnerability.name, dependencyName)) {
+        // graph.addDirectedEdge(vulnerability.name, dependencyName, {
         graph.addDirectedEdge(vulnerability.name, dependencyName, {
           type: "arrow",
           size: 2,
+          color: "#212326",
         });
       }
     }
