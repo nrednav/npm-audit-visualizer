@@ -17,6 +17,7 @@ import {
 } from "@react-sigma/core";
 import "@react-sigma/core/lib/react-sigma.min.css";
 import { MultiDirectedGraph } from "graphology";
+import { circular } from "graphology-layout";
 import { COLORS } from "src/constants";
 
 type VisualizerProps = {
@@ -51,7 +52,10 @@ const modes: VisualizerMode[] = [
       return (
         <SigmaContainer
           style={{ width: "100%", height: "1024px" }}
-          settings={{ allowInvalidContainer: true }}
+          settings={{
+            allowInvalidContainer: true,
+            defaultEdgeColor: COLORS.black,
+          }}
         >
           <VulnerabilityGraphComponent graphData={data.vulnerability.graph} />
           <ControlsContainer position={"bottom-right"}>
@@ -80,6 +84,7 @@ export const VulnerabilityGraphComponent = ({
   useEffect(() => {
     const graph = new MultiDirectedGraph({ allowSelfLoops: true });
     graph.import(graphData);
+    circular.assign(graph);
     loadGraph(graph);
     registerEvents({
       enterNode: (event) => {
@@ -87,8 +92,8 @@ export const VulnerabilityGraphComponent = ({
         setHoveredNode(event.node);
       },
       leaveNode: (event) => {
-        setPreviouslyHoveredNode(event.node);
         setHoveredNode(null);
+        setPreviouslyHoveredNode(event.node);
       },
     });
   }, [loadGraph, graphData, registerEvents]);
@@ -103,8 +108,22 @@ export const VulnerabilityGraphComponent = ({
           highlighted: Boolean(nodeAttributes.highlighted) || false,
         };
 
-        if (hoveredNode && hoveredNode === node) {
+        if (
+          hoveredNode &&
+          (hoveredNode === node || graph.neighbors(hoveredNode).includes(node))
+        ) {
           newNodeAttributes.highlighted = true;
+          newNodeAttributes.size = nodeAttributes.size * 2;
+
+          if (nodeAttributes.vulnerability.via.includes(hoveredNode)) {
+            newNodeAttributes.color = COLORS.indigo;
+          } else {
+            newNodeAttributes.color = COLORS.coral;
+          }
+
+          if (hoveredNode === node) {
+            newNodeAttributes.color = COLORS.gold;
+          }
 
           for (const outboundEdge of graph.outboundEdges(hoveredNode)) {
             graph.setEdgeAttribute(outboundEdge, "color", COLORS.coral);
@@ -136,16 +155,16 @@ export const VulnerabilityGraphComponent = ({
       },
       edgeReducer: (edge, data) => {
         const graph = sigma.getGraph();
-        const newData: { hidden: boolean; color?: string } = {
+        const newEdgeAttributes: { hidden: boolean; color?: string } = {
           ...data,
           hidden: false,
         };
 
         if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
-          newData.hidden = true;
+          newEdgeAttributes.hidden = true;
         }
 
-        return newData;
+        return newEdgeAttributes;
       },
     });
   }, [hoveredNode, setSettings, sigma, previouslyHoveredNode]);

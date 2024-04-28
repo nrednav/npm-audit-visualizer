@@ -32,7 +32,7 @@ const createVulnerabilityGraph = (
   }
 
   // First Pass: Add Nodes
-  for (const [index, entry] of Object.entries(vulnerabilities).entries()) {
+  for (const entry of Object.entries(vulnerabilities)) {
     const [name, vulnerability] = entry;
 
     if (graph.hasNode(name)) {
@@ -40,10 +40,8 @@ const createVulnerabilityGraph = (
     }
 
     graph.addNode(name, {
-      x: 0,
-      y: index * -100,
       label: vulnerability.name,
-      size: 4,
+      size: 8,
       vulnerability: vulnerability,
     });
   }
@@ -57,23 +55,10 @@ const createVulnerabilityGraph = (
         typeof dependency === "string" ? dependency : dependency.name;
 
       if (!graph.hasEdge(vulnerability.name, dependencyName)) {
-        // graph.addDirectedEdge(vulnerability.name, dependencyName, {
-        graph.addDirectedEdge(vulnerability.name, dependencyName, {
-          type: "arrow",
-          size: 2,
-          color: "#212326",
-        });
+        graph.addDirectedEdge(vulnerability.name, dependencyName, { size: 4 });
       }
     }
   }
-
-  // Third Pass: Move most vulnerable packages to right
-  graph.mapNodes((node, _) => {
-    const causes = graph.outboundNeighbors(node).filter((x) => x !== node);
-    const effects = graph.inboundNeighbors(node).filter((x) => x !== node);
-    const newX = (causes.length + effects.length) * -1000;
-    graph.setNodeAttribute(node, "x", newX);
-  });
 
   return graph.export();
 };
