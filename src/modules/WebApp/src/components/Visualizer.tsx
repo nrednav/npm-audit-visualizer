@@ -50,7 +50,7 @@ const modes: VisualizerMode[] = [
     Component: ({ data }: { data: ParsedAuditReport }) => {
       return (
         <SigmaContainer
-          style={{ width: "1024px", height: "1024px" }}
+          style={{ width: "100%", height: "1024px" }}
           settings={{ allowInvalidContainer: true }}
         >
           <VulnerabilityGraphComponent graphData={data.vulnerability.graph} />
