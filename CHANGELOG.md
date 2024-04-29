@@ -11,8 +11,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - CLI
-  - Added `label` and `size` attributes to graph nodes
-  - Added `size` attribute to graph edges
+  - Parser
+    - Added `label` and `size` attributes to graph nodes
+    - Added `size` attribute to graph edges
 - WebApp
   - Added new scripts to `web-app` package.json
     - `predev` copies `parsed-audit-report.json` from the root build directory
@@ -29,12 +30,17 @@ Versioning](https://semver.org/spec/v2.0.0.html).
     - `graphology-layout`
     - `del-cli`
   - Temporarily mocked Visualizer component in `App` test suite
-
-### Removed
+  - Added new components `VulnerabilityGraph`, `GraphLegend`
+  - Added `constants.ts` to track constants like color hexcodes
 
 ### Changed
 
-- Replace normal edges with directed edges
+- CLI
+  - Parser
+    - Replace normal edges with directed edges
+- WebApp
+  - Re-organized structure of `Visualizer` component
+  - Changed shade of `dark` color from `#162026` to `#212326`
 
 ## [v1.0.0-alpha.0] - 2024-04-10
 
