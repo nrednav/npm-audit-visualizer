@@ -31,8 +31,10 @@ const createVulnerabilityGraph = (
     return graph.export();
   }
 
+  const sortedVulnerabilities = sortVulnerabilitiesBySeverity(vulnerabilities);
+
   // First Pass: Add Nodes
-  for (const entry of Object.entries(vulnerabilities)) {
+  for (const entry of sortedVulnerabilities) {
     const [name, vulnerability] = entry;
 
     if (graph.hasNode(name)) {
@@ -61,6 +63,31 @@ const createVulnerabilityGraph = (
   }
 
   return graph.export();
+};
+
+const sortVulnerabilitiesBySeverity = (
+  vulnerabilities: AuditReport["vulnerabilities"],
+) => {
+  const SEVERITY_LEVELS = {
+    critical: 5,
+    high: 4,
+    moderate: 3,
+    low: 2,
+    info: 1,
+    none: 0,
+  };
+
+  const sortedVulnerabilities = Object.entries(vulnerabilities).sort((a, b) => {
+    const vulnerabilityAName = a[0];
+    const vulnerabilityBName = b[0];
+
+    const severityA = vulnerabilities[vulnerabilityAName]?.severity ?? "none";
+    const severityB = vulnerabilities[vulnerabilityBName]?.severity ?? "none";
+
+    return SEVERITY_LEVELS[severityA] - SEVERITY_LEVELS[severityB];
+  });
+
+  return sortedVulnerabilities;
 };
 
 const createVulnerabilityTable = (

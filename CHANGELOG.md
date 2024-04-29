@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0-alpha.3] - 2024-04-29
+
+### Added
+
+- Defined new constant `SEVERITY_COLOR_MAP` which maps severity levels to a
+  color
+- Added new colors
+  - red, yellow, limeGreen, green, grey, purple, blue
+
+### Changed
+
+- Vulnerabilities are now sorted by their severity in the AuditReport/Parser
+  module
+  - This is so that vulnerabilities are grouped by their severity e.g. all
+    critical vulnerabilities will be lined up next to each other in a sequence
+- Replace incoming & outgoing edge colors with purple & blue respectively
+  - Since `COLORS.coral` will be used to represent `high` severity
+    vulnerabilities
+- Non-neighboring nodes will now be colored `COLORS.grey` when a node is hovered
+  - This is so that the hovered node & its neighbors can be more easily
+    distinguished
+
 ## [v1.0.0-alpha.2] - 2024-04-14
 
 ### Added
