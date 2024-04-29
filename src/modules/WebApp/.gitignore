@@ -24,8 +24,5 @@ build
 *.sln
 *.sw?
 
-# Generated artifacts
-src/data/parsed-audit-report.json
-
 # Parsed Audit Report (for development only)
 public/parsed-audit-report.json

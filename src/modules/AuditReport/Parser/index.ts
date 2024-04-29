@@ -35,9 +35,15 @@ const createVulnerabilityGraph = (
   for (const entry of Object.entries(vulnerabilities)) {
     const [name, vulnerability] = entry;
 
-    if (!graph.hasNode(name)) {
-      graph.addNode(name, vulnerability);
+    if (graph.hasNode(name)) {
+      continue;
     }
+
+    graph.addNode(name, {
+      label: vulnerability.name,
+      size: 8,
+      vulnerability: vulnerability,
+    });
   }
 
   // Second Pass: Add Edges
@@ -49,7 +55,7 @@ const createVulnerabilityGraph = (
         typeof dependency === "string" ? dependency : dependency.name;
 
       if (!graph.hasEdge(vulnerability.name, dependencyName)) {
-        graph.addEdge(vulnerability.name, dependencyName);
+        graph.addDirectedEdge(vulnerability.name, dependencyName, { size: 4 });
       }
     }
   }
