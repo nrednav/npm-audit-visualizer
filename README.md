@@ -53,9 +53,9 @@ While the new textual format still contains useful information, there were
 visual elements to the tabular format that made it slightly easier to trace the
 vulnerability paths & dependencies.
 
-The goal of this tool is to supplement the current textual output of `npm audit`
-with a visual interface that can help decipher & resolve vulnerabilities quicker
-in npm projects.
+The goal of this tool is to supplement the current output of `npm audit` with a
+visual interface, that can hopefully make the process of identifying & resolving
+vulnerabilities within npm projects, quicker & easier.
 
 ### How
 
