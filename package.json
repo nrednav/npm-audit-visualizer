@@ -54,7 +54,8 @@
     "lint": "biome lint --apply --no-errors-on-unmatched --files-ignore-unknown=true",
     "check": "biome check --apply --no-errors-on-unmatched --files-ignore-unknown=true",
     "prepare": "husky install",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "postversion": "cd src/modules/WebApp && npm version $npm_package_version"
   },
   "dependencies": {
     "chalk": "^5.3.0",
