@@ -39,7 +39,27 @@ manually.
 
 ## About
 
-> TODO: Explain what the tool is, why it was created & how it works
+### What
+
+`npm-audit-visualizer` is a web-based tool to visualize audit reports generated
+by `npm audit`.
+
+### Why
+
+With v7 of npm, the `npm audit` command was updated & it no longer displays
+results in a tabular format.
+
+While the new textual format still contains useful information, there were
+visual elements to the tabular format that made it slightly easier to trace the
+vulnerability paths & dependencies.
+
+The goal of this tool is to supplement the current textual output of `npm audit`
+with a visual interface that can help decipher & resolve vulnerabilities quicker
+in npm projects.
+
+### How
+
+> TODO
 
 ## Development
 
