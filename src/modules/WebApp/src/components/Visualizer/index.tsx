@@ -2,7 +2,7 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 import { useState } from "react";
 import { ParsedAuditReport } from "root/src/modules/AuditReport/Parser/types";
 import { TabList } from "src/components/TabList";
-import VulnerabilityGraphVisualizer, {} from "src/components/Visualizer/VulnerabilityGraph";
+import VulnerabilityGraphComponent from "src/components/Visualizer/VulnerabilityGraph/";
 
 type VisualizerProps = {
   parsedAuditReport: ParsedAuditReport;
@@ -32,7 +32,7 @@ const Visualizer = (props: VisualizerProps) => {
 const getSelectedComponent = (name: string, data: ParsedAuditReport) => {
   switch (name) {
     case "graph":
-      return <VulnerabilityGraphVisualizer data={data.vulnerability.graph} />;
+      return <VulnerabilityGraphComponent data={data.vulnerability.graph} />;
     case "table":
       return <div>Table Mode</div>;
   }
