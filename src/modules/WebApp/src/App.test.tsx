@@ -14,7 +14,7 @@ vi.mock("./hooks/use-parsed-audit-report.ts", async () => {
   };
 });
 
-vi.mock("./components/Visualizer.tsx", () => ({
+vi.mock("./components/Visualizer/index.tsx", () => ({
   default: () => <div>visualizer</div>,
 }));
 
