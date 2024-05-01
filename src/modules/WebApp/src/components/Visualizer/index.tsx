@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ParsedAuditReport } from "root/src/modules/AuditReport/Parser/types";
 import { TabList } from "src/components/TabList";
 import VulnerabilityGraphComponent from "src/components/Visualizer/VulnerabilityGraph/";
+import VulnerabilityTableComponent from "src/components/Visualizer/VulnerabilityTable/";
 
 type VisualizerProps = {
   parsedAuditReport: ParsedAuditReport;
@@ -34,7 +35,7 @@ const getSelectedComponent = (name: string, data: ParsedAuditReport) => {
     case "graph":
       return <VulnerabilityGraphComponent data={data.vulnerability.graph} />;
     case "table":
-      return <div>Table Mode</div>;
+      return <VulnerabilityTableComponent data={data.vulnerability.table} />;
   }
 };
 

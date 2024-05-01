@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import graphology from "graphology";
 import { logger } from "src/shared/modules/logger.js";
 import { AuditReport } from "../Validator/schema.js";
@@ -12,13 +13,33 @@ export const parseAuditReport = (
   auditReport: AuditReport,
 ): ParsedAuditReport => {
   logger.debug("Parsing audit report");
+  const vulnerabilitiesWithIds = generateIdsForVulnerabilities(
+    auditReport.vulnerabilities,
+  );
   return {
     metadata: auditReport.metadata,
     vulnerability: {
-      graph: createVulnerabilityGraph(auditReport.vulnerabilities),
-      table: createVulnerabilityTable(auditReport.vulnerabilities),
+      graph: createVulnerabilityGraph(vulnerabilitiesWithIds),
+      table: createVulnerabilityTable(vulnerabilitiesWithIds),
     },
   };
+};
+
+const generateIdsForVulnerabilities = (
+  vulnerabilities: AuditReport["vulnerabilities"],
+): AuditReport["vulnerabilities"] => {
+  const vulnerabilitiesClone = structuredClone(vulnerabilities);
+
+  for (const entry of Object.entries(vulnerabilitiesClone)) {
+    const [name, vulnerability] = entry;
+    const vulnerabilityClone = structuredClone(vulnerability);
+    const hash = crypto.createHash("sha256");
+    hash.update(JSON.stringify(vulnerabilitiesClone));
+    vulnerabilityClone.id = hash.digest("hex");
+    vulnerabilitiesClone[name] = vulnerabilityClone;
+  }
+
+  return vulnerabilitiesClone;
 };
 
 const createVulnerabilityGraph = (
