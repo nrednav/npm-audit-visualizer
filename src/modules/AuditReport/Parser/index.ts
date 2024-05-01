@@ -67,6 +67,7 @@ const createVulnerabilityGraph = (
 
 const sortVulnerabilitiesBySeverity = (
   vulnerabilities: AuditReport["vulnerabilities"],
+  sortOrder: "ascending" | "descending" = "ascending",
 ) => {
   const SEVERITY_LEVELS = {
     critical: 5,
@@ -84,7 +85,9 @@ const sortVulnerabilitiesBySeverity = (
     const severityA = vulnerabilities[vulnerabilityAName]?.severity ?? "none";
     const severityB = vulnerabilities[vulnerabilityBName]?.severity ?? "none";
 
-    return SEVERITY_LEVELS[severityA] - SEVERITY_LEVELS[severityB];
+    return sortOrder === "ascending"
+      ? SEVERITY_LEVELS[severityA] - SEVERITY_LEVELS[severityB]
+      : SEVERITY_LEVELS[severityB] - SEVERITY_LEVELS[severityA];
   });
 
   return sortedVulnerabilities;
@@ -94,5 +97,7 @@ const createVulnerabilityTable = (
   vulnerabilities: AuditReport["vulnerabilities"],
 ): VulnerabilityTable => {
   logger.debug("Creating vulnerability table");
-  return Object.values(vulnerabilities);
+  return sortVulnerabilitiesBySeverity(vulnerabilities, "descending").map(
+    ([_, value]) => value,
+  );
 };
