@@ -103,12 +103,14 @@ const sortVulnerabilitiesBySeverity = (
     const vulnerabilityAName = a[0];
     const vulnerabilityBName = b[0];
 
-    const severityA = vulnerabilities[vulnerabilityAName]?.severity ?? "none";
-    const severityB = vulnerabilities[vulnerabilityBName]?.severity ?? "none";
+    const severityA =
+      SEVERITY_LEVELS[vulnerabilities[vulnerabilityAName]?.severity ?? "none"];
+    const severityB =
+      SEVERITY_LEVELS[vulnerabilities[vulnerabilityBName]?.severity ?? "none"];
 
     return sortOrder === "ascending"
-      ? SEVERITY_LEVELS[severityA] - SEVERITY_LEVELS[severityB]
-      : SEVERITY_LEVELS[severityB] - SEVERITY_LEVELS[severityA];
+      ? severityA - severityB
+      : severityB - severityA;
   });
 
   return sortedVulnerabilities;
