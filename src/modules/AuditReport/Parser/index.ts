@@ -100,13 +100,11 @@ const sortVulnerabilitiesBySeverity = (
   };
 
   const sortedVulnerabilities = Object.entries(vulnerabilities).sort((a, b) => {
-    const vulnerabilityAName = a[0];
-    const vulnerabilityBName = b[0];
+    const vulnerabilityA = vulnerabilities[a[0]];
+    const vulnerabilityB = vulnerabilities[b[0]];
 
-    const severityA =
-      SEVERITY_LEVELS[vulnerabilities[vulnerabilityAName]?.severity ?? "none"];
-    const severityB =
-      SEVERITY_LEVELS[vulnerabilities[vulnerabilityBName]?.severity ?? "none"];
+    const severityA = SEVERITY_LEVELS[vulnerabilityA?.severity ?? "none"];
+    const severityB = SEVERITY_LEVELS[vulnerabilityB?.severity ?? "none"];
 
     return sortOrder === "ascending"
       ? severityA - severityB
