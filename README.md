@@ -55,13 +55,12 @@ by `npm audit`.
 With v7 of npm, the `npm audit` command was updated & it no longer displays
 results in a tabular format.
 
-While the new textual format still contains useful information, there were
-visual elements to the tabular format that made it slightly easier to trace the
-vulnerability paths & dependencies.
+While the new format is still useful, there were some visual elements to the old
+tabular format that made it easier to trace vulnerability paths & dependencies.
 
-The goal of this tool is to supplement the current output of `npm audit` with a
-visual interface, that can hopefully make the process of identifying & resolving
-vulnerabilities within npm projects, quicker & easier.
+As a result, the goal of this tool is to re-provide a visual interface for audit
+reports, which can hopefully make it quicker and easier to identify and resolve
+vulnerabilities within npm-managed projects.
 
 ### How
 
