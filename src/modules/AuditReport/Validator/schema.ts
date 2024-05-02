@@ -21,6 +21,7 @@ const DependencySchema = z.union([
 ]);
 
 export const VulnerabilitySchema = z.object({
+  id: z.string().optional(),
   name: z.string(),
   severity: SeveritySchema,
   isDirect: z.boolean(),

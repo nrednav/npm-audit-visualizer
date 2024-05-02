@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0-alpha.4] - 2024-05-02
+
+### Added
+
+- Added logs to pre-commit & pre-push git hooks
+- Added code to AuditReport parser that will generate ID's (sha256 hashes) for
+  each vulnerability
+  - This will make them easier to work with in the Web App since React requires
+    element keys to be unique
+- Implemented basic vulnerability table visualizer
+- Added shared utility type `ValueOf`
+
+### Changed
+
+- Updated `sortVulnerabilitiesBySeverity` to accept a `sortOrder` argument
+- Updated `createVulnerabilityTable` to sort vulnerabilities in descending
+  order of severity (critical -> low)
+- Updated `VulnerabilitySchema` to include `id` as an optional field
+
 ## [v1.0.0-alpha.3] - 2024-04-29
 
 ### Added
@@ -84,6 +103,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 - First Release
 
+[v1.0.0-alpha.4]: https://github.com/nrednav/npm-audit-visualizer/compare/v1.0.0-alpha.3...v1.0.0-alpha.4
 [v1.0.0-alpha.3]: https://github.com/nrednav/npm-audit-visualizer/compare/v1.0.0-alpha.2...v1.0.0-alpha.3
 [v1.0.0-alpha.2]: https://github.com/nrednav/npm-audit-visualizer/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
 [v1.0.0-alpha.1]: https://github.com/nrednav/npm-audit-visualizer/compare/v1.0.0-alpha.0...v1.0.0-alpha.1

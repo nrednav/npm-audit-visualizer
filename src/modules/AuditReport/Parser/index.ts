@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import graphology from "graphology";
 import { logger } from "src/shared/modules/logger.js";
 import { AuditReport } from "../Validator/schema.js";
@@ -12,13 +13,33 @@ export const parseAuditReport = (
   auditReport: AuditReport,
 ): ParsedAuditReport => {
   logger.debug("Parsing audit report");
+  const vulnerabilitiesWithIds = generateIdsForVulnerabilities(
+    auditReport.vulnerabilities,
+  );
   return {
     metadata: auditReport.metadata,
     vulnerability: {
-      graph: createVulnerabilityGraph(auditReport.vulnerabilities),
-      table: createVulnerabilityTable(auditReport.vulnerabilities),
+      graph: createVulnerabilityGraph(vulnerabilitiesWithIds),
+      table: createVulnerabilityTable(vulnerabilitiesWithIds),
     },
   };
+};
+
+const generateIdsForVulnerabilities = (
+  vulnerabilities: AuditReport["vulnerabilities"],
+): AuditReport["vulnerabilities"] => {
+  const vulnerabilitiesClone = structuredClone(vulnerabilities);
+
+  for (const entry of Object.entries(vulnerabilitiesClone)) {
+    const [name, vulnerability] = entry;
+    const vulnerabilityClone = structuredClone(vulnerability);
+    const hash = crypto.createHash("sha256");
+    hash.update(JSON.stringify(vulnerabilitiesClone));
+    vulnerabilityClone.id = hash.digest("hex");
+    vulnerabilitiesClone[name] = vulnerabilityClone;
+  }
+
+  return vulnerabilitiesClone;
 };
 
 const createVulnerabilityGraph = (
@@ -67,6 +88,7 @@ const createVulnerabilityGraph = (
 
 const sortVulnerabilitiesBySeverity = (
   vulnerabilities: AuditReport["vulnerabilities"],
+  sortOrder: "ascending" | "descending" = "ascending",
 ) => {
   const SEVERITY_LEVELS = {
     critical: 5,
@@ -78,13 +100,15 @@ const sortVulnerabilitiesBySeverity = (
   };
 
   const sortedVulnerabilities = Object.entries(vulnerabilities).sort((a, b) => {
-    const vulnerabilityAName = a[0];
-    const vulnerabilityBName = b[0];
+    const vulnerabilityA = vulnerabilities[a[0]];
+    const vulnerabilityB = vulnerabilities[b[0]];
 
-    const severityA = vulnerabilities[vulnerabilityAName]?.severity ?? "none";
-    const severityB = vulnerabilities[vulnerabilityBName]?.severity ?? "none";
+    const severityA = SEVERITY_LEVELS[vulnerabilityA?.severity ?? "none"];
+    const severityB = SEVERITY_LEVELS[vulnerabilityB?.severity ?? "none"];
 
-    return SEVERITY_LEVELS[severityA] - SEVERITY_LEVELS[severityB];
+    return sortOrder === "ascending"
+      ? severityA - severityB
+      : severityB - severityA;
   });
 
   return sortedVulnerabilities;
@@ -94,5 +118,7 @@ const createVulnerabilityTable = (
   vulnerabilities: AuditReport["vulnerabilities"],
 ): VulnerabilityTable => {
   logger.debug("Creating vulnerability table");
-  return Object.values(vulnerabilities);
+  return sortVulnerabilitiesBySeverity(vulnerabilities, "descending").map(
+    ([_, value]) => value,
+  );
 };

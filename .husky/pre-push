@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+echo "Running pre-push git hook..."
 npm run type-check
 npm run test
+echo "Finished running pre-push git hook."
