@@ -36,6 +36,8 @@ const getSelectedComponent = (name: string, data: ParsedAuditReport) => {
       return <VulnerabilityGraphComponent data={data.vulnerability.graph} />;
     case "table":
       return <VulnerabilityTableComponent data={data.vulnerability.table} />;
+    default:
+      return null;
   }
 };
 
