@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { useState } from "react";
 import type { ParsedAuditReport } from "root/src/modules/AuditReport/Parser/types";
 import { SEVERITY_COLOR_MAP } from "src/constants";
@@ -56,9 +55,7 @@ const MetadataCard = (props: MetadataCardProps) => {
   const { label, value } = props;
   return (
     <li
-      className={clsx(
-        "w-32 p-4 | flex flex-col | rounded-lg bg-white shadow border-r-4",
-      )}
+      className="w-32 p-4 | flex flex-col | rounded-lg bg-white shadow border-r-4"
       style={{ borderRightColor: SEVERITY_COLOR_MAP[label.toLowerCase()] }}
     >
       <p className="truncate text-sm font-semibold text-slate-500 capitalize">
