@@ -1,4 +1,5 @@
 import http from "http";
+import { AddressInfo } from "net";
 import chalk from "chalk";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import handler from "serve-handler";
@@ -30,15 +31,40 @@ export const visualizeAuditReport =
 const startWebApp = (port: number) => async () => {
   logger.debug("Starting web app");
 
+  let alternatePort = port;
+
   const server = http.createServer((request, response) => {
     return handler(request, response, { public: WEB_APP_BUILD_DIR });
   });
 
   server.listen(port, () => {
-    logger.info("Web app started at", chalk.green(`http://localhost:${port}`));
+    const serverAddress = server.address() as AddressInfo;
+    logger.info(
+      "Web app started at",
+      chalk.green(`http://localhost:${serverAddress.port}`),
+    );
   });
 
-  server.on("error", (error) => {
+  server.on("error", (error: NodeJS.ErrnoException) => {
+    if (error.code === "EADDRINUSE") {
+      logger.info(
+        chalk.yellow(
+          `Port ${alternatePort} is already in use, retrying on port ${
+            alternatePort + 1
+          }`,
+        ),
+      );
+
+      alternatePort += 1;
+
+      setTimeout(() => {
+        server.close();
+        server.listen(alternatePort);
+      }, 1000);
+
+      return;
+    }
+
     logger.error(error);
     server.close().once("close", () => logger.info("Web app stopped"));
     process.exit(1);

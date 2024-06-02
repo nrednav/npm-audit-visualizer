@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0-alpha.6] - 2024-06-02
+
+### Added
+
+- Added retry logic to the web-app server for when ports are already being used
+
 ## [v1.0.0-alpha.5] - 2024-06-01
 
 ### Added
@@ -113,6 +119,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 - First Release
 
+[v1.0.0-alpha.6]: https://github.com/nrednav/npm-audit-visualizer/compare/v1.0.0-alpha.5...v1.0.0-alpha.6
 [v1.0.0-alpha.5]: https://github.com/nrednav/npm-audit-visualizer/compare/v1.0.0-alpha.4...v1.0.0-alpha.5
 [v1.0.0-alpha.4]: https://github.com/nrednav/npm-audit-visualizer/compare/v1.0.0-alpha.3...v1.0.0-alpha.4
 [v1.0.0-alpha.3]: https://github.com/nrednav/npm-audit-visualizer/compare/v1.0.0-alpha.2...v1.0.0-alpha.3
