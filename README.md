@@ -62,10 +62,6 @@ As a result, the goal of this tool is to re-provide a visual interface for audit
 reports, which can hopefully make it quicker and easier to identify and resolve
 vulnerabilities within npm-managed projects.
 
-### How
-
-> TODO
-
 ## Development
 
 This section will describe how to get the project setup for local development.
@@ -84,8 +80,6 @@ installed:
 
 This project is hosted at: https://github.com/nrednav/npm-audit-visualizer
 
-To clone it locally:
-
 HTTPS:
 
 ```shell
@@ -98,7 +92,7 @@ SSH:
 git clone git@github.com:nrednav/npm-audit-visualizer.git
 ```
 
-### Installation
+### Install
 
 To install the project's dependencies:
 
@@ -107,9 +101,7 @@ cd npm-audit-visualizer/
 npm install
 ```
 
-### Building
-
-To build the project:
+### Build
 
 ```shell
 npm run build
@@ -117,7 +109,7 @@ npm run build
 
 This will also build the `web-app`.
 
-### Testing
+### Test
 
 To run all the project's tests:
 
