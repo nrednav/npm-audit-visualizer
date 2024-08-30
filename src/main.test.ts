@@ -4,6 +4,7 @@ import { logger } from "./shared/modules/logger.js";
 
 vi.mock("./modules/AuditReport/Visualizer/index.js", async () => {
   const TE = await import("fp-ts/lib/TaskEither.js");
+
   return {
     visualizeAuditReport: () => () => TE.right(true),
   };
@@ -17,7 +18,7 @@ describe("main", () => {
     vi.restoreAllMocks();
   });
 
-  it("logs the name of the tool & the audit report file path", () => {
+  it("logs tool name & audit report file path", () => {
     process.argv = [
       "node",
       appName,
