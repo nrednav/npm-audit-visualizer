@@ -34,18 +34,21 @@ describe("AuditReport", () => {
           const metadataParsingResult = MetadataSchema.safeParse(
             parsedAuditReport.metadata,
           );
+
           expect(metadataParsingResult.success).toStrictEqual(true);
 
           const vulnerabilityTableParsingResult =
             VulnerabilitySchema.array().safeParse(
               parsedAuditReport.vulnerability.table,
             );
+
           expect(vulnerabilityTableParsingResult.success).toStrictEqual(true);
 
           const vulnerabilityGraphParsingResult =
             VulnerabilityGraphSchema.safeParse(
               parsedAuditReport.vulnerability.graph,
             );
+
           expect(vulnerabilityGraphParsingResult.success).toStrictEqual(true);
         }
       });

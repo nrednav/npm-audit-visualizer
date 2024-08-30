@@ -40,6 +40,7 @@ describe("AuditReport", () => {
         expect(E.isRight(result)).toStrictEqual(true);
 
         const parsedAuditReportPath = `${tempDir}/parsed-audit-report.json`;
+
         expect(fs.existsSync(parsedAuditReportPath)).toStrictEqual(true);
 
         fs.rmSync(parsedAuditReportPath);

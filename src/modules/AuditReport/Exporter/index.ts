@@ -19,10 +19,12 @@ export const exportParsedAuditReport =
     return E.tryCatchK(
       () => {
         fs.writeFileSync(outputPath, serializedReport, "utf-8");
+
         return parsedAuditReport;
       },
       (error: unknown) => {
         assertIsError(error);
+
         return new AppError(
           "Failed to export parsed audit report",
           {
