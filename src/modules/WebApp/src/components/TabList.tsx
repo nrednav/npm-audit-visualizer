@@ -8,6 +8,7 @@ export type TabListProps = {
 
 export const TabList = (props: TabListProps) => {
   const { tabs, selectedTab, onTabSelected } = props;
+
   return (
     <div className="flex flex-row gap-x-4" role="tablist">
       {tabs.map((tabLabel, tabIndex) => (

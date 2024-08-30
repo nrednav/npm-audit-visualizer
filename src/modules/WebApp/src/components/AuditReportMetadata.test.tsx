@@ -7,6 +7,7 @@ import AuditReportMetadata from "./AuditReportMetadata";
 describe("AuditReportMetadata", () => {
   it("renders 2 tabs: vulnerabilities & dependencies", () => {
     render(<AuditReportMetadata metadata={parsedAuditReport.metadata} />);
+
     expect(screen.getByRole("tab", { name: /vulnerabilities/i })).toBeVisible();
     expect(screen.getByRole("tab", { name: /dependencies/i })).toBeVisible();
   });
@@ -14,7 +15,9 @@ describe("AuditReportMetadata", () => {
   describe("given vulnerabilities tab is selected", () => {
     beforeAll(async () => {
       const user = userEvent.setup();
+
       render(<AuditReportMetadata metadata={parsedAuditReport.metadata} />);
+
       await user.click(screen.getByRole("tab", { name: /vulnerabilities/i }));
     });
 
@@ -32,7 +35,9 @@ describe("AuditReportMetadata", () => {
   describe("given dependencies tab is selected", () => {
     beforeAll(async () => {
       const user = userEvent.setup();
+
       render(<AuditReportMetadata metadata={parsedAuditReport.metadata} />);
+
       await user.click(screen.getByRole("tab", { name: /dependencies/i }));
     });
 
@@ -40,6 +45,7 @@ describe("AuditReportMetadata", () => {
       const dependencyTypes = Object.keys(
         parsedAuditReport.metadata.dependencies,
       );
+
       for (const dependencyType of dependencyTypes) {
         expect(screen.getByText(dependencyType)).toBeVisible();
       }

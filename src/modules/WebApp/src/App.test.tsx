@@ -6,6 +6,7 @@ vi.mock("./hooks/use-parsed-audit-report.ts", async () => {
   const auditReportFixture = await import(
     "./fixtures/parsed-audit-report.json"
   );
+
   return {
     useParsedAuditReport: () => ({
       parsedAuditReport: auditReportFixture,
@@ -21,6 +22,7 @@ vi.mock("./components/Visualizer/index.tsx", () => ({
 describe("App", () => {
   it("renders a heading with the tool's name", async () => {
     render(<App />);
+
     await waitFor(() => {
       expect(
         screen.getByRole("heading", { name: "npm-audit-visualizer" }),
