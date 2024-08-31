@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import App from "./App";
+import App from "./app";
 
 vi.mock("./hooks/use-parsed-audit-report.ts", async () => {
   const auditReportFixture = await import(
@@ -15,7 +15,7 @@ vi.mock("./hooks/use-parsed-audit-report.ts", async () => {
   };
 });
 
-vi.mock("./components/Visualizer/index.tsx", () => ({
+vi.mock("./components/visualizer/index.tsx", () => ({
   default: () => <div>visualizer</div>,
 }));
 

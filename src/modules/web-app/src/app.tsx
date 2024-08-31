@@ -1,5 +1,5 @@
-import AuditReportMetadata from "./components/AuditReportMetadata";
-import Visualizer from "./components/Visualizer";
+import AuditReportMetadata from "./components/audit-report-metadata";
+import Visualizer from "./components/visualizer";
 import { useParsedAuditReport } from "./hooks/use-parsed-audit-report";
 
 const App = () => {

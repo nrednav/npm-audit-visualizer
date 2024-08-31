@@ -7,8 +7,7 @@ const run = () => {
 
   const command = [
     `npm run dev -- --export-only -f ${auditReportFilePath}`,
-    "cd src/modules/WebApp",
-    "npm run dev",
+    "npm --prefix src/modules/web-app run dev",
   ].join(" && ");
 
   execSync(command, { stdio: "inherit" });

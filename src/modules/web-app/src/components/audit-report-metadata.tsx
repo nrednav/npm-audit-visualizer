@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ParsedAuditReport } from "root/src/modules/audit-report/parser/types";
 import { SEVERITY_COLOR_MAP } from "src/constants";
-import { TabList } from "./TabList";
+import { TabList } from "./tab-list";
 
 type AuditReportMetadataProps = {
   metadata: ParsedAuditReport["metadata"];

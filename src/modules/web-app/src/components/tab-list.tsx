@@ -1,4 +1,4 @@
-import { Tab } from "./Tab";
+import { Tab } from "./tab";
 
 export type TabListProps = {
   tabs: string[];

@@ -22,5 +22,5 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "src/modules/WebApp"]
+  "exclude": ["node_modules", "src/modules/web-app"]
 }

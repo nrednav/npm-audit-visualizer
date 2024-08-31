@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     environment: "node",
-    exclude: [...configDefaults.exclude, "src/modules/WebApp/**/*"],
+    exclude: [...configDefaults.exclude, "src/modules/web-app/**/*"],
   },
 });
