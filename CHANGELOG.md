@@ -16,6 +16,26 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Added project scripts
   - prebuild
   - web-app dev
+- Added dependencies
+  - web-app
+    - vite-tsconfig-paths
+- Setup tsconfig paths plugin in vite config
+
+### Changed
+
+- Renamed files & folders and updated import paths
+  - AuditReport -> audit-report
+  - WebApp -> web-app
+  - Component files & folders from PascalCase to kebab-case
+- Updated import paths to be absolute in most cases
+- Updated `tsconfig.json` for web-app
+  - Added import re-maps for `src/*`
+  - Removed `../../../*` from list of includes
+- Split vitest config from vite config into separate file
+
+### Removed
+
+- Removed `src` resolve alias from vite config
 
 ## [v1.0.0-alpha.7] - 2024-06-02
 

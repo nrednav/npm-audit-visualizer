@@ -21,6 +21,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "src/modules/WebApp"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "src/modules/web-app"]
 }
