@@ -4,12 +4,12 @@ import type {
   SerializedEdge,
   SerializedNode,
 } from "graphology-types";
-import { z } from "zod";
 import {
   MetadataSchema,
   Vulnerability,
   VulnerabilitySchema,
-} from "../Validator/schema.js";
+} from "src/modules/audit-report/validator/schema.js";
+import { z } from "zod";
 
 export const VulnerabilityGraphSchema = z.object({
   attributes: z.custom<Attributes>(),

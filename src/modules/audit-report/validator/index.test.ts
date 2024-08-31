@@ -1,8 +1,8 @@
 import path from "path";
 import { flatMap, isLeft, isRight } from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
+import { importAuditReport } from "src/modules/audit-report/importer/index.js";
 import { describe, expect, it, test } from "vitest";
-import { importAuditReport } from "../Importer/index.js";
 import { validateAuditReport } from "./index.js";
 
 describe("AuditReport", () => {

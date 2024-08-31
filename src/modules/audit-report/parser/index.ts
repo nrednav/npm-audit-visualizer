@@ -1,12 +1,13 @@
 import crypto from "node:crypto";
 import graphology from "graphology";
+import { AuditReport } from "src/modules/audit-report/validator/schema.js";
 import { logger } from "src/shared/modules/logger.js";
-import { AuditReport } from "../Validator/schema.js";
 import type {
   ParsedAuditReport,
   VulnerabilityGraph,
   VulnerabilityTable,
 } from "./types.js";
+
 const { MultiDirectedGraph } = graphology;
 
 export const parseAuditReport = (

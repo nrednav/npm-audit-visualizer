@@ -1,6 +1,6 @@
 import "@react-sigma/core/lib/react-sigma.min.css";
 import { useState } from "react";
-import { ParsedAuditReport } from "root/src/modules/AuditReport/Parser/types";
+import { ParsedAuditReport } from "root/src/modules/audit-report/parser/types";
 import { TabList } from "src/components/TabList";
 import VulnerabilityGraphComponent from "src/components/Visualizer/VulnerabilityGraph/";
 import VulnerabilityTableComponent from "src/components/Visualizer/VulnerabilityTable/";

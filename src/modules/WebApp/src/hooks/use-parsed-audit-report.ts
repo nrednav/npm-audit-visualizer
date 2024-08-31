@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   ParsedAuditReport,
   ParsedAuditReportSchema,
-} from "root/src/modules/AuditReport/Parser/types";
+} from "root/src/modules/audit-report/parser/types";
 import { assertIsError } from "root/src/shared/utils";
 
 export const useParsedAuditReport = () => {

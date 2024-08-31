@@ -11,7 +11,7 @@ export const importAuditReport = (
   logger.debug("Importing audit report");
 
   const context = {
-    file: "modules/AuditReport/Importer/index.ts",
+    file: "modules/audit-report/importer/index.ts",
     functionName: "importAuditReport",
     data: { filePath },
   };

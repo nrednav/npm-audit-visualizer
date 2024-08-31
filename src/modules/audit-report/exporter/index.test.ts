@@ -2,10 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import * as E from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
+import { importAuditReport } from "src/modules/audit-report/importer/index.js";
+import { parseAuditReport } from "src/modules/audit-report/parser/index.js";
+import { validateAuditReport } from "src/modules/audit-report/validator/index.js";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { importAuditReport } from "../Importer/index.js";
-import { parseAuditReport } from "../Parser/index.js";
-import { validateAuditReport } from "../Validator/index.js";
 import { exportParsedAuditReport } from "./index.js";
 
 describe("AuditReport", () => {

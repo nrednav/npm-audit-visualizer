@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { tryCatchK } from "fp-ts/lib/Either.js";
-import { ParsedAuditReport } from "src/modules/AuditReport/Parser/types.js";
+import { ParsedAuditReport } from "src/modules/audit-report/parser/types.js";
 import { WEB_APP_BUILD_DIR } from "src/shared/constants.js";
 import { AppError } from "src/shared/errors.js";
 import { logger } from "src/shared/modules/logger.js";
@@ -28,7 +28,7 @@ export const exportParsedAuditReport =
         return new AppError(
           "Failed to export parsed audit report",
           {
-            file: "modules/AuditReport/Exporter/index.ts",
+            file: "modules/audit-report/exporter/index.ts",
             functionName: "exportParsedAuditReport",
             data: { parsedAuditReport, exportPath },
           },

@@ -1,10 +1,13 @@
 import path from "path";
 import { flatMap, isRight, map } from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
+import { importAuditReport } from "src/modules/audit-report/importer/index.js";
+import { validateAuditReport } from "src/modules/audit-report/validator/index.js";
+import {
+  MetadataSchema,
+  VulnerabilitySchema,
+} from "src/modules/audit-report/validator/schema.js";
 import { describe, expect, test } from "vitest";
-import { importAuditReport } from "../Importer/index.js";
-import { validateAuditReport } from "../Validator/index.js";
-import { MetadataSchema, VulnerabilitySchema } from "../Validator/schema.js";
 import { parseAuditReport } from "./index.js";
 import { VulnerabilityGraphSchema } from "./types.js";
 

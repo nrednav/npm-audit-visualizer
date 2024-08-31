@@ -21,7 +21,7 @@ export const validateAuditReport = (
       new AppError(
         "Failed to validate audit report",
         {
-          file: "modules/AuditReport/Validator/index.ts",
+          file: "modules/audit-report/validator/index.ts",
           functionName: "validateAuditReport",
           data: { auditReport },
         },

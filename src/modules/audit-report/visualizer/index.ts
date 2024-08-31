@@ -3,7 +3,7 @@ import { AddressInfo } from "net";
 import chalk from "chalk";
 import { TaskEither, tryCatchK } from "fp-ts/lib/TaskEither.js";
 import handler from "serve-handler";
-import { ParsedAuditReport } from "src/modules/AuditReport/Parser/types.js";
+import { ParsedAuditReport } from "src/modules/audit-report/parser/types.js";
 import { WEB_APP_BUILD_DIR } from "src/shared/constants.js";
 import { AppError } from "src/shared/errors.js";
 import { logger } from "src/shared/modules/logger.js";
@@ -20,7 +20,7 @@ export const visualizeAuditReport =
       return new AppError(
         "Failed to visualize parsed audit report",
         {
-          file: "modules/AuditReport/Visualizer/index.ts",
+          file: "modules/audit-report/visualizer/index.ts",
           functionName: "visualizeAuditReport",
           data: { port, parsedAuditReport },
         },

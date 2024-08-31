@@ -5,16 +5,16 @@ import chalk from "chalk";
 import * as Either from "fp-ts/lib/Either.js";
 import * as TaskEither from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
+import { exportParsedAuditReport } from "src/modules/audit-report/exporter/index.js";
+import { importAuditReport } from "src/modules/audit-report/importer/index.js";
+import { parseAuditReport } from "src/modules/audit-report/parser/index.js";
+import { validateAuditReport } from "src/modules/audit-report/validator/index.js";
+import { visualizeAuditReport } from "src/modules/audit-report/visualizer/index.js";
+import { PACKAGE_ENTRY_POINT, PACKAGE_NAME } from "src/shared/constants.js";
+import { AppError } from "src/shared/errors.js";
+import { logger } from "src/shared/modules/logger.js";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { exportParsedAuditReport } from "./modules/AuditReport/Exporter/index.js";
-import { importAuditReport } from "./modules/AuditReport/Importer/index.js";
-import { parseAuditReport } from "./modules/AuditReport/Parser/index.js";
-import { validateAuditReport } from "./modules/AuditReport/Validator/index.js";
-import { visualizeAuditReport } from "./modules/AuditReport/Visualizer/index.js";
-import { PACKAGE_ENTRY_POINT, PACKAGE_NAME } from "./shared/constants.js";
-import { AppError } from "./shared/errors.js";
-import { logger } from "./shared/modules/logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 

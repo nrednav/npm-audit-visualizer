@@ -1,8 +1,8 @@
+import { logger } from "src/shared/modules/logger.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { main } from "./main.js";
-import { logger } from "./shared/modules/logger.js";
 
-vi.mock("./modules/AuditReport/Visualizer/index.js", async () => {
+vi.mock("src/modules/audit-report/visualizer/index.js", async () => {
   const TE = await import("fp-ts/lib/TaskEither.js");
 
   return {

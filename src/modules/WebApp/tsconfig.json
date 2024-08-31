@@ -6,7 +6,8 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "baseUrl": ".",
     "paths": {
-      "root/*": ["../../../*"]
+      "root/*": ["../../../*"],
+      "src/*": ["./src/*", "../../../src/*"]
     },
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -21,7 +22,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src", "setupTests.ts", "../../../*"],
+  "include": ["src/**/*", "setupTests.ts"],
   "exclude": ["node_modules"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
