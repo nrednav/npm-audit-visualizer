@@ -41,8 +41,9 @@
   "scripts": {
     "dev": "tsx ./src/main.ts",
     "dev:watch": "tsx watch ./src/main.ts",
+    "dev:web-app": "tsx ./scripts/web-app.dev.ts",
     "start": "node ./build/main.js",
-    "prebuild": "npm run build:web-app && npm run clean && npm run type-check",
+    "prebuild": "tsx ./scripts/prebuild.ts",
     "build": "tsup ./src/main.ts && chmod +x ./build/main.js",
     "build:web-app": "cd src/modules/WebApp && npm install && npm run build",
     "clean": "npx del ./build/",

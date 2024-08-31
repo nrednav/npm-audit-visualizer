@@ -13,6 +13,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `export-only` as a hidden option for CLI app
   - This can help with running the web-app in dev mode, since the audit report
     can be watched & re-exported without having to re-visualize it each time
+- Added project scripts
+  - prebuild
+  - web-app dev
 
 ## [v1.0.0-alpha.7] - 2024-06-02
 

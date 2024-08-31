@@ -8,13 +8,13 @@ import { logger } from "src/shared/modules/logger.js";
 import { assertIsError } from "src/shared/utils.js";
 
 export const exportParsedAuditReport =
-  (outputDir: string = WEB_APP_BUILD_DIR) =>
+  (exportPath: string = WEB_APP_BUILD_DIR) =>
   (parsedAuditReport: ParsedAuditReport) => {
-    logger.debug(`Exporting parsed audit report to ${outputDir}`);
+    logger.debug(`Exporting parsed audit report to ${exportPath}`);
 
     const serializedReport = JSON.stringify(parsedAuditReport, null, 2);
     const filename = "parsed-audit-report.json";
-    const outputPath = path.resolve(outputDir, filename);
+    const outputPath = path.resolve(exportPath, filename);
 
     return tryCatchK(
       () => {
@@ -30,7 +30,7 @@ export const exportParsedAuditReport =
           {
             file: "modules/AuditReport/Exporter/index.ts",
             functionName: "exportParsedAuditReport",
-            data: { parsedAuditReport, outputDir },
+            data: { parsedAuditReport, exportPath },
           },
           error,
         );
