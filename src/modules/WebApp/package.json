@@ -1,6 +1,6 @@
 {
   "name": "npm-audit-visualizer/web-app",
-  "version": "1.0.0-alpha.7",
+  "version": "1.0.0-alpha.8",
   "description": "The web-app component of npm-audit-visualizer",
   "author": "Vandern Rodrigues <nrednav@gmail.com>",
   "type": "module",
