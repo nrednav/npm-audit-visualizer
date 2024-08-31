@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0-alpha.8] - 2024-08-31
+
+### Added
+
+- Added `export-only` as a hidden option for CLI app
+  - This can help with running the web-app in dev mode, since the audit report
+    can be watched & re-exported without having to re-visualize it each time
+
 ## [v1.0.0-alpha.7] - 2024-06-02
 
 ### Changed

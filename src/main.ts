@@ -42,6 +42,13 @@ export const main = () => {
         alias: "p",
         default: 1248,
       },
+      "export-only": {
+        type: "boolean",
+        describe: "Only exports the parsed audit report. Does not visualize it",
+        alias: "e",
+        default: false,
+        hidden: true,
+      },
     })
     .help()
     .alias("help", "h")
@@ -61,7 +68,9 @@ export const main = () => {
       Either.map(parseAuditReport),
       Either.flatMap(exportParsedAuditReport()),
       TaskEither.fromEither,
-      TaskEither.flatMap(visualizeAuditReport(args.port)),
+      args.exportOnly
+        ? TaskEither.asUnit
+        : TaskEither.flatMap(visualizeAuditReport(args.port)),
       TaskEither.match(handleError(args.debug), () => {}),
     );
 
