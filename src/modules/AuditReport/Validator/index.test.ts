@@ -13,7 +13,7 @@ describe("AuditReport", () => {
         "one-vulnerability-audit-report.json",
         "few-vulnerabilities-audit-report.json",
         "many-vulnerabilities-audit-report.json",
-      ])("can validate %s", (fileName) => {
+      ])("returns true for %s", (fileName) => {
         const filePath = path.resolve("src/shared/fixtures", fileName);
 
         const result = pipe(
@@ -25,7 +25,7 @@ describe("AuditReport", () => {
         expect(E.isRight(result)).toStrictEqual(true);
       });
 
-      it("can invalidate an audit report", () => {
+      it("returns false for invalid-audit-report.json", () => {
         const filePath = path.resolve(
           "src/shared/fixtures",
           "invalid-audit-report.json",

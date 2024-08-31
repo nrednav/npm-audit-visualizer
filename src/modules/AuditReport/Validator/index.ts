@@ -9,11 +9,14 @@ export const validateAuditReport = (
   auditReport: RawJson,
 ): E.Either<AppError, AuditReport> => {
   logger.debug("Validating audit report");
+
   try {
     const validatedAuditReport = AuditReportSchema.parse(auditReport);
+
     return E.right(validatedAuditReport);
   } catch (error) {
     assertIsError(error);
+
     return E.left(
       new AppError(
         "Failed to validate audit report",

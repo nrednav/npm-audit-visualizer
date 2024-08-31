@@ -16,6 +16,7 @@ export const visualizeAuditReport =
 
     return TE.tryCatchK(startWebApp(port), (error: unknown) => {
       assertIsError(error);
+
       return new AppError(
         "Failed to visualize parsed audit report",
         {
@@ -39,6 +40,7 @@ const startWebApp = (port: number) => async () => {
 
   server.listen(port, () => {
     const serverAddress = server.address() as AddressInfo;
+
     logger.info(
       "Web app started at",
       chalk.green(`http://localhost:${serverAddress.port}`),
@@ -66,7 +68,9 @@ const startWebApp = (port: number) => async () => {
     }
 
     logger.error(error);
+
     server.close().once("close", () => logger.info("Web app stopped"));
+
     process.exit(1);
   });
 };

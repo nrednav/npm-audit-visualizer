@@ -21,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 export const main = () => {
   logger.info(chalk.green("npm-audit-visualizer"));
 
-  const argv = yargs(hideBin(process.argv))
+  const args = yargs(hideBin(process.argv))
     .options({
       file: {
         type: "string",
@@ -47,22 +47,24 @@ export const main = () => {
     .alias("help", "h")
     .parseSync();
 
-  if (argv.debug) {
+  if (args.debug) {
     logger.enableDebugMode();
   }
 
-  if (argv.file) {
-    logger.info(`Audit report file: ${chalk.blueBright(argv.file)}`);
+  if (args.file) {
+    logger.info(`Audit report file: ${chalk.blueBright(args.file)}`);
+
     const run = pipe(
-      argv.file,
+      args.file,
       importAuditReport,
       E.flatMap(validateAuditReport),
       E.map(parseAuditReport),
       E.flatMap(exportParsedAuditReport()),
       TE.fromEither,
-      TE.flatMap(visualizeAuditReport(argv.port)),
-      TE.match(handleError(argv.debug), () => {}),
+      TE.flatMap(visualizeAuditReport(args.port)),
+      TE.match(handleError(args.debug), () => {}),
     );
+
     run();
   }
 };

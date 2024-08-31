@@ -25,9 +25,11 @@ export const importAuditReport = (
   try {
     const file = fs.readFileSync(filePath, "utf-8");
     const auditReport: RawJson = JSON.parse(file);
+
     return E.right(auditReport);
   } catch (error) {
     assertIsError(error);
+
     return E.left(
       new AppError("Failed to import audit report", context, error),
     );

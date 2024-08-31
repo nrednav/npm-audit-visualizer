@@ -15,9 +15,11 @@ export const useParsedAuditReport = () => {
         const res = await fetch("/parsed-audit-report.json");
         const rawJson = (await res.json()) as unknown;
         const data = ParsedAuditReportSchema.parse(rawJson);
+
         setData(data);
       } catch (error) {
         assertIsError(error);
+
         console.error(
           `Failed to import parsed audit report: \n${error.message}`,
         );

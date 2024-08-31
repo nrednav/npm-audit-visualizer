@@ -15,6 +15,7 @@ const AuditReportMetadata = (props: AuditReportMetadataProps) => {
   const tabs = Object.keys(metadata) as unknown as MetadataKey[];
   const [selectedTab, setSelectedTab] = useState(0);
   const selectedMetadataKey = tabs[selectedTab];
+
   return (
     <section>
       <TabList
@@ -34,6 +35,7 @@ type MetadataCardListProps = {
 const MetadataCardList = (props: MetadataCardListProps) => {
   const { data } = props;
   const keys = Object.keys(data);
+
   return (
     <ul className="py-4 | flex flex-row gap-4">
       {keys.map((key) => {
@@ -53,6 +55,7 @@ type MetadataCardProps = {
 
 const MetadataCard = (props: MetadataCardProps) => {
   const { label, value } = props;
+
   return (
     <li
       className="w-32 p-4 | flex flex-col | rounded-lg bg-white shadow border-r-4"

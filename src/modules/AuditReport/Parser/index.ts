@@ -13,9 +13,11 @@ export const parseAuditReport = (
   auditReport: AuditReport,
 ): ParsedAuditReport => {
   logger.debug("Parsing audit report");
+
   const vulnerabilitiesWithIds = generateIdsForVulnerabilities(
     auditReport.vulnerabilities,
   );
+
   return {
     metadata: auditReport.metadata,
     vulnerability: {
@@ -34,7 +36,9 @@ const generateIdsForVulnerabilities = (
     const [name, vulnerability] = entry;
     const vulnerabilityClone = structuredClone(vulnerability);
     const hash = crypto.createHash("sha256");
+
     hash.update(JSON.stringify(vulnerabilitiesClone));
+
     vulnerabilityClone.id = hash.digest("hex");
     vulnerabilitiesClone[name] = vulnerabilityClone;
   }
@@ -46,6 +50,7 @@ const createVulnerabilityGraph = (
   vulnerabilities: AuditReport["vulnerabilities"],
 ): VulnerabilityGraph => {
   logger.debug("Creating vulnerability graph");
+
   const graph = new MultiDirectedGraph({ allowSelfLoops: true });
 
   if (Object.keys(vulnerabilities).length === 0) {
@@ -118,6 +123,7 @@ const createVulnerabilityTable = (
   vulnerabilities: AuditReport["vulnerabilities"],
 ): VulnerabilityTable => {
   logger.debug("Creating vulnerability table");
+
   return sortVulnerabilitiesBySeverity(vulnerabilities, "descending").map(
     ([_, value]) => value,
   );
