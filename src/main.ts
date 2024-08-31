@@ -2,8 +2,8 @@
 
 import { fileURLToPath } from "node:url";
 import chalk from "chalk";
-import * as E from "fp-ts/lib/Either.js";
-import * as TE from "fp-ts/lib/TaskEither.js";
+import * as Either from "fp-ts/lib/Either.js";
+import * as TaskEither from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -57,12 +57,12 @@ export const main = () => {
     const run = pipe(
       args.file,
       importAuditReport,
-      E.flatMap(validateAuditReport),
-      E.map(parseAuditReport),
-      E.flatMap(exportParsedAuditReport()),
-      TE.fromEither,
-      TE.flatMap(visualizeAuditReport(args.port)),
-      TE.match(handleError(args.debug), () => {}),
+      Either.flatMap(validateAuditReport),
+      Either.map(parseAuditReport),
+      Either.flatMap(exportParsedAuditReport()),
+      TaskEither.fromEither,
+      TaskEither.flatMap(visualizeAuditReport(args.port)),
+      TaskEither.match(handleError(args.debug), () => {}),
     );
 
     run();

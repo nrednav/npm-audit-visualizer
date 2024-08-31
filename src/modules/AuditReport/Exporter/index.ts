@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import * as E from "fp-ts/lib/Either.js";
+import { tryCatchK } from "fp-ts/lib/Either.js";
 import { ParsedAuditReport } from "src/modules/AuditReport/Parser/types.js";
 import { WEB_APP_BUILD_DIR } from "src/shared/constants.js";
 import { AppError } from "src/shared/errors.js";
@@ -16,7 +16,7 @@ export const exportParsedAuditReport =
     const filename = "parsed-audit-report.json";
     const outputPath = path.resolve(outputDir, filename);
 
-    return E.tryCatchK(
+    return tryCatchK(
       () => {
         fs.writeFileSync(outputPath, serializedReport, "utf-8");
 

@@ -1,7 +1,7 @@
 import http from "http";
 import { AddressInfo } from "net";
 import chalk from "chalk";
-import * as TE from "fp-ts/lib/TaskEither.js";
+import { TaskEither, tryCatchK } from "fp-ts/lib/TaskEither.js";
 import handler from "serve-handler";
 import { ParsedAuditReport } from "src/modules/AuditReport/Parser/types.js";
 import { WEB_APP_BUILD_DIR } from "src/shared/constants.js";
@@ -11,10 +11,10 @@ import { assertIsError } from "src/shared/utils.js";
 
 export const visualizeAuditReport =
   (port: number) =>
-  (parsedAuditReport: ParsedAuditReport): TE.TaskEither<AppError, void> => {
+  (parsedAuditReport: ParsedAuditReport): TaskEither<AppError, void> => {
     logger.debug("Visualizing parsed audit report");
 
-    return TE.tryCatchK(startWebApp(port), (error: unknown) => {
+    return tryCatchK(startWebApp(port), (error: unknown) => {
       assertIsError(error);
 
       return new AppError(

@@ -1,5 +1,5 @@
 import path from "path";
-import * as E from "fp-ts/lib/Either.js";
+import { flatMap, isLeft, isRight } from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { describe, expect, it, test } from "vitest";
 import { importAuditReport } from "../Importer/index.js";
@@ -19,10 +19,10 @@ describe("AuditReport", () => {
         const result = pipe(
           filePath,
           importAuditReport,
-          E.flatMap(validateAuditReport),
+          flatMap(validateAuditReport),
         );
 
-        expect(E.isRight(result)).toStrictEqual(true);
+        expect(isRight(result)).toStrictEqual(true);
       });
 
       it("returns false for invalid-audit-report.json", () => {
@@ -34,10 +34,10 @@ describe("AuditReport", () => {
         const result = pipe(
           filePath,
           importAuditReport,
-          E.flatMap(validateAuditReport),
+          flatMap(validateAuditReport),
         );
 
-        expect(E.isLeft(result)).toStrictEqual(true);
+        expect(isLeft(result)).toStrictEqual(true);
       });
     });
   });

@@ -1,5 +1,5 @@
 import fs from "fs";
-import * as E from "fp-ts/lib/Either.js";
+import { Either, left, right } from "fp-ts/lib/Either.js";
 import { AppError } from "src/shared/errors.js";
 import { logger } from "src/shared/modules/logger.js";
 import type { RawJson } from "src/shared/types.js";
@@ -7,7 +7,7 @@ import { assertIsError } from "src/shared/utils.js";
 
 export const importAuditReport = (
   filePath: string,
-): E.Either<AppError, RawJson> => {
+): Either<AppError, RawJson> => {
   logger.debug("Importing audit report");
 
   const context = {
@@ -17,7 +17,7 @@ export const importAuditReport = (
   };
 
   if (!fs.existsSync(filePath)) {
-    return E.left(
+    return left(
       new AppError(`File does not exist at path: ${filePath}`, context),
     );
   }
@@ -26,12 +26,10 @@ export const importAuditReport = (
     const file = fs.readFileSync(filePath, "utf-8");
     const auditReport: RawJson = JSON.parse(file);
 
-    return E.right(auditReport);
+    return right(auditReport);
   } catch (error) {
     assertIsError(error);
 
-    return E.left(
-      new AppError("Failed to import audit report", context, error),
-    );
+    return left(new AppError("Failed to import audit report", context, error));
   }
 };

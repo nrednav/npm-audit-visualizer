@@ -1,5 +1,5 @@
 import path from "path";
-import * as E from "fp-ts/lib/Either.js";
+import { flatMap, isRight, map } from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { describe, expect, test } from "vitest";
 import { importAuditReport } from "../Importer/index.js";
@@ -22,13 +22,13 @@ describe("AuditReport", () => {
         const result = pipe(
           filePath,
           importAuditReport,
-          E.flatMap(validateAuditReport),
-          E.map(parseAuditReport),
+          flatMap(validateAuditReport),
+          map(parseAuditReport),
         );
 
-        expect(E.isRight(result)).toStrictEqual(true);
+        expect(isRight(result)).toStrictEqual(true);
 
-        if (E.isRight(result)) {
+        if (isRight(result)) {
           const parsedAuditReport = result.right;
 
           const metadataParsingResult = MetadataSchema.safeParse(
