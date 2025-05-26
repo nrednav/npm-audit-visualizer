@@ -10,17 +10,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Updated dependencies
-  - main
-    - Major = vitest, vite-tsconfig-paths
-    - Minor = chalk, zod, @biomejs/biome, tsup, tsx, typescript
-    - Patch = fp-ts, serve-handler, @types/yargs
-  - web-app
-    - Major = vite, vitest
-    - Minor = @testing-library/jest-dom, @testing-library/user-event,
-      @vitejs/plugin-react, eslint-plugin-jest-dom, eslint-plugin-react,
-      postcss, typescript, vite-tsconfig-paths
-    - Patch = clsx, sigma, autoprefixer
+- Updated dependency versions for tool and web-app module
 
 ### Fixed
 
