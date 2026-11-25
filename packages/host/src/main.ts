@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { run } from "./cli.js";
 import { openInBrowser } from "./presentation/open.js";
+import { auditProject } from "./report/audit.js";
 
 const controller = new AbortController();
 
@@ -24,7 +25,9 @@ const toStderr = writeLine(process.stderr);
  * number, so every failure is testable without spawning a process.
  */
 process.exitCode = await run(process.argv.slice(2), {
+  cwd: process.cwd(),
   assetsDir: fileURLToPath(new URL("./surface", import.meta.url)),
+  auditProject,
   out: writeLine(process.stdout),
   err: toStderr,
   openSurface: (url) => {

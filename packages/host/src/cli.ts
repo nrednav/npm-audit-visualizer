@@ -1,4 +1,6 @@
 import { parseArgs } from "node:util";
+import type { AuditReport } from "@npm-audit-visualizer/contract";
+import { type AuditResult, describeAuditFailure } from "./report/audit.js";
 import { buildPayload } from "./report/model.js";
 import { describeReadFailure, readReport } from "./report/read.js";
 import { describeServeFailure, startServing } from "./serve/server.js";
@@ -6,13 +8,16 @@ import { describeServeFailure, startServing } from "./serve/server.js";
 export const DEFAULT_PORT = 1248;
 export const PORT_ATTEMPTS = 10;
 
-const USAGE = `npm-audit-visualizer — read an npm audit report in a local page
+const USAGE = `npm-audit-visualizer — audit the current project and read the report in a local page
 
 Usage
-  npm-audit-visualizer --file <report.json>
+  npm-audit-visualizer [--file <report.json>]
+
+Runs "npm audit --json" in the current directory, then serves the findings.
 
 Options
-  -f, --file <path>   Report written by "npm audit --json". Required.
+  -f, --file <path>   Read a report written by "npm audit --json" instead of
+                      running an audit in the current directory.
   -p, --port <number> First port to try, 0 for any free port. Default ${DEFAULT_PORT}.
       --no-open       Serve the page without opening a browser.
   -d, --debug         Print the stages the run goes through.
@@ -21,8 +26,12 @@ Options
 The page is served from this machine only. Nothing is sent anywhere.`;
 
 export type CliIo = {
+  /** The caller's project directory. The entry module reads it from the process. */
+  cwd: string;
   /** Where the built interface is served from. The entry module locates it. */
   assetsDir: string;
+  /** Obtains a report from the caller's project when no file is given. */
+  auditProject: (cwd: string, signal: AbortSignal) => Promise<AuditResult>;
   out: (line: string) => void;
   err: (line: string) => void;
   openSurface: (url: string) => void;
@@ -30,7 +39,7 @@ export type CliIo = {
 };
 
 type Options = {
-  file: string;
+  file: string | null;
   port: number;
   open: boolean;
   debug: boolean;
@@ -90,13 +99,7 @@ const parse = (argv: string[]): Intent => {
 
   if (positionals.length > 0) {
     return refuse(
-      `Unexpected argument: ${positionals.join(" ")}. Pass the report with --file <path>.`,
-    );
-  }
-
-  if (values.file === undefined || values.file.trim() === "") {
-    return refuse(
-      'No report given. Pass the path of a report written by "npm audit --json" with --file <path>.',
+      `Unexpected argument: ${positionals.join(" ")}. Pass a report with --file <path>, or run without arguments to audit the current directory.`,
     );
   }
 
@@ -117,7 +120,10 @@ const parse = (argv: string[]): Intent => {
   return {
     kind: "run",
     options: {
-      file: values.file,
+      file:
+        values.file === undefined || values.file.trim() === ""
+          ? null
+          : values.file,
       port,
       open: values.open !== false && values["no-open"] !== true,
       debug: values.debug === true,
@@ -141,19 +147,38 @@ export const run = async (argv: string[], io: CliIo): Promise<number> => {
   }
 
   const { options } = intent;
+  let report: AuditReport;
 
-  if (options.debug) {
-    io.out(`Reading ${options.file}`);
+  if (options.file === null) {
+    if (options.debug) {
+      io.out(`Auditing ${io.cwd}`);
+    }
+
+    const audited = await io.auditProject(io.cwd, io.signal);
+
+    if (!audited.ok) {
+      io.err(describeAuditFailure(audited.failure));
+
+      return audited.failure.kind === "aborted" ? 130 : 1;
+    }
+
+    report = audited.report;
+  } else {
+    if (options.debug) {
+      io.out(`Reading ${options.file}`);
+    }
+
+    const read = await readReport(options.file);
+
+    if (!read.ok) {
+      io.err(describeReadFailure(read.failure));
+      return 1;
+    }
+
+    report = read.report;
   }
 
-  const read = await readReport(options.file);
-
-  if (!read.ok) {
-    io.err(describeReadFailure(read.failure));
-    return 1;
-  }
-
-  const payload = buildPayload(read.report);
+  const payload = buildPayload(report);
 
   if (options.debug) {
     io.out(

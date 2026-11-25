@@ -1,26 +1,32 @@
 # CLI and Payload Reference
 
-`npm-audit-visualizer` reads an `npm audit --json` report and serves it as a local
-page. This reference describes the command's options, its exit codes, the route
-it serves, and the shape of the payload that route returns. It is part of the
-published command, not of the two internal workspace packages.
+`npm-audit-visualizer` obtains an `npm audit --json` report from the current
+project, or from a file you name, and serves it as a local page. This reference
+describes the command's options, its exit codes, the route it serves, and the
+shape of the payload that route returns. It is part of the published command,
+not of the two internal workspace packages.
 
 See the [how-to guide](how-to-read-a-report.md) for using the command in practice.
 
 ## Command
 
 ```
-npm-audit-visualizer --file <report.json> [options]
+npm-audit-visualizer [--file <report.json>] [options]
 ```
 
-The command reads one report, starts a local HTTP server on the loopback
-interface, and opens the page in a browser unless told not to.
+With no arguments, the command runs `npm audit --json` in the directory it was
+invoked from. With `--file`, it reads that report and runs no audit. Either way
+it validates one report, starts a local HTTP server on the loopback interface,
+and opens the page in a browser unless told not to.
+
+An automatic run uses the caller's npm executable, npm configuration, registry,
+and network. It writes no report file.
 
 ## Options
 
 | Option                  | Type                | Default | Required | Description                                                         |
 | ----------------------- | ------------------- | ------- | -------- | ------------------------------------------------------------------- |
-| `-f`, `--file <path>`   | path                | none    | yes      | Path to a report written by `npm audit --json`.                     |
+| `-f`, `--file <path>`   | path                | none    | no       | Read this report instead of auditing the current directory.         |
 | `-p`, `--port <number>` | integer `0`–`65535` | `1248`  | no       | First port to try. `0` asks the operating system for any free port. |
 | `--no-open`             | flag                | open    | no       | Serve the page without launching a browser.                         |
 | `-d`, `--debug`         | flag                | off     | no       | Print the stages the run goes through to stderr.                    |
@@ -36,18 +42,24 @@ connections from other machines.
 
 ## Exit codes
 
-| Code  | Condition                                                                                                                                           |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0`   | `--help` printed, or the server stopped cleanly on an interrupt.                                                                                    |
-| `1`   | Refusal: no `--file`, an unknown option, a stray argument, a port outside `0`–`65535`, an unreadable or invalid report, or a missing surface build. |
-| `130` | An interrupt arrived before serving began.                                                                                                          |
+| Code  | Condition                                                                                                                                                                                   |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0`   | `--help` printed, or the server stopped cleanly on an interrupt.                                                                                                                            |
+| `1`   | Refusal: an unknown option, a stray argument, a port outside `0`–`65535`, an audit that could not produce a valid report, an unreadable or invalid report file, or a missing surface build. |
+| `130` | An interrupt arrived before serving began, including during the audit.                                                                                                                      |
 
 ## Report requirements
 
-The file must be the output of `npm audit --json` with `auditReportVersion: 2`.
-A report with zero vulnerabilities is accepted and renders an empty state.
+The report, from a file or from an automatic audit, must be the output of
+`npm audit --json` with `auditReportVersion: 2`. A report with zero
+vulnerabilities is accepted and renders an empty state.
 
-Read failures are distinguished. Each names the path and the cause.
+`npm audit --json` exits with a nonzero status when it finds vulnerabilities. A
+valid report is accepted whatever that status is. A nonzero status matters only
+when the output is not a valid report; the command then prints the status and
+npm's error output.
+
+Read failures are distinguished. Each names the source and the cause.
 
 | Kind                  | Cause                                                                              |
 | --------------------- | ---------------------------------------------------------------------------------- |
@@ -56,6 +68,16 @@ Read failures are distinguished. Each names the path and the cause.
 | `not-json`            | The bytes are not valid JSON.                                                      |
 | `not-a-report`        | The JSON does not match the audit report shape; the failing field paths are named. |
 | `unsupported-version` | `auditReportVersion` is not `2`; the found and supported versions are named.       |
+
+Automatic-audit failures are also distinguished.
+
+| Kind          | Cause                                                                      |
+| ------------- | -------------------------------------------------------------------------- |
+| `unavailable` | npm could not be started; the spawn error is named.                        |
+| `aborted`     | The caller interrupted before a report was complete; the child is stopped. |
+| `too-large`   | Combined output passed 16 MiB; the child is stopped before parsing.        |
+| `failed`      | npm exited nonzero and its output was not a valid report.                  |
+| `report`      | npm exited zero and its output was not a valid report.                     |
 
 ## HTTP routes
 

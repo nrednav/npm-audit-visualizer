@@ -10,6 +10,15 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Running the command with no arguments now audits the project in the current
+  directory. It runs `npm audit --json` there and serves the result, so you no
+  longer generate a report file and pass it in. `--file` remains for a saved
+  report and runs no audit
+- A valid audit report is accepted even though `npm audit --json` exits nonzero
+  when it finds vulnerabilities. The exit status matters only when the output is
+  not a valid report, and the message then names the status and npm's error
+- Automatic-audit failures are distinguished: npm could not start, the caller
+  interrupted, output passed 16 MiB, or npm exited without a valid report
 - Each severity level now has its own silhouette, drawn in the table's pill, the
   severity ledger, and the graph legend. Severity was previously carried by
   colour and by the label's text, so a greyscale print or a colour-vision

@@ -1,8 +1,18 @@
-import { mkdtemp, readdir, rm, stat, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { run } from "../src/cli.js";
+import { type AuditResult, auditProject } from "../src/report/audit.js";
+import { readReport } from "../src/report/read.js";
 import {
   createTemporaryAssets,
   type TemporaryAssets,
@@ -15,27 +25,52 @@ const fixturePath = (name: string): string =>
   new URL(`../../contract/test/fixtures/${name}.json`, import.meta.url)
     .pathname;
 
+const fixtureReport = async () => {
+  const read = await readReport(
+    fixturePath("few-vulnerabilities-audit-report"),
+  );
+
+  if (!read.ok) {
+    throw new Error("the fixture must be a valid report");
+  }
+
+  return read.report;
+};
+
 type Harness = {
   out: string[];
   err: string[];
   opened: string[];
+  audited: string[];
   controller: AbortController;
   io: Parameters<typeof run>[1];
 };
 
-const harness = (signal?: AbortSignal): Harness => {
+const harness = (
+  signal?: AbortSignal,
+  audit: Parameters<typeof run>[1]["auditProject"] = async () => {
+    throw new Error("the automatic audit was not expected to run");
+  },
+): Harness => {
   const out: string[] = [];
   const err: string[] = [];
   const opened: string[] = [];
+  const audited: string[] = [];
   const controller = new AbortController();
 
   return {
     out,
     err,
     opened,
+    audited,
     controller,
     io: {
+      cwd: "/caller/project",
       assetsDir: assets.directory,
+      auditProject: (cwd, innerSignal) => {
+        audited.push(cwd);
+        return audit(cwd, innerSignal);
+      },
       out: (line) => out.push(line),
       err: (line) => err.push(line),
       openSurface: (url) => opened.push(url),
@@ -43,6 +78,11 @@ const harness = (signal?: AbortSignal): Harness => {
     },
   };
 };
+
+const auditReturning =
+  (result: AuditResult): Parameters<typeof run>[1]["auditProject"] =>
+  async () =>
+    result;
 
 beforeEach(async () => {
   assets = await createTemporaryAssets();
@@ -58,15 +98,56 @@ afterEach(async () => {
 });
 
 describe("run", () => {
-  it("refuses when no report is given", async () => {
-    const sink = harness();
+  it("audits the caller's directory when no report is given", async () => {
+    const sink = harness(
+      undefined,
+      auditReturning({
+        ok: true,
+        report: await fixtureReport(),
+      }),
+    );
+    const done = run(["--port", "0", "--no-open"], sink.io);
+
+    const address = await addressOf(sink);
+    expect(sink.audited).toEqual(["/caller/project"]);
+
+    const response = await fetch(`${address}/report.json`);
+    expect(response.status).toBe(200);
+
+    const body = (await response.json()) as { findings: unknown[] };
+    expect(body.findings.length).toBeGreaterThan(0);
+
+    sink.controller.abort();
+    expect(await done).toBe(0);
+  });
+
+  it("stops with 130 when the automatic audit is interrupted", async () => {
+    const sink = harness(
+      undefined,
+      auditReturning({ ok: false, failure: { kind: "aborted" } }),
+    );
+    const code = await run([], sink.io);
+
+    expect(code).toBe(130);
+    expect(sink.out.join("\n")).not.toContain("http://localhost");
+    expect(sink.opened).toEqual([]);
+  });
+
+  it("names an audit failure and serves nothing", async () => {
+    const sink = harness(
+      undefined,
+      auditReturning({
+        ok: false,
+        failure: { kind: "unavailable", reason: "spawn npm ENOENT" },
+      }),
+    );
     const code = await run([], sink.io);
 
     expect(code).toBe(1);
-    expect(sink.err.join("\n")).toContain("No report given");
-    expect(sink.err.join("\n")).toContain("Usage");
+    expect(sink.err.join("\n")).toContain("ENOENT");
     expect(sink.err.join("\n")).toContain("--file");
-    expect(sink.out).toEqual([]);
+    expect(sink.out.join("\n")).not.toContain("http://localhost");
+    expect(sink.opened).toEqual([]);
   });
 
   it("refuses a port that is not a port", async () => {
@@ -108,6 +189,8 @@ describe("run", () => {
     expect(code).toBe(0);
     expect(sink.out.join("\n")).toContain("npm-audit-visualizer");
     expect(sink.out.join("\n")).toContain("--no-open");
+    expect(sink.out.join("\n")).toContain("current directory");
+    expect(sink.out.join("\n")).toContain("--file");
   });
 
   it("prints the reason and fails when the report is missing", async () => {
@@ -140,6 +223,7 @@ describe("run", () => {
     expect(sink.opened[0]).toMatch(/^http:\/\/localhost:\d+$/);
     expect(sink.out.join("\n")).toContain(sink.opened[0]);
     expect(sink.out.join("\n")).toContain("Ctrl-C");
+    expect(sink.audited).toEqual([]);
 
     sink.controller.abort();
     expect(await done).toBe(0);
@@ -357,5 +441,51 @@ describe("a complete run leaves the asset directory untouched", () => {
     await done;
 
     expect(await snapshot(assets.directory)).toEqual(before);
+  });
+});
+
+describe("an automatic run reads the project through the real npm command", () => {
+  it("serves the findings and writes no report file", async () => {
+    const project = await mkdtemp(path.join(tmpdir(), "nav-project-"));
+    temporaryDirectories.push(project);
+
+    const bin = await mkdtemp(path.join(tmpdir(), "nav-bin-"));
+    temporaryDirectories.push(bin);
+    const executable = path.join(bin, "npm");
+    const text = await readFile(
+      fixturePath("few-vulnerabilities-audit-report"),
+      "utf8",
+    );
+
+    await writeFile(
+      executable,
+      `#!${process.execPath}\nprocess.stdout.write(${JSON.stringify(text)});\n`,
+      "utf8",
+    );
+    await chmod(executable, 0o755);
+
+    const original = process.env.PATH;
+    process.env.PATH = `${bin}${path.delimiter}${original ?? ""}`;
+    const before = await snapshot(project);
+    const sink = harness(undefined, auditProject);
+
+    try {
+      const done = run(["--port", "0", "--no-open"], {
+        ...sink.io,
+        cwd: project,
+      });
+      const address = await addressOf(sink);
+      const response = await fetch(`${address}/report.json`);
+      const body = (await response.json()) as { findings: unknown[] };
+
+      expect(body.findings.length).toBeGreaterThan(0);
+
+      sink.controller.abort();
+      expect(await done).toBe(0);
+    } finally {
+      process.env.PATH = original;
+    }
+
+    expect(await snapshot(project)).toEqual(before);
   });
 });

@@ -3,7 +3,7 @@
 ## Scope
 
 - This file applies to the whole npm workspace.
-- The product reads an `npm audit --json` report with `auditReportVersion: 2` and serves a local React interface.
+- The product obtains an `npm audit --json` report with `auditReportVersion: 2`, from a file or from an automatic audit of the caller's project, and serves a local React interface.
 - The publishable CLI is `packages/host`, named `npm-audit-visualizer`. The other packages are private.
 - Reports are user data. Serve them on loopback only and do not transmit them.
 
@@ -52,6 +52,8 @@ npm run check:support
 - `npm run dev` builds before starting. `npm start` runs the existing `packages/host/dist/main.js` and does not build first.
 - `npm run dev:surface` starts Vite with hot reload. It needs a host server providing `/report.json`.
 - The CLI defaults to port `1248`, tries subsequent ports, and opens a browser unless `--no-open` is passed.
+- With no `--file`, the CLI runs `npm audit --json` in the directory it was started from. With `--file`, it runs no audit.
+- The audit adapter caps combined child output at 16 MiB and terminates the child on abort or on exceeding the cap.
 
 ## Code style
 
@@ -95,7 +97,7 @@ export type Finding = z.infer<typeof FindingSchema>;
 | `packages/contract/src`     | Zod report and payload schemas, shared types, severity order, and `REPORT_ROUTE`          |
 | `packages/host/src/main.ts` | Entry module, signals, output streams, browser opening, and the sole exit-code assignment |
 | `packages/host/src/cli.ts`  | Argument parsing, defaults, usage text, and exit-code selection                           |
-| `packages/host/src/report`  | Report reading, validation, and payload construction                                      |
+| `packages/host/src/report`  | Report acquisition, validation, and payload construction                                  |
 | `packages/host/src/serve`   | Loopback HTTP server, routes, and static-file handling                                    |
 | `packages/surface/src`      | React application, components, hooks, table, and graph views                              |
 | `test`                      | Cross-package artifact, boundary, toolchain, automation, and development-command tests    |

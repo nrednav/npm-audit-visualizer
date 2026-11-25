@@ -21,7 +21,7 @@ describe("the development command", () => {
       timeout: 120_000,
     });
 
-    expect(output).toContain("npm-audit-visualizer --file <report.json>");
+    expect(output).toContain("npm-audit-visualizer [--file <report.json>]");
     expect(output).toContain("--no-open");
     expect(output).not.toContain("Unexpected argument");
   }, 150_000);

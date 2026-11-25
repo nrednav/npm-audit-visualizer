@@ -52,16 +52,22 @@ A match means the bytes you hold are the bytes that were published.
 
 ## Usage
 
-Navigate to a project that has package vulnerabilities and generate an audit
-report:
+Navigate to any Node project and run the command with no arguments. It runs
+`npm audit --json` in that directory and serves the result:
+
+```shell
+cd your-project
+npm-audit-visualizer
+```
+
+The audit runs against the directory you invoked the command from. Your npm
+configuration and registry apply, and no report file is created.
+
+If you already have a report, pass it instead. The command reads that file and
+does not run an audit:
 
 ```shell
 npm audit --json > audit.json
-```
-
-Then, run the tool on the generated audit report:
-
-```shell
 npm-audit-visualizer -f audit.json
 ```
 
@@ -71,13 +77,13 @@ is printed before the browser is asked to open, so a machine without a desktop
 can still be reached manually. If port `1248` is busy, pass another one:
 
 ```shell
-npm-audit-visualizer -f audit.json --port 3000
+npm-audit-visualizer --port 3000
 ```
 
 To serve without opening a browser:
 
 ```shell
-npm-audit-visualizer -f audit.json --no-open
+npm-audit-visualizer --no-open
 ```
 
 For a guided walk through reading and acting on a report, see

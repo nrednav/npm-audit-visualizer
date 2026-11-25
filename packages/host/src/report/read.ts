@@ -6,16 +6,25 @@ import {
 } from "@npm-audit-visualizer/contract";
 
 export type ReadFailure =
-  | { kind: "missing"; path: string }
-  | { kind: "unreadable"; path: string; reason: string }
-  | { kind: "not-json"; path: string; reason: string }
-  | { kind: "not-a-report"; path: string; paths: string[] }
+  | { kind: "missing"; source: string }
+  | { kind: "unreadable"; source: string; reason: string }
+  | { kind: "not-json"; source: string; reason: string }
+  | { kind: "not-a-report"; source: string; paths: string[] }
   | {
       kind: "unsupported-version";
-      path: string;
+      source: string;
       found: string;
       supported: number;
     };
+
+export type ParseFailure = Extract<
+  ReadFailure,
+  { kind: "not-json" | "not-a-report" | "unsupported-version" }
+>;
+
+export type ParseResult =
+  | { ok: true; report: AuditReport }
+  | { ok: false; failure: ParseFailure };
 
 export type ReadResult =
   | { ok: true; report: AuditReport }
@@ -36,67 +45,48 @@ const errorCode = (error: unknown): string | undefined => {
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
-const describeFileError = (filePath: string, error: unknown): ReadFailure => {
+const describeFileError = (source: string, error: unknown): ReadFailure => {
   const code = errorCode(error);
 
   if (code === "ENOENT") {
-    return { kind: "missing", path: filePath };
+    return { kind: "missing", source };
   }
 
   if (code === "EISDIR") {
-    return { kind: "unreadable", path: filePath, reason: "it is a directory" };
+    return { kind: "unreadable", source, reason: "it is a directory" };
   }
 
   if (code === "EACCES" || code === "EPERM") {
-    return { kind: "unreadable", path: filePath, reason: "permission denied" };
+    return { kind: "unreadable", source, reason: "permission denied" };
   }
 
   return {
     kind: "unreadable",
-    path: filePath,
+    source,
     reason: code === undefined ? errorMessage(error) : code,
   };
 };
 
-const parseJson = (
-  filePath: string,
-  text: string,
-): { ok: true; value: unknown } | { ok: false; failure: ReadFailure } => {
+/**
+ * One parser for every report source. File reading and process execution only
+ * differ in how they obtain `text`, so validation cannot drift between them.
+ */
+export const parseReport = (text: string, source: string): ParseResult => {
+  let raw: unknown;
+
   try {
-    return { ok: true, value: JSON.parse(text) as unknown };
+    raw = JSON.parse(text) as unknown;
   } catch (error) {
     return {
       ok: false,
-      failure: {
-        kind: "not-json",
-        path: filePath,
-        reason: errorMessage(error),
-      },
+      failure: { kind: "not-json", source, reason: errorMessage(error) },
     };
   }
-};
-
-export const readReport = async (filePath: string): Promise<ReadResult> => {
-  let text: string;
-
-  try {
-    text = await readFile(filePath, "utf8");
-  } catch (error) {
-    return { ok: false, failure: describeFileError(filePath, error) };
-  }
-
-  const parsed = parseJson(filePath, text);
-
-  if (!parsed.ok) {
-    return parsed;
-  }
-
-  const raw = parsed.value;
 
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
     return {
       ok: false,
-      failure: { kind: "not-a-report", path: filePath, paths: ["(root)"] },
+      failure: { kind: "not-a-report", source, paths: ["(root)"] },
     };
   }
 
@@ -107,7 +97,7 @@ export const readReport = async (filePath: string): Promise<ReadResult> => {
       ok: false,
       failure: {
         kind: "unsupported-version",
-        path: filePath,
+        source,
         found: String(version),
         supported: SUPPORTED_AUDIT_REPORT_VERSION,
       },
@@ -121,7 +111,7 @@ export const readReport = async (filePath: string): Promise<ReadResult> => {
       ok: false,
       failure: {
         kind: "not-a-report",
-        path: filePath,
+        source,
         paths: report.error.issues
           .slice(0, MAX_REPORTED_PATHS)
           .map((issue) => issue.path.join(".") || "(root)"),
@@ -132,6 +122,18 @@ export const readReport = async (filePath: string): Promise<ReadResult> => {
   return { ok: true, report: report.data };
 };
 
+export const readReport = async (filePath: string): Promise<ReadResult> => {
+  let text: string;
+
+  try {
+    text = await readFile(filePath, "utf8");
+  } catch (error) {
+    return { ok: false, failure: describeFileError(filePath, error) };
+  }
+
+  return parseReport(text, filePath);
+};
+
 /**
  * One sentence per failure kind, so that "not a report" can never be mistaken
  * for "a report with no findings".
@@ -139,14 +141,14 @@ export const readReport = async (filePath: string): Promise<ReadResult> => {
 export const describeReadFailure = (failure: ReadFailure): string => {
   switch (failure.kind) {
     case "missing":
-      return `No file exists at ${failure.path}. Pass the path of a report written by "npm audit --json > report.json".`;
+      return `No file exists at ${failure.source}. Pass the path of a report written by "npm audit --json > report.json".`;
     case "unreadable":
-      return `Cannot read ${failure.path}: ${failure.reason}.`;
+      return `Cannot read ${failure.source}: ${failure.reason}.`;
     case "not-json":
-      return `${failure.path} is not valid JSON: ${failure.reason}`;
+      return `${failure.source} is not valid JSON: ${failure.reason}`;
     case "not-a-report":
-      return `${failure.path} is not an npm audit report. Could not read: ${failure.paths.join(", ")}.`;
+      return `${failure.source} is not an npm audit report. Could not read: ${failure.paths.join(", ")}.`;
     case "unsupported-version":
-      return `${failure.path} is audit report version ${failure.found}. This tool reads version ${failure.supported}.`;
+      return `${failure.source} is audit report version ${failure.found}. This tool reads version ${failure.supported}.`;
   }
 };

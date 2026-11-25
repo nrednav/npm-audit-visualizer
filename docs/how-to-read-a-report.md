@@ -7,34 +7,33 @@ terminal and have a Node project that uses npm.
 For the full list of options and the payload shape, see the
 [CLI and payload reference](cli-reference.md).
 
-## Generate the report
+## Audit the project
 
-To produce the report file, run npm's audit command in your project and save the
-JSON output:
+Open a terminal in the project you want to audit and run the command with no
+arguments:
 
 ```shell
 cd your-project
+npx npm-audit-visualizer
+```
+
+The command runs `npm audit --json` in that directory, reads the result, and
+opens a local page with the findings. It creates no report file. The audit uses
+your npm configuration and registry, so it needs network access.
+
+If the project has no vulnerabilities, the page shows an empty state rather than
+an error. The command prints the address it is serving before it asks the
+browser to open it.
+
+If you installed the tool globally, drop the `npx`.
+
+### Use a report you already have
+
+If you generated a report earlier, or the project cannot run `npm audit`, pass
+the file. The command reads it and does not run an audit:
+
+```shell
 npm audit --json > audit.json
-```
-
-If your project has no vulnerabilities, the report is still valid. The tool
-renders an empty state rather than an error.
-
-## Read it in a page
-
-To open the report in a local page, pass the file to the command:
-
-```shell
-npx npm-audit-visualizer --file audit.json
-```
-
-The command prints the address it is serving and opens it in your browser.
-Confirm the page loaded by looking for the audit briefing and the finding count
-at the top.
-
-If you installed the tool globally, drop the `npx`:
-
-```shell
 npm-audit-visualizer --file audit.json
 ```
 
@@ -44,7 +43,7 @@ If you are on a remote machine or in a container, serve the page without
 launching a browser:
 
 ```shell
-npm-audit-visualizer --file audit.json --no-open
+npm-audit-visualizer --no-open
 ```
 
 Read the printed address and open it yourself. The listener binds to the
@@ -57,14 +56,14 @@ If port `1248` is taken, either let the command pick a free port or name one.
 To let the operating system choose, pass `0`:
 
 ```shell
-npm-audit-visualizer --file audit.json --port 0 --no-open
+npm-audit-visualizer --port 0 --no-open
 ```
 
 To name a starting port, pass it directly. The command tries up to 10
 consecutive ports from there:
 
 ```shell
-npm-audit-visualizer --file audit.json --port 3000
+npm-audit-visualizer --port 3000
 ```
 
 Confirm the address in the printed output. It is the port actually bound, which
@@ -94,20 +93,22 @@ cleanly with code `0`.
 If the command refuses to start, read the message on stderr. It names the cause
 and exits with code `1`.
 
-| Message points to     | What to do                                                             |
-| --------------------- | ---------------------------------------------------------------------- |
-| no report given       | Add `--file <path>`.                                                   |
-| missing file          | Check the path; the report was not found there.                        |
-| unreadable            | The path is a directory, or you lack permission.                       |
-| not JSON              | Re-run `npm audit --json`; the file is not valid JSON.                 |
-| not a report          | The JSON does not match the audit shape; the failing fields are named. |
-| unsupported version   | The report's `auditReportVersion` is not `2`.                          |
-| missing surface build | The installed copy is incomplete; reinstall it.                        |
+| Message points to     | What to do                                                                |
+| --------------------- | ------------------------------------------------------------------------- |
+| npm did not start     | Check that npm is installed and on `PATH` for this shell.                 |
+| npm exited nonzero    | Read the printed npm error. A lockfile or dependency tree may be missing. |
+| output too large      | Pass a saved report with `--file <path>` instead.                         |
+| missing file          | Check the path; the report was not found there.                           |
+| unreadable            | The path is a directory, or you lack permission.                          |
+| not JSON              | Re-run `npm audit --json`; the report is not valid JSON.                  |
+| not a report          | The JSON does not match the audit shape; the failing fields are named.    |
+| unsupported version   | The report's `auditReportVersion` is not `2`.                             |
+| missing surface build | The installed copy is incomplete; reinstall it.                           |
 
 To see the stages a run goes through, add `--debug`:
 
 ```shell
-npm-audit-visualizer --file audit.json --debug
+npm-audit-visualizer --debug
 ```
 
 You have read the report and traced its findings. For option defaults, exit
