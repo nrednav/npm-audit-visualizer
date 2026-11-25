@@ -10,6 +10,55 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The repository is now one npm workspace with three packages: a contract that
+  both runtimes load, a host that turns a report into a page, and a surface that
+  draws it. One lockfile, one Node pin, one formatter, one test runner, and one
+  explicit build order replace the nested `web-app` project
+- Severity order, the payload shape, and the graph shape are defined once and
+  imported by both sides. The parser ranked six levels and the web app ranked
+  five; they no longer disagree
+- The graph payload is a list of nodes and edges, not a graphology
+  serialisation. `graphology` and `sigma` are no longer dependencies of the
+  published command
+- The surface has three states rather than two: loading, failed with a printed
+  cause, and loaded. A failed request can no longer be drawn as a report that
+  happens to hold no findings
+- The published command has no runtime dependencies. `yargs` is replaced by
+  `node:util` `parseArgs` and `serve-handler` by an explicit static handler
+
+### Added
+
+- Each severity level now has its own silhouette, drawn in the table's pill, the
+  severity ledger, and the graph legend. Severity was previously carried by
+  colour and by the label's text, so a greyscale print or a colour-vision
+  difference showed one level as another. The five shapes step from an octagon
+  to a circle, which keeps the rank legible as well as the level
+
+### Fixed
+
+- `npm run dev -- --file audit.json` now forwards the flags and resolves the
+  report from the directory where the command was invoked, rather than dropping
+  `--file` or looking for the report under `packages/host`
+- A clean install now works on the pinned Node version. The pin is 20.19.0,
+  which satisfies Vite 7's engine requirement, and the undeclared Husky,
+  lint-staged, and `type-check` hook path has been removed
+- Reading a report now separates five outcomes that were previously one: no such
+  file, an unreadable file, a file that is not JSON, JSON that is not an audit
+  report, and a report of a version this tool does not read
+- Every vulnerability used to gain an edge to itself in the graph, because an
+  advisory's `name` is the vulnerable package. An advisory now contributes no
+  edge
+- `process.exit` no longer appears inside a module. Modules return a result and
+  the entry module assigns the exit code once
+- The port retry no longer mutates one shared port across callbacks or re-listens
+  a server that already failed. One server per attempt, and the port reported is
+  the one actually bound
+- Port `0` is accepted and reported as the port the operating system chose
+- An unknown path is answered `404` rather than with `index.html`, so a missing
+  asset is reported as missing
+
+### Changed
+
 - Rebuilt the web-app presentation around an audit briefing, severity ledger,
   and evidence-first explorer
 - Replaced raw audit fields in the table with plain-language reach, fix, and

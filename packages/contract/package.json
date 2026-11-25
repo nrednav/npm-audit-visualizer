@@ -1,0 +1,25 @@
+{
+  "name": "@npm-audit-visualizer/contract",
+  "version": "1.0.0-alpha.9",
+  "private": true,
+  "description": "The report shape, payload shape, and severity rank shared by the host and the surface",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.25.28"
+  }
+}

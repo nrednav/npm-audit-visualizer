@@ -1,0 +1,265 @@
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+
+const repoRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
+
+const walk = (directory: string): string[] => {
+  const absolute = path.join(repoRoot, directory);
+
+  try {
+    statSync(absolute);
+  } catch {
+    return [];
+  }
+
+  const found: string[] = [];
+
+  for (const entry of readdirSync(absolute, { withFileTypes: true })) {
+    const relative = path.posix.join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      found.push(...walk(relative));
+      continue;
+    }
+
+    found.push(relative);
+  }
+
+  return found;
+};
+
+const sources = (packageName: string): string[] =>
+  walk(`packages/${packageName}/src`).filter((file) => /\.tsx?$/.test(file));
+
+const importsOf = (relativePath: string): string[] => {
+  const text = readFileSync(path.join(repoRoot, relativePath), "utf8");
+  const specifiers = new Set<string>();
+
+  for (const match of text.matchAll(/from\s+"([^"]+)"/g)) {
+    const specifier = match[1];
+
+    if (specifier !== undefined) {
+      specifiers.add(specifier);
+    }
+  }
+
+  for (const match of text.matchAll(/import\s+"([^"]+)"/g)) {
+    const specifier = match[1];
+
+    if (specifier !== undefined) {
+      specifiers.add(specifier);
+    }
+  }
+
+  return [...specifiers];
+};
+
+const manifestOf = (packageName: string): Record<string, unknown> =>
+  JSON.parse(
+    readFileSync(
+      path.join(repoRoot, "packages", packageName, "package.json"),
+      "utf8",
+    ),
+  ) as Record<string, unknown>;
+
+const declaredDependencies = (manifest: Record<string, unknown>): string[] => {
+  const names = new Set<string>();
+
+  for (const field of ["dependencies", "devDependencies", "peerDependencies"]) {
+    const group = manifest[field];
+
+    if (typeof group !== "object" || group === null) {
+      continue;
+    }
+
+    for (const name of Object.keys(group)) {
+      names.add(name);
+    }
+  }
+
+  return [...names];
+};
+
+describe("the contract holds no runtime", () => {
+  it("imports nothing but its own modules and zod", () => {
+    // This subsumes "no Node builtin": a `node:` specifier matches neither the
+    // zod arm nor the relative arms, so one allowlist covers both failures.
+    const allowed = /^(zod|\.\/.*|\.\.\/.*)$/;
+    const offenders: string[] = [];
+
+    for (const file of sources("contract")) {
+      for (const specifier of importsOf(file)) {
+        if (!allowed.test(specifier)) {
+          offenders.push(`${file}: ${specifier}`);
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("the host does not carry the renderer's graph library", () => {
+  it("does not declare graphology anywhere", () => {
+    const declared = declaredDependencies(manifestOf("host"));
+
+    expect(declared.filter((name) => name.startsWith("graphology"))).toEqual(
+      [],
+    );
+    expect(declared).not.toContain("sigma");
+  });
+
+  it("does not import graphology from its source", () => {
+    const offenders = sources("host").filter((file) =>
+      importsOf(file).some((specifier) => /graphology|^sigma/.test(specifier)),
+    );
+
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("the surface reaches the host through nothing", () => {
+  it("imports no file from the host package", () => {
+    const offenders: string[] = [];
+
+    for (const file of sources("surface")) {
+      for (const specifier of importsOf(file)) {
+        if (/packages\/host|npm-audit-visualizer\/src/.test(specifier)) {
+          offenders.push(`${file}: ${specifier}`);
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("imports no Node builtin", () => {
+    const offenders = sources("surface").filter((file) =>
+      importsOf(file).some((specifier) => specifier.startsWith("node:")),
+    );
+
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("nothing terminates the process below the entry module", () => {
+  it("calls process.exit from no host module", () => {
+    const offenders = sources("host").filter((file) =>
+      /process\.exit\s*\(/.test(
+        readFileSync(path.join(repoRoot, file), "utf8"),
+      ),
+    );
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("assigns the exit code only in main.ts", () => {
+    const offenders = sources("host").filter(
+      (file) =>
+        file !== "packages/host/src/main.ts" &&
+        /process\.exitCode\s*=/.test(
+          readFileSync(path.join(repoRoot, file), "utf8"),
+        ),
+    );
+
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("no module imports across a package boundary by path", () => {
+  it("resolves the old repository-root alias nowhere", () => {
+    const offenders = [
+      ...sources("host"),
+      ...sources("surface"),
+      ...sources("contract"),
+    ].filter((file) =>
+      importsOf(file).some((specifier) => specifier.startsWith("root/")),
+    );
+
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("no specifier resolves into another package by path", () => {
+  it("keeps every surface import inside the surface or the contract", () => {
+    const hostRoot = path.join(repoRoot, "packages/host");
+    const surfaceRoot = path.join(repoRoot, "packages/surface");
+    const contractRoot = path.join(repoRoot, "packages/contract");
+    const offenders: string[] = [];
+
+    for (const file of sources("surface")) {
+      const from = path.dirname(path.join(repoRoot, file));
+
+      for (const specifier of importsOf(file)) {
+        if (!specifier.startsWith(".")) {
+          continue;
+        }
+
+        const resolved = path.resolve(from, specifier);
+
+        if (resolved.startsWith(hostRoot)) {
+          offenders.push(`${file}: ${specifier} resolves into packages/host`);
+          continue;
+        }
+
+        if (
+          !resolved.startsWith(surfaceRoot) &&
+          !resolved.startsWith(contractRoot)
+        ) {
+          offenders.push(
+            `${file}: ${specifier} resolves outside the workspace`,
+          );
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("the listener names its host", () => {
+  const argumentList = (source: string, start: number): string => {
+    let depth = 0;
+    let index = start;
+
+    while (index < source.length) {
+      const character = source[index];
+
+      if (character === "(") {
+        depth += 1;
+      } else if (character === ")") {
+        depth -= 1;
+
+        if (depth === 0) {
+          return source.slice(start, index + 1);
+        }
+      }
+
+      index += 1;
+    }
+
+    return source.slice(start);
+  };
+
+  it("passes a host to every listen call", () => {
+    const offenders: string[] = [];
+
+    for (const file of sources("host")) {
+      const source = readFileSync(path.join(repoRoot, file), "utf8");
+
+      for (const match of source.matchAll(/\.listen\(/g)) {
+        const open = match.index + match[0].length - 1;
+        const call = argumentList(source, open);
+        const commas = call.split(",").length - 1;
+
+        if (commas < 1) {
+          offenders.push(`${file}: ${call}`);
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+});

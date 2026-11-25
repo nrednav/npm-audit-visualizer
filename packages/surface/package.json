@@ -1,0 +1,39 @@
+{
+  "name": "@npm-audit-visualizer/surface",
+  "version": "1.0.0-alpha.9",
+  "private": true,
+  "description": "The browser application that renders an audit report",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@npm-audit-visualizer/contract": "1.0.0-alpha.9",
+    "@react-sigma/core": "^4.0.2",
+    "clsx": "^2.1.1",
+    "graphology": "^0.25.4",
+    "graphology-layout": "^0.6.1",
+    "graphology-types": "^0.24.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sigma": "^3.0.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^20.11.6",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.5.0",
+    "autoprefixer": "^10.4.21",
+    "jsdom": "^24.0.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.8.3",
+    "vite": "^7.3.8"
+  }
+}

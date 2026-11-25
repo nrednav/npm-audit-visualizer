@@ -28,6 +28,28 @@ To verify that the installation was successful, please try the `--help` flag:
 npm-audit-visualizer --help
 ```
 
+The command installs with no dependency tree of its own. Everything it needs is
+bundled into one file, so `npm install` adds exactly one package and nothing
+else reaches your global `node_modules`.
+
+### Verify a download
+
+The npm registry records a SHA-512 integrity hash for every published version
+and checks it again on install, so a corrupted or tampered download fails
+installation rather than running. To check a version you already have, or one
+you downloaded as a tarball:
+
+```shell
+# The hash the registry recorded for this version
+npm view npm-audit-visualizer dist.integrity
+
+# The hash of a tarball you downloaded
+openssl dgst -sha512 -binary npm-audit-visualizer-*.tgz | openssl base64 -A
+```
+
+Prefix the second command's output with `sha512-` and compare it to the first.
+A match means the bytes you hold are the bytes that were published.
+
 ## Usage
 
 Navigate to a project that has package vulnerabilities and generate an audit
@@ -43,9 +65,33 @@ Then, run the tool on the generated audit report:
 npm-audit-visualizer -f audit.json
 ```
 
-By default, this should automatically open a new page in your web browser at the
-URL: `http://localhost:1248`. If it does not, please try navigating to that URL
-manually.
+By default, this opens a new page in your web browser at
+`http://localhost:1248`, or the next free port if that one is taken. The address
+is printed before the browser is asked to open, so a machine without a desktop
+can still be reached manually. If port `1248` is busy, pass another one:
+
+```shell
+npm-audit-visualizer -f audit.json --port 3000
+```
+
+To serve without opening a browser:
+
+```shell
+npm-audit-visualizer -f audit.json --no-open
+```
+
+For a guided walk through reading and acting on a report, see
+[How to read an npm audit report](docs/how-to-read-a-report.md). For option
+defaults, exit codes, routes, and the payload schema, see the
+[CLI and payload reference](docs/cli-reference.md).
+
+## Documentation
+
+| Document | Use it when |
+|---|---|
+| [How to read an npm audit report](docs/how-to-read-a-report.md) | you have a report and want to read, filter, and act on it |
+| [CLI and payload reference](docs/cli-reference.md) | you need an option default, an exit code, a route, or a field type |
+| [Changelog](CHANGELOG.md) | you want to know what changed between versions |
 
 ## About
 
@@ -75,7 +121,7 @@ This section will describe how to get the project setup for local development.
 To work with this project, you will need to have the following dependencies
 installed:
 
-- Node.js (v20+)
+- Node.js 20.19.0 (the version pinned in `.nvmrc` and `.node-version`)
   - [Official](https://nodejs.org/en/download)
   - [fnm](https://github.com/Schniz/fnm)
   - [nvm](https://github.com/nvm-sh/nvm)
@@ -105,8 +151,24 @@ cd npm-audit-visualizer/
 npm install
 ```
 
-Git hooks are installed only when the checkout contains a `.git` directory.
-An exported copy installs without hooks.
+There are no install-time Git hooks. Run `npm run check` before committing.
+
+### Layout
+
+The repository is one npm workspace with three packages. Each one answers a
+different question, and the dependency arrows only point one way.
+
+| Package | Question | Runtime |
+|---|---|---|
+| `packages/contract` | what shape is a report, and what shape is a payload? | either |
+| `packages/host` | how does one report become one page? | Node |
+| `packages/surface` | what does the page draw? | browser |
+
+`contract` imports nothing but zod, so both runtimes can load it. `host` never
+imports the surface's source, and `surface` never imports the host. Their only
+agreement is the contract, which is checked before either one draws anything.
+
+`test/boundaries.test.ts` enforces those edges.
 
 ### Build
 
@@ -114,37 +176,53 @@ An exported copy installs without hooks.
 npm run build
 ```
 
-This will also build the `web-app`.
+Builds the contract, then the surface, then the host, in that order. The host's
+build copies the surface output into `dist/surface`, so one `npm publish` ships
+one working command.
 
-### Test
-
-To run all the project's tests:
+### Check
 
 ```shell
+npm run check
+```
+
+Runs the formatter and linter, then the type checker for every package, then the
+tests, then the build. This is the gate to pass before opening a pull request.
+
+Individual steps:
+
+```shell
+npm run lint
+npm run format
+npm run typecheck
 npm run test
 ```
 
-Alternatively, you can run just the `web-app` tests with:
+The suite runs in two projects: `node` for the contract and the host, `jsdom`
+for the surface. Tests resolve the contract to its source, so no build is needed
+to run them.
 
-```shell
-npm run test:web-app
-```
-
-### Run
-
-To run the tool:
+### Run from source
 
 ```shell
 npm run dev -- -f <path/to/audit.json>
 ```
 
-You can also run the tool in `debug` mode using the `-d` flag:
+`dev` builds and then starts the packaged command, because the interface is
+served from the built directory. For iteration on the interface alone:
+
+```shell
+npm run dev:surface
+```
+
+That starts Vite on the surface with a hot reload; it needs a report served at
+`/report.json`, which `npm start` provides.
+
+Add `-d` to print the stages the run goes through:
 
 ```shell
 npm run dev -- -d -f <path/to/audit.json>
 ```
-
-This will output additional logs for each stage the tool completes.
 
 ## Issues & Requests
 

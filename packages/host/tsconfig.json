@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@npm-audit-visualizer/contract": ["../contract/src/index.ts"]
+    }
+  },
+  "include": ["src", "test"]
+}

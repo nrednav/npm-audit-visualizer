@@ -1,0 +1,116 @@
+import { PayloadSchema, REPORT_ROUTE } from "@npm-audit-visualizer/contract";
+import { renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import parsedReportFixture from "../../../contract/test/fixtures/parsed-report.json";
+import { type PayloadState, usePayload } from "./use-payload";
+
+const respond = (body: unknown, status = 200): Response =>
+  ({
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  }) as Response;
+
+const settle = async (): Promise<PayloadState> => {
+  const { result } = renderHook(() => usePayload());
+
+  await waitFor(() => {
+    expect(result.current.status).not.toBe("loading");
+  });
+
+  return result.current;
+};
+
+beforeEach(() => {
+  vi.unstubAllGlobals();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+describe("usePayload", () => {
+  it("asks the contract's route for the report", async () => {
+    const fetchSpy = vi.fn(async () => respond(parsedReportFixture));
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const state = await settle();
+
+    // The spy is the instrument for every fetch assertion here, so its count
+    // is checked rather than assumed: one request must read as one call.
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy).toHaveBeenCalledWith(REPORT_ROUTE, expect.anything());
+    expect(state.status).toBe("loaded");
+  });
+
+  it("loads a payload that matches the contract", async () => {
+    vi.stubGlobal("fetch", async () => respond(parsedReportFixture));
+
+    const state = await settle();
+
+    expect(state.status).toBe("loaded");
+
+    if (state.status !== "loaded") {
+      return;
+    }
+
+    expect(state.payload.findings).toHaveLength(3);
+  });
+
+  it("fails when the request cannot be made", async () => {
+    vi.stubGlobal("fetch", async () => {
+      throw new Error("connection refused");
+    });
+
+    const state = await settle();
+
+    expect(state.status).toBe("failed");
+    expect(state.status === "failed" ? state.cause : "").toContain(
+      "connection refused",
+    );
+  });
+
+  it("fails when the server answers an error", async () => {
+    vi.stubGlobal("fetch", async () => respond({}, 500));
+
+    const state = await settle();
+
+    expect(state.status).toBe("failed");
+    expect(state.status === "failed" ? state.cause : "").toContain("500");
+  });
+
+  it("fails when the body is not JSON", async () => {
+    vi.stubGlobal("fetch", async () => ({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new SyntaxError("Unexpected token <");
+      },
+    }));
+
+    const state = await settle();
+
+    expect(state.status).toBe("failed");
+    expect(state.status === "failed" ? state.cause : "").toContain("JSON");
+  });
+
+  it("fails when the body does not match the contract, naming what broke", async () => {
+    vi.stubGlobal("fetch", async () =>
+      respond({ metadata: {}, findings: [], graph: { nodes: [], edges: [] } }),
+    );
+
+    const state = await settle();
+
+    expect(state.status).toBe("failed");
+    expect(state.status === "failed" ? state.cause : "").toMatch(/metadata/);
+  });
+
+  it("never renders a contract failure as a report with no findings", async () => {
+    vi.stubGlobal("fetch", async () => respond({ findings: [] }));
+
+    const state = await settle();
+
+    expect(state.status).toBe("failed");
+    expect(PayloadSchema.safeParse({ findings: [] }).success).toBe(false);
+  });
+});

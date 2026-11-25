@@ -3,7 +3,8 @@ logs
 *.log
 npm-debug.log*
 
-# Production
+# Build output
+dist/
 build/
 
 # Misc
@@ -18,9 +19,11 @@ node_modules/
 *.env
 !.env.example
 
-# Typescript Cache
+# TypeScript cache
 *.tsbuildinfo
 
-# ESLint Cache
+# Editor and tooling caches
 .eslintcache
-
+.vscode/*
+!.vscode/extensions.json
+.idea
