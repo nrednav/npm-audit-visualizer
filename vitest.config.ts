@@ -29,6 +29,12 @@ export default defineConfig({
             "packages/contract/test/**/*.test.ts",
             "packages/host/test/**/*.test.ts",
           ],
+          // The artifact assertions read and produce one built tree. Each test
+          // file runs in its own worker, so two files that both find the build
+          // missing would build over each other's output directories, and the
+          // development command rebuilds the tree inside the file that runs it.
+          // One file at a time keeps that tree whole for every reader.
+          fileParallelism: false,
         },
       },
       {
