@@ -6,6 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-11-25
+
+### Changed
+
+- Rebuilt the web-app presentation around an audit briefing, severity ledger,
+  and evidence-first explorer
+- Replaced raw audit fields in the table with plain-language reach, fix, and
+  evidence summaries plus expandable row detail
+- Reworked the graph frame, legend, hover isolation, and control styling
+- Separated critical, high, and moderate into distinct rose, orange, and amber
+  palettes, and colored both relationship labels and line samples
+- Added a documented design system contract, tokens, and reduced-motion path
+
+### Fixed
+
+- `npm install` no longer fails when the workspace has no `.git` directory;
+  Git hooks are installed only when repository metadata is present
+- `npm run dev:web-app` now creates the export and public directories when
+  they do not exist
+- Development commands and tests no longer require `build/main.js` to exist
+  before the source entrypoint can start
+- Restored Sigma's base stylesheet so the graph canvas has dimensions and its
+  controls remain anchored instead of rendering as full-width rows
+- Centered Sigma control icons by matching the button and container sizes,
+  resetting Sigma's legacy clipping rule, and sizing the SVGs explicitly
+- Removed faint resting-state graph edges that could appear as stray artifacts
+- Replaced Sigma's hardcoded white hover-label background with a theme-aware
+  surface so graph labels remain readable in dark mode
+
+### Added
+
+- Light and dark themes with operating-system detection, a header switch, and
+  locally persisted explicit preferences
+- Theme-aware severity, relationship, graph, and control colors
+- Severity-ledger filtering, finding search, and a fix-available filter
+- Responsive card rows for small screens
+- Keyboard-operable view switch and pagination
+- Directional animated dashes and arrowheads for selected graph edges, with a
+  static reduced-motion fallback
+- Continuous, constant-speed graph flow without a visible pause between loops
+
 ## [v1.0.0-alpha.9] - 2025-05-26
 
 ### Changed

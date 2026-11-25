@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  ParsedAuditReport,
+  type ParsedAuditReport,
   ParsedAuditReportSchema,
 } from "root/src/modules/audit-report/parser/types";
 import { assertIsError } from "root/src/shared/utils";

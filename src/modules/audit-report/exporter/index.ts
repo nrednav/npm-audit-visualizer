@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { tryCatchK } from "fp-ts/lib/Either.js";
-import { ParsedAuditReport } from "src/modules/audit-report/parser/types.js";
+import type { ParsedAuditReport } from "src/modules/audit-report/parser/types.js";
 import { WEB_APP_BUILD_DIR } from "src/shared/constants.js";
 import { AppError } from "src/shared/errors.js";
 import { logger } from "src/shared/modules/logger.js";
@@ -18,6 +18,7 @@ export const exportParsedAuditReport =
 
     return tryCatchK(
       () => {
+        fs.mkdirSync(exportPath, { recursive: true });
         fs.writeFileSync(outputPath, serializedReport, "utf-8");
 
         return parsedAuditReport;

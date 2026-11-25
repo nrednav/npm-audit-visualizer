@@ -6,7 +6,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "predev": "cp ../../../build/web-app/parsed-audit-report.json ./public/parsed-audit-report.json",
+    "predev": "mkdir -p ./public && cp ../../../build/web-app/parsed-audit-report.json ./public/parsed-audit-report.json",
     "dev": "vite --open",
     "prebuild": "npm run clean",
     "build": "npx tsc && vite build",

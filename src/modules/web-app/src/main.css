@@ -4,63 +4,254 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  /* A series of classes to help with designing & debugging layouts */
-  .debug-r {
-    @apply outline outline-1 outline-red-400;
+@layer base {
+  :root {
+    --color-canvas: 244 245 240;
+    --color-surface: 255 255 255;
+    --color-subtle: 247 248 244;
+    --color-control: 236 238 231;
+    --color-ink: 23 33 27;
+    --color-ink-muted: 94 101 95;
+    --color-on-ink: 232 238 233;
+    --color-briefing: 23 33 27;
+    --color-line: 223 226 218;
+    --color-teal: 11 107 92;
+    --color-teal-soft: 225 239 234;
+
+    --canvas: rgb(var(--color-canvas));
+    --surface: rgb(var(--color-surface));
+    --ink: rgb(var(--color-ink));
+    --ink-muted: rgb(var(--color-ink-muted));
+    --on-ink: rgb(var(--color-on-ink));
+    --line: rgb(var(--color-line));
+    --teal: rgb(var(--color-teal));
+    --teal-soft: rgb(var(--color-teal-soft));
+
+    --severity-critical: #9d174d;
+    --severity-critical-surface: #fce7f0;
+    --severity-critical-border: #f5c6da;
+    --severity-high: #c2410c;
+    --severity-high-surface: #ffedd5;
+    --severity-high-border: #fed7aa;
+    --severity-moderate: #a16207;
+    --severity-moderate-surface: #fef9c3;
+    --severity-moderate-border: #fde68a;
+    --severity-low: #0b6b5c;
+    --severity-low-surface: #e1efea;
+    --severity-low-border: #c9e0d8;
+    --severity-info: #334155;
+    --severity-info-surface: #edf0f2;
+    --severity-info-border: #d9dfe3;
+    --relationship-affects: #0b6b5c;
+    --relationship-affected-by: #2f5aa8;
+    color-scheme: light;
   }
 
-  .debug-g {
-    @apply outline outline-1 outline-green-400;
+  .dark {
+    --color-canvas: 15 21 18;
+    --color-surface: 24 33 28;
+    --color-subtle: 29 40 34;
+    --color-control: 36 49 42;
+    --color-ink: 230 236 231;
+    --color-ink-muted: 169 181 173;
+    --color-on-ink: 23 33 27;
+    --color-briefing: 17 27 22;
+    --color-line: 54 68 59;
+    --color-teal: 94 234 212;
+    --color-teal-soft: 22 59 51;
+
+    --severity-critical: #f9a8d4;
+    --severity-critical-surface: #451a2c;
+    --severity-critical-border: #7f2b4a;
+    --severity-high: #fdba74;
+    --severity-high-surface: #442412;
+    --severity-high-border: #7c3d18;
+    --severity-moderate: #fde047;
+    --severity-moderate-surface: #3c310c;
+    --severity-moderate-border: #6b5a14;
+    --severity-low: #5eead4;
+    --severity-low-surface: #123c34;
+    --severity-low-border: #1f6b5a;
+    --severity-info: #cbd5e1;
+    --severity-info-surface: #29343e;
+    --severity-info-border: #485665;
+    --relationship-affects: #5eead4;
+    --relationship-affected-by: #93b4ff;
+    color-scheme: dark;
   }
 
-  .debug-b {
-    @apply outline outline-1 outline-blue-400;
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
 
-  .debug-y {
-    @apply outline outline-1 outline-yellow-400;
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
-  .debug-w {
-    @apply outline outline-1 outline-white;
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 150ms ease-out, color 150ms ease-out;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  ul,
+  ol,
+  dl,
+  dd,
+  figure {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    padding: 0;
+    list-style: none;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--teal-soft);
+    color: var(--ink);
   }
 }
 
-/** ---- [Vanilla] ---- **/
+@layer components {
+  .page-shell {
+    width: 100%;
+    max-width: 86rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
 
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  @media (min-width: 48rem) {
+    .page-shell {
+      padding-inline: 2rem;
+    }
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 650;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .bar-track {
+    position: relative;
+    height: 0.25rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgb(var(--color-ink) / 0.08);
+  }
+
+  .bar-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  .evidence-reveal {
+    animation: evidence-in 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 50;
+    padding: 0.625rem 1rem;
+    border-radius: 0.5rem;
+    background: var(--ink);
+    color: var(--on-ink);
+    font-weight: 600;
+    transition: top 120ms ease-out;
+  }
+
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  .scroll-region {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-ink) / 0.22) transparent;
+  }
+
+  .scroll-region::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+  }
+
+  .scroll-region::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+    background-color: rgb(var(--color-ink) / 0.22);
+  }
 }
 
-:root {
-  min-height: 100vh;
-
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-synthesis: none;
-  text-rendering: optimizeSpeed;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  color-scheme: light dark;
-}
-
-html:focus-within {
-  scroll-behavior: smooth;
+@keyframes evidence-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }

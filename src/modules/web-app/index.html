@@ -3,10 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>npm audit visualizer</title>
+    <meta name="theme-color" content="#f4f5f0" />
+    <script>
+      (() => {
+        let storedTheme = null;
+        try {
+          storedTheme = localStorage.getItem("npm-audit-visualizer-theme");
+        } catch {
+          // Fall back to the operating-system preference.
+        }
+        const theme =
+          storedTheme === "dark" || storedTheme === "light"
+            ? storedTheme
+            : typeof window.matchMedia === "function" &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.classList.toggle("dark", theme === "dark");
+        document.documentElement.style.colorScheme = theme;
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute("content", theme === "dark" ? "#0f1512" : "#f4f5f0");
+      })();
+    </script>
+    <meta
+      name="description"
+      content="A local workspace for reading an npm audit report: severity, evidence, and dependency relationships."
+    />
+    <title>npm-audit-visualizer</title>
   </head>
-  <body class="bg-white text-slate-800">
-    <div id="root" class="min-w-[800px] max-w-[1280px] mx-auto"></div>
+  <body>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

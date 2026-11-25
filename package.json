@@ -52,7 +52,7 @@
     "format": "biome format --write --no-errors-on-unmatched --files-ignore-unknown=true",
     "lint": "biome lint --apply --no-errors-on-unmatched --files-ignore-unknown=true",
     "check": "biome check --apply --no-errors-on-unmatched --files-ignore-unknown=true",
-    "prepare": "husky install",
+    "prepare": "node ./scripts/install-hooks.cjs",
     "prepack": "npm run build",
     "postversion": "cd src/modules/web-app && npm version $npm_package_version"
   },
