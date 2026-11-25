@@ -4,7 +4,7 @@ export default defineConfig({
   entry: ["src/main.ts"],
   bundle: true,
   minify: true,
-  target: "node20",
+  target: "node26",
   format: ["esm"],
   outDir: "./dist",
   clean: true,

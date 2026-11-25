@@ -19,11 +19,11 @@ const reasonOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
 const describeIssues = (
-  issues: readonly { path: (string | number)[] }[],
+  issues: readonly { path: readonly PropertyKey[] }[],
 ): string =>
   issues
     .slice(0, 3)
-    .map((issue) => issue.path.join(".") || "(root)")
+    .map((issue) => issue.path.map(String).join(".") || "(root)")
     .join(", ");
 
 export const usePayload = (): PayloadState => {

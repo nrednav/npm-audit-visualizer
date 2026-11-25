@@ -8,8 +8,60 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] - 2026-11-25
 
+### Added
+
+- Each severity level now has its own silhouette, drawn in the table's pill, the
+  severity ledger, and the graph legend. Severity was previously carried by
+  colour and by the label's text, so a greyscale print or a colour-vision
+  difference showed one level as another. The five shapes step from an octagon
+  to a circle, which keeps the rank legible as well as the level
+- Light and dark themes with operating-system detection, a header switch, and
+  locally persisted explicit preferences
+- Theme-aware severity, relationship, graph, and control colours
+- Severity-ledger filtering, finding search, and a fix-available filter
+- Responsive card rows for small screens
+- Keyboard-operable view switch and pagination
+- Directional animated dashes and arrowheads for selected graph edges, with a
+  static reduced-motion fallback
+- Continuous, constant-speed graph flow without a visible pause between loops
+- `check:support` reads `.nvmrc` and the official Node.js release schedule, then
+  exits 0 for an LTS or maintenance line, 1 for a line that has ended or has not
+  entered LTS, and 2 when the schedule cannot be read
+- `verify.yml` installs the pinned runtime on Ubuntu, installs
+  strictly from the lockfile, checks that the running npm matches
+  `packageManager`, and runs the full `npm run check`
+- `drift.yml` repeats that verification every Monday, then audits the resolved
+  graph, checks every direct dependency against the registry, and checks the
+  Node line against the official release schedule
+- `dependabot.yml` proposes npm and GitHub Actions updates weekly, grouping
+  minor and patch changes and leaving majors reviewable on their own. Nothing
+  is merged automatically
+- Tests guard the support policy, the automation contracts, the typed Node
+  major, the strict install settings, and the lockfile's engine agreement
+
 ### Changed
 
+- The toolchain now rests on Node.js 26.13.1, an Active LTS line supported until
+  2029-04-30, instead of Node.js 20.19.0, which reached end of life on
+  2026-04-30. `.nvmrc`, `.node-version`, both engine declarations, the lockfile,
+  the TypeScript libraries, and the host bundle target move together
+- Every direct dependency now resolves to its latest stable release: TypeScript
+  7, Biome 2, Vite 8, Vitest 5, React 19, Tailwind CSS 4, Zod 4, Sigma 4,
+  graphology 0.26, jsdom 31, tsup 9, and their companions
+- `packageManager` declares `npm@11.20.0`, the version Node.js 26.13.1 ships,
+  so one runtime download reproduces the documented setup. `.npmrc` sets
+  `engine-strict` and `save-exact`, so an install on another
+  runtime stops instead of producing a tree that was never verified, and a new
+  dependency is written at one exact version
+- The graph's hover treatment is expressed as Sigma 4 node state instead of a
+  hand-drawn canvas hover. A hovered node rises above its neighbours, its label
+  carries a surface that follows the theme, and its neighbours take the
+  direction colour of the edge that connects them
+- Tailwind CSS 4 is wired through `@tailwindcss/postcss` with a CSS-first entry
+  that keeps the existing token config. Dark mode remains a class on the
+  document, so the surface tokens keep their single source
+- Zod records name their key schema explicitly, and the payload failure message
+  reads issue paths that may contain any property key
 - The repository is now one npm workspace with three packages: a contract that
   both runtimes load, a host that turns a report into a page, and a surface that
   draws it. One lockfile, one Node pin, one formatter, one test runner, and one
@@ -25,29 +77,36 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   happens to hold no findings
 - The published command has no runtime dependencies. `yargs` is replaced by
   `node:util` `parseArgs` and `serve-handler` by an explicit static handler
-
-### Added
-
-- Each severity level now has its own silhouette, drawn in the table's pill, the
-  severity ledger, and the graph legend. Severity was previously carried by
-  colour and by the label's text, so a greyscale print or a colour-vision
-  difference showed one level as another. The five shapes step from an octagon
-  to a circle, which keeps the rank legible as well as the level
+- Rebuilt the web-app presentation around an audit briefing, severity ledger,
+  and evidence-first explorer
+- Replaced raw audit fields in the table with plain-language reach, fix, and
+  evidence summaries plus expandable row detail
+- Reworked the graph frame, legend, hover isolation, and control styling
+- Separated critical, high, and moderate into distinct rose, orange, and amber
+  palettes, and coloured both relationship labels and line samples
+- Added a documented design system contract, tokens, and reduced-motion path
 
 ### Fixed
 
-- `npm run dev -- --file audit.json` now forwards the flags and resolves the
-  report from the directory where the command was invoked, rather than dropping
-  `--file` or looking for the report under `packages/host`
-- A clean install now works on the pinned Node version. The pin is 20.19.0,
-  which satisfies Vite 7's engine requirement, and the undeclared Husky,
-  lint-staged, and `type-check` hook path has been removed
+- A clean install now works on the pinned Node version. The pin is 26.13.1,
+  which satisfies every upgraded package's engine range, and the undeclared
+  Husky, lint-staged, and `type-check` hook path has been removed
+- `npm ci` failed with `EBADENGINE` on a lockfile that still declared the
+  previous engine. The lockfile is now checked against the manifest
+- A `node_modules` carried over from another platform no longer masks a broken
+  build. The native Rollup package is installed for the host platform, and the
+  suite starts from a clean install
+- Replaced Sigma's hardcoded white hover-label background with a theme-aware
+  surface so graph labels remain readable in dark mode
 - Reading a report now separates five outcomes that were previously one: no such
   file, an unreadable file, a file that is not JSON, JSON that is not an audit
   report, and a report of a version this tool does not read
 - Every vulnerability used to gain an edge to itself in the graph, because an
   advisory's `name` is the vulnerable package. An advisory now contributes no
   edge
+- `npm run dev -- --file audit.json` now forwards the flags and resolves the
+  report from the directory where the command was invoked, rather than dropping
+  `--file` or looking for the report under `packages/host`
 - `process.exit` no longer appears inside a module. Modules return a result and
   the entry module assigns the exit code once
 - The port retry no longer mutates one shared port across callbacks or re-listens
@@ -56,20 +115,6 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Port `0` is accepted and reported as the port the operating system chose
 - An unknown path is answered `404` rather than with `index.html`, so a missing
   asset is reported as missing
-
-### Changed
-
-- Rebuilt the web-app presentation around an audit briefing, severity ledger,
-  and evidence-first explorer
-- Replaced raw audit fields in the table with plain-language reach, fix, and
-  evidence summaries plus expandable row detail
-- Reworked the graph frame, legend, hover isolation, and control styling
-- Separated critical, high, and moderate into distinct rose, orange, and amber
-  palettes, and colored both relationship labels and line samples
-- Added a documented design system contract, tokens, and reduced-motion path
-
-### Fixed
-
 - `npm install` no longer fails when the workspace has no `.git` directory;
   Git hooks are installed only when repository metadata is present
 - `npm run dev:web-app` now creates the export and public directories when
@@ -78,23 +123,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   before the source entrypoint can start
 - Restored Sigma's base stylesheet so the graph canvas has dimensions and its
   controls remain anchored instead of rendering as full-width rows
-- Centered Sigma control icons by matching the button and container sizes,
+- Centred Sigma control icons by matching the button and container sizes,
   resetting Sigma's legacy clipping rule, and sizing the SVGs explicitly
 - Removed faint resting-state graph edges that could appear as stray artifacts
-- Replaced Sigma's hardcoded white hover-label background with a theme-aware
-  surface so graph labels remain readable in dark mode
-
-### Added
-
-- Light and dark themes with operating-system detection, a header switch, and
-  locally persisted explicit preferences
-- Theme-aware severity, relationship, graph, and control colors
-- Severity-ledger filtering, finding search, and a fix-available filter
-- Responsive card rows for small screens
-- Keyboard-operable view switch and pagination
-- Directional animated dashes and arrowheads for selected graph edges, with a
-  static reduced-motion fallback
-- Continuous, constant-speed graph flow without a visible pause between loops
 
 ## [v1.0.0-alpha.9] - 2025-05-26
 

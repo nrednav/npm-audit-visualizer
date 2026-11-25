@@ -76,7 +76,7 @@ export const SUPPORTED_AUDIT_REPORT_VERSION = 2;
 
 export const AuditReportSchema = z.object({
   auditReportVersion: z.literal(SUPPORTED_AUDIT_REPORT_VERSION),
-  vulnerabilities: z.record(ReportedVulnerabilitySchema),
+  vulnerabilities: z.record(z.string(), ReportedVulnerabilitySchema),
   metadata: MetadataSchema,
 });
 

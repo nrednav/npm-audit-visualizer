@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -296,5 +296,70 @@ describe("toolchain pins", () => {
         ).toBe(version);
       }
     }
+  });
+});
+
+/** The major of an exact version, for comparing a pin against its types. */
+const majorOf = (version: string): number =>
+  Number(/^(\d+)\./.exec(version)?.[1]);
+
+describe("the installed toolchain answers to the pin", () => {
+  const pin = rootManifest.engines?.node ?? "";
+
+  it("types the Node standard library at the pinned major", () => {
+    const declared = packages.filter(
+      ({ manifest }) => manifest.devDependencies?.["@types/node"] !== undefined,
+    );
+
+    expect(declared.length).toBeGreaterThan(0);
+
+    for (const { directory, manifest } of declared) {
+      const types = manifest.devDependencies?.["@types/node"] ?? "";
+
+      expect(types, `packages/${directory}: @types/node must be exact`).toMatch(
+        /^\d+\.\d+\.\d+$/,
+      );
+      expect(
+        majorOf(types),
+        `packages/${directory}: @types/node must match the pinned Node major`,
+      ).toBe(majorOf(pin));
+    }
+  });
+
+  it("rejects a types package from another release line", () => {
+    // Known inputs prove the guard rejects the failure it was added for. A
+    // Node 26 pin typed by @types/node 20 is the exact drift this catches.
+    expect(majorOf("20.19.0")).not.toBe(majorOf("26.13.1"));
+    expect(majorOf("26.6.10")).toBe(majorOf("26.13.1"));
+  });
+
+  it("installs strictly and writes exact versions", () => {
+    const npmrc = readText(".npmrc");
+
+    expect(npmrc).toMatch(/^engine-strict=true$/m);
+    expect(npmrc).toMatch(/^save-exact=true$/m);
+  });
+
+  it("records the same Node.js pin in the lockfile", () => {
+    // A lockfile that still declares the old engine makes `npm ci` fail with
+    // EBADENGINE even when every manifest is correct, which is exactly the
+    // failure that blocked this upgrade.
+    const lockfile = readJson("package-lock.json");
+
+    if (!isRecord(lockfile) || !isRecord(lockfile.packages)) {
+      throw new Error("package-lock.json must contain packages");
+    }
+
+    const root = lockfile.packages[""];
+
+    if (!isRecord(root)) {
+      throw new Error("the lockfile must describe the root package");
+    }
+
+    const engines = root.engines;
+
+    expect(isRecord(engines) ? engines.node : undefined).toBe(
+      rootManifest.engines?.node,
+    );
   });
 });

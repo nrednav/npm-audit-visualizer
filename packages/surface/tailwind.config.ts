@@ -4,7 +4,7 @@ const themeColor = (name: string) =>
   `rgb(var(--color-${name}) / <alpha-value>)`;
 
 const config = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {

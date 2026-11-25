@@ -1,15 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "target": "ES2024",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node"],
     "verbatimModuleSyntax": false,
     "noUncheckedIndexedAccess": false,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
       "src/*": ["./src/*"],
       "@npm-audit-visualizer/contract": ["../contract/src/index.ts"]

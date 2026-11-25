@@ -94,15 +94,15 @@ cleanly with code `0`.
 If the command refuses to start, read the message on stderr. It names the cause
 and exits with code `1`.
 
-| Message points to | What to do |
-|---|---|
-| no report given | Add `--file <path>`. |
-| missing file | Check the path; the report was not found there. |
-| unreadable | The path is a directory, or you lack permission. |
-| not JSON | Re-run `npm audit --json`; the file is not valid JSON. |
-| not a report | The JSON does not match the audit shape; the failing fields are named. |
-| unsupported version | The report's `auditReportVersion` is not `2`. |
-| missing surface build | The installed copy is incomplete; reinstall it. |
+| Message points to     | What to do                                                             |
+| --------------------- | ---------------------------------------------------------------------- |
+| no report given       | Add `--file <path>`.                                                   |
+| missing file          | Check the path; the report was not found there.                        |
+| unreadable            | The path is a directory, or you lack permission.                       |
+| not JSON              | Re-run `npm audit --json`; the file is not valid JSON.                 |
+| not a report          | The JSON does not match the audit shape; the failing fields are named. |
+| unsupported version   | The report's `auditReportVersion` is not `2`.                          |
+| missing surface build | The installed copy is incomplete; reinstall it.                        |
 
 To see the stages a run goes through, add `--debug`:
 

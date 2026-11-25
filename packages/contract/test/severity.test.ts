@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  isSeverity,
   SEVERITY_ORDER,
   SeveritySchema,
-  isSeverity,
   severityRank,
 } from "../src/severity.js";
 

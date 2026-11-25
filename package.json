@@ -6,10 +6,12 @@
   "type": "module",
   "license": "MIT",
   "engines": {
-    "node": "20.19.0"
+    "node": "26.13.1"
   },
   "packageManager": "npm@11.20.0",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "npm run build -w @npm-audit-visualizer/contract && npm run build -w @npm-audit-visualizer/surface && npm run build -w npm-audit-visualizer",
     "typecheck": "npm run typecheck --workspaces --if-present",
@@ -19,13 +21,15 @@
     "format": "biome format --write --no-errors-on-unmatched --files-ignore-unknown=true .",
     "format:check": "biome format --no-errors-on-unmatched --files-ignore-unknown=true .",
     "check": "biome check --no-errors-on-unmatched --files-ignore-unknown=true . && npm run typecheck && npm test && npm run build",
+    "check:support": "tsx packages/host/scripts/node-support.ts",
     "dev": "npm run build && npm start --",
     "start": "node packages/host/dist/main.js",
     "dev:surface": "npm run dev -w @npm-audit-visualizer/surface"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "typescript": "^5.8.3",
-    "vitest": "^3.1.4"
+    "@biomejs/biome": "2.6.9",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.1.2"
   }
 }

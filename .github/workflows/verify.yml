@@ -1,0 +1,59 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      # The runner is disposable and preinstalled versions change without
+      # notice, so every input is either pinned here or declared in the
+      # repository.
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Install the pinned Node.js version
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install the tree exactly as locked
+        run: npm ci
+
+      - name: Check the package manager matches its pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          declared="$(node -p "require('./package.json').packageManager")"
+          running="npm@$(npm --version)"
+          if [ "$declared" != "$running" ]; then
+            printf 'Declared %s but ran %s\n' "$declared" "$running" >&2
+            exit 1
+          fi
+          printf 'Running %s as declared\n' "$running"
+
+      - name: Run the full verification suite
+        run: npm run check
+
+      - name: Print the toolchain in use
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          npm --version

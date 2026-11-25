@@ -1,0 +1,63 @@
+name: drift
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC, before the working week begins.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: drift
+  cancel-in-progress: false
+
+jobs:
+  # The drift check reuses the same verification the contributors run, so a
+  # scheduled green means the repository still passes its own gate.
+  verify:
+    uses: ./.github/workflows/verify.yml
+
+  drift:
+    name: drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Install the pinned Node.js version
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install the tree exactly as locked
+        run: npm ci
+
+      - name: Audit the resolved dependency graph
+        run: npm audit --audit-level=high
+
+      - name: Check every direct dependency against the registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          # `npm outdated` exits 1 when anything is behind the registry, which
+          # is the signal this step reports. A higher status means the check
+          # itself failed and must not be read as "nothing outdated".
+          status=0
+          outdated="$(npm outdated --json)" || status=$?
+          if [ "$status" -gt 1 ]; then
+            printf 'npm outdated failed with status %s\n' "$status" >&2
+            exit "$status"
+          fi
+          if [ -n "$outdated" ] && [ "$outdated" != "{}" ]; then
+            printf 'Direct dependencies are behind the registry:\n%s\n' "$outdated" >&2
+            exit 1
+          fi
+          printf 'Every direct dependency is current.\n'
+
+      - name: Check the pinned Node.js line is still supported
+        run: npm run check:support

@@ -3,14 +3,14 @@ import { createServer } from "node:http";
 import { REPORT_ROUTE } from "@npm-audit-visualizer/contract";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  type Serving,
   describeServeFailure,
+  type Serving,
   startServing,
 } from "../../src/serve/server.js";
 import {
+  createTemporaryAssets,
   FIXTURE_PAYLOAD,
   type TemporaryAssets,
-  createTemporaryAssets,
 } from "../support.js";
 
 let assets: TemporaryAssets;

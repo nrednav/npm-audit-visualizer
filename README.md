@@ -87,11 +87,11 @@ defaults, exit codes, routes, and the payload schema, see the
 
 ## Documentation
 
-| Document | Use it when |
-|---|---|
-| [How to read an npm audit report](docs/how-to-read-a-report.md) | you have a report and want to read, filter, and act on it |
-| [CLI and payload reference](docs/cli-reference.md) | you need an option default, an exit code, a route, or a field type |
-| [Changelog](CHANGELOG.md) | you want to know what changed between versions |
+| Document                                                        | Use it when                                                        |
+| --------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [How to read an npm audit report](docs/how-to-read-a-report.md) | you have a report and want to read, filter, and act on it          |
+| [CLI and payload reference](docs/cli-reference.md)              | you need an option default, an exit code, a route, or a field type |
+| [Changelog](CHANGELOG.md)                                       | you want to know what changed between versions                     |
 
 ## About
 
@@ -121,10 +121,12 @@ This section will describe how to get the project setup for local development.
 To work with this project, you will need to have the following dependencies
 installed:
 
-- Node.js 20.19.0 (the version pinned in `.nvmrc` and `.node-version`)
+- Node.js 26.13.1, the pinned Active LTS line in `.nvmrc` and `.node-version`
   - [Official](https://nodejs.org/en/download)
   - [fnm](https://github.com/Schniz/fnm)
   - [nvm](https://github.com/nvm-sh/nvm)
+- npm 11.20.0, the version Node.js 26.13.1 ships and `packageManager`
+  declares
 
 ### Get the source
 
@@ -151,6 +153,10 @@ cd npm-audit-visualizer/
 npm install
 ```
 
+`.npmrc` sets `engine-strict=true` and `save-exact=true`. An install on a
+different Node version stops with `EBADENGINE` instead of producing a tree that
+was never verified, and a new dependency is written at one exact version.
+
 There are no install-time Git hooks. Run `npm run check` before committing.
 
 ### Layout
@@ -158,11 +164,11 @@ There are no install-time Git hooks. Run `npm run check` before committing.
 The repository is one npm workspace with three packages. Each one answers a
 different question, and the dependency arrows only point one way.
 
-| Package | Question | Runtime |
-|---|---|---|
-| `packages/contract` | what shape is a report, and what shape is a payload? | either |
-| `packages/host` | how does one report become one page? | Node |
-| `packages/surface` | what does the page draw? | browser |
+| Package             | Question                                             | Runtime |
+| ------------------- | ---------------------------------------------------- | ------- |
+| `packages/contract` | what shape is a report, and what shape is a payload? | either  |
+| `packages/host`     | how does one report become one page?                 | Node    |
+| `packages/surface`  | what does the page draw?                             | browser |
 
 `contract` imports nothing but zod, so both runtimes can load it. `host` never
 imports the surface's source, and `surface` never imports the host. Their only
@@ -223,6 +229,32 @@ Add `-d` to print the stages the run goes through:
 ```shell
 npm run dev -- -d -f <path/to/audit.json>
 ```
+
+### Keeping the foundation current
+
+The runtime pin is checked against the official Node.js release schedule, not
+against a date written here:
+
+```shell
+npm run check:support
+```
+
+It exits 0 when the pinned line is LTS or maintenance, 1 when the line has
+ended or is not yet LTS, and 2 when the schedule could not be read. A line that
+is `Current` does not pass, because a foundation meant to carry feature work
+should not rest on a line that can still take breaking changes.
+
+Three automated rhythms keep the tree from drifting back:
+
+| Where            | When                             | What it does                                                                                                          |
+| ---------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `verify.yml`     | every push and pull request      | clean install, package-manager check, full `npm run check` on Ubuntu                                                  |
+| `drift.yml`      | Mondays at 06:00 UTC, or by hand | reruns verification, `npm audit`, `npm outdated`, and the support check                                               |
+| `dependabot.yml` | Mondays at 06:00 UTC             | proposes npm and GitHub Actions updates, grouped for minor and patch, separate for majors, never merged automatically |
+
+A red scheduled run is the signal to act. Minor and patch proposals usually
+land as one grouped change; a major proposal is a migration and gets the full
+suite to itself.
 
 ## Issues & Requests
 

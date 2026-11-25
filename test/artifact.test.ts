@@ -6,11 +6,11 @@ import { pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   CONTRACT_BUNDLE,
-  HOST_ENTRY,
-  SURFACE_ENTRY,
   ensureBuild,
+  HOST_ENTRY,
   readBuilt,
   repoRoot,
+  SURFACE_ENTRY,
   waitFor,
 } from "./ensure-build.js";
 

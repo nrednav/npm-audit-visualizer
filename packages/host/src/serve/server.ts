@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { type Server, createServer } from "node:http";
+import { createServer, type Server } from "node:http";
 import path from "node:path";
 import type { Payload } from "@npm-audit-visualizer/contract";
 import { createRequestHandler } from "./routes.js";

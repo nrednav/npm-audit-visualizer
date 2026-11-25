@@ -6,5 +6,5 @@
       "@npm-audit-visualizer/contract": ["../contract/src/index.ts"]
     }
   },
-  "include": ["src", "test"]
+  "include": ["src", "test", "scripts"]
 }
