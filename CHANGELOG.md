@@ -10,6 +10,14 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The payload version is now `4`. The graph carries a required `derivation`, so a
+  version-3 payload is refused by name.
+
+### Added
+
+- The graph states that it is derived from the `via` relationships npm reported,
+  and says it is not a complete dependency tree. The page shows that sentence
+  wherever it draws the graph.
 - The payload version is now `3`. Two descriptor fields became a union of a value
   and an unknown, so a version-2 payload is refused by name. A `null` no longer
   states an absence in the descriptor.

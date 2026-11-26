@@ -354,6 +354,21 @@ describe("the payload contract is documented where a reader looks", () => {
     expect(text).toMatch(/states an unknown with a\s+reason instead/);
   });
 
+  it("documents the graph derivation and its basis", () => {
+    const text = reference();
+
+    expect(text).toMatch(/`graph\.derivation`/);
+    expect(text).toMatch(/`basis`[^\n]*audit-via/);
+    expect(text).toMatch(/Always `derived`/);
+  });
+
+  it("states that the graph is not a complete dependency tree", () => {
+    const text = reference();
+
+    expect(text).toMatch(/not a complete dependency tree/i);
+    expect(text).toMatch(/absent package is not evidence/i);
+  });
+
   it("states that npm fields carry no origin wrapper", () => {
     const text = reference();
 

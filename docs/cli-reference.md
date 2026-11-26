@@ -238,14 +238,39 @@ or null), `major` (boolean, whether the fix is a semver-major change).
 
 ### `graph`
 
-| Field         | Type                              |
-| ------------- | --------------------------------- |
-| `graph.nodes` | array of `{ id, name, severity }` |
-| `graph.edges` | array of `{ from, to }`           |
+| Field              | Type                                       |
+| ------------------ | ------------------------------------------ |
+| `graph.nodes`      | array of `{ id, name, severity }`          |
+| `graph.edges`      | array of `{ from, to }`                    |
+| `graph.derivation` | `{ origin, basis, note }`, always required |
 
 A node reached only through a dependency chain carries `severity: null`. An edge
 `{ from, to }` means `from` is introduced by `to`. An advisory never produces a
 self-edge.
+
+### `graph.derivation`
+
+The graph is computed by this tool, not reported by npm, and the payload says so:
+
+```json
+"derivation": {
+  "origin": "derived",
+  "basis": "audit-via",
+  "note": "Derived from the via relationships npm reported. This is not a complete dependency tree: a package npm did not report is absent."
+}
+```
+
+| Field    | Meaning                                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `origin` | Always `derived`, one of the [four origins](#evidence-origins-and-unknowns). A graph cannot claim npm reported its edges. |
+| `basis`  | What the graph was computed from. Currently `audit-via`.                                                                  |
+| `note`   | A sentence the page shows beside the graph, stating what it omits.                                                        |
+
+**The graph is not a complete dependency tree.** It contains the packages npm
+reported as involved in a vulnerability and the introductions it named. A package
+that npm did not report is absent, so an absent package is not evidence that it
+is not installed. The page shows the note wherever it draws the graph, because a
+graph without that sentence invites exactly that misreading.
 
 ## Environment
 
