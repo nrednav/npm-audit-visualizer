@@ -25,6 +25,8 @@ const MAX_LABEL_LENGTH = 120;
 
 const DRIVE_PREFIX = /^[A-Za-z]:/;
 
+const DIRECTORY_REFERENCE = /^\.\.?$/;
+
 /**
  * A label names an artifact without describing where it lives. A path leaks the
  * local filesystem layout, which the tool already promises not to do with report
@@ -35,7 +37,8 @@ export const isSafeLabel = (candidate: string): boolean =>
   candidate.length <= MAX_LABEL_LENGTH &&
   !candidate.includes("/") &&
   !candidate.includes("\\") &&
-  !DRIVE_PREFIX.test(candidate);
+  !DRIVE_PREFIX.test(candidate) &&
+  !DIRECTORY_REFERENCE.test(candidate);
 
 export const SourceDescriptorSchema = z.object({
   kind: SourceKindSchema,

@@ -1,4 +1,8 @@
-import { type Payload, PayloadSchema } from "@npm-audit-visualizer/contract";
+import {
+  PAYLOAD_SCHEMA_VERSION,
+  type Payload,
+  PayloadSchema,
+} from "@npm-audit-visualizer/contract";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import parsedReportFixture from "../../contract/test/fixtures/parsed-report.json";
@@ -21,6 +25,7 @@ vi.mock("./components/visualizer/index.tsx", () => ({
 
 const emptyPayload: Payload = {
   schemaVersion: loadedPayload.schemaVersion,
+  sources: loadedPayload.sources,
   metadata: {
     vulnerabilities: {
       info: 0,
@@ -119,16 +124,19 @@ describe("App", () => {
   it("never draws an incompatible payload as a report or as an empty one", () => {
     setState({
       status: "failed",
-      cause:
-        "This page expects payload version 1, but the report carries 2. The server and the page were built from different contracts, so the report has not been read.",
+      cause: `This page expects payload version ${PAYLOAD_SCHEMA_VERSION}, but the report carries ${PAYLOAD_SCHEMA_VERSION + 1}. The server and the page were built from different contracts, so the report has not been read.`,
     });
     render(<App />);
 
     expect(
       screen.getByRole("heading", { name: /could not be read/i }),
     ).toBeVisible();
-    expect(screen.getByText(/payload version 1/)).toBeVisible();
-    expect(screen.getByText(/carries 2/)).toBeVisible();
+    expect(
+      screen.getByText(new RegExp(`payload version ${PAYLOAD_SCHEMA_VERSION}`)),
+    ).toBeVisible();
+    expect(
+      screen.getByText(new RegExp(`carries ${PAYLOAD_SCHEMA_VERSION + 1}`)),
+    ).toBeVisible();
     expect(screen.queryByText(/lists no vulnerabilities/i)).toBeNull();
     expect(
       screen.queryByRole("heading", { name: /findings reported/i }),

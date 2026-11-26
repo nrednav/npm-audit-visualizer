@@ -10,6 +10,7 @@ import {
 } from "@npm-audit-visualizer/contract";
 import { describe, expect, it } from "vitest";
 import { buildPayload } from "../../src/report/model.js";
+import { sourceOfFile } from "../../src/report/source.js";
 
 const readReport = (name: string): AuditReport => {
   const raw: unknown = JSON.parse(
@@ -29,9 +30,13 @@ const readReport = (name: string): AuditReport => {
 
 const ordered = readReport("few-vulnerabilities-audit-report");
 
+/** The report-only tests are about findings, so they share one fixed source. */
+const payloadOf = (report: AuditReport) =>
+  buildPayload(report, [sourceOfFile("report.json")]);
+
 describe("buildPayload", () => {
   it("presents every reported vulnerability and invents none", () => {
-    const payload = buildPayload(ordered);
+    const payload = payloadOf(ordered);
     const reported = new Set(Object.keys(ordered.vulnerabilities));
     const presented = new Set(payload.findings.map((finding) => finding.id));
 
@@ -40,7 +45,7 @@ describe("buildPayload", () => {
   });
 
   it("accepts a report with no vulnerabilities and produces no findings", () => {
-    const payload = buildPayload(readReport("valid-audit-report"));
+    const payload = payloadOf(readReport("valid-audit-report"));
 
     expect(payload.findings).toEqual([]);
     expect(payload.graph.nodes).toEqual([]);
@@ -50,9 +55,7 @@ describe("buildPayload", () => {
   it("orders findings by severity rank", () => {
     // The three-finding fixture is entirely `moderate`, so ordering over it
     // cannot fail. The wide fixture carries four distinct levels.
-    const payload = buildPayload(
-      readReport("many-vulnerabilities-audit-report"),
-    );
+    const payload = payloadOf(readReport("many-vulnerabilities-audit-report"));
     const ranks = payload.findings.map((finding) =>
       severityRank(finding.severity),
     );
@@ -66,7 +69,7 @@ describe("buildPayload", () => {
   });
 
   it("turns every introducing package into an edge and keeps its target reachable", () => {
-    const payload = buildPayload(ordered);
+    const payload = payloadOf(ordered);
     const nodeIds = new Set(payload.graph.nodes.map((node) => node.id));
 
     for (const [id, vulnerability] of Object.entries(ordered.vulnerabilities)) {
@@ -82,7 +85,7 @@ describe("buildPayload", () => {
   });
 
   it("draws no edge for an advisory, whose name is the vulnerable package", () => {
-    const payload = buildPayload(ordered);
+    const payload = payloadOf(ordered);
     const selfEdges = payload.graph.edges.filter(
       (edge) => edge.from === edge.to,
     );
@@ -104,7 +107,7 @@ describe("buildPayload", () => {
 
     nodemon.via = [...nodemon.via, "unreported-introducer"];
 
-    const payload = buildPayload(withIntroducer);
+    const payload = payloadOf(withIntroducer);
     const node = payload.graph.nodes.find(
       (candidate) => candidate.id === "unreported-introducer",
     );
@@ -127,7 +130,7 @@ describe("buildPayload", () => {
 
     nodemon.via = [...nodemon.via, "unreported-introducer"];
 
-    const payload = buildPayload(withIntroducer);
+    const payload = payloadOf(withIntroducer);
     const reportingIds = new Set(payload.findings.map((finding) => finding.id));
     const reachedOnly = payload.graph.nodes.filter(
       (node) => !reportingIds.has(node.id),
@@ -143,7 +146,7 @@ describe("buildPayload", () => {
   it("offers a chain from a transitive finding to a directly installed one", () => {
     // C3: a reader must be able to walk from a finding to the package they can
     // actually act on. `effects` names the dependents, so the walk follows it.
-    const payload = buildPayload(ordered);
+    const payload = payloadOf(ordered);
     const byId = new Map(
       payload.findings.map((finding) => [finding.id, finding]),
     );
@@ -188,14 +191,14 @@ describe("buildPayload", () => {
   });
 
   it("derives identifiers from the report, not from iteration", () => {
-    const payload = buildPayload(ordered);
+    const payload = payloadOf(ordered);
     const reordered: AuditReport = {
       ...ordered,
       vulnerabilities: Object.fromEntries(
         Object.entries(ordered.vulnerabilities).reverse(),
       ),
     };
-    const other = buildPayload(reordered);
+    const other = payloadOf(reordered);
 
     expect(other.findings.map((finding) => finding.id).sort()).toEqual(
       payload.findings.map((finding) => finding.id).sort(),
@@ -204,19 +207,17 @@ describe("buildPayload", () => {
   });
 
   it("produces a payload the contract accepts", () => {
-    const result = PayloadSchema.safeParse(buildPayload(ordered));
+    const result = PayloadSchema.safeParse(payloadOf(ordered));
 
     expect(result.success).toBe(true);
   });
 
   it("stamps the payload with the contract's version", () => {
-    expect(buildPayload(ordered).schemaVersion).toBe(PAYLOAD_SCHEMA_VERSION);
+    expect(payloadOf(ordered).schemaVersion).toBe(PAYLOAD_SCHEMA_VERSION);
   });
 
   it("keeps every reported finding and the whole graph under a version stamp", () => {
-    const payload = buildPayload(
-      readReport("many-vulnerabilities-audit-report"),
-    );
+    const payload = payloadOf(readReport("many-vulnerabilities-audit-report"));
 
     expect(payload.findings).toHaveLength(
       Object.keys(
@@ -228,8 +229,28 @@ describe("buildPayload", () => {
     );
   });
 
+  it("carries the descriptors it was given, in order", () => {
+    const first = sourceOfFile("audit.json");
+    const second = sourceOfFile("other.json");
+    const payload = buildPayload(ordered, [first, second]);
+
+    expect(payload.sources).toEqual([first, second]);
+  });
+
+  it("reports the artifact version and leaves the unstated fields unfilled", () => {
+    const [descriptor] = payloadOf(ordered).sources;
+
+    expect(descriptor).toEqual({
+      kind: "audit-report",
+      producer: { name: "npm", version: null },
+      schemaVersion: String(ordered.auditReportVersion),
+      createdAt: null,
+      label: "report.json",
+    });
+  });
+
   it("normalises each way a fix can be reported", () => {
-    const payload = buildPayload(ordered);
+    const payload = payloadOf(ordered);
     const available = payload.findings.filter(
       (finding) => finding.fix.available,
     );
@@ -259,7 +280,7 @@ describe("committed payload fixture", () => {
       ),
     );
 
-    expect(committed).toEqual(buildPayload(ordered));
+    expect(committed).toEqual(payloadOf(ordered));
   });
 });
 
@@ -268,7 +289,7 @@ describe("buildPayload leaves the report alone", () => {
     const many = readReport("many-vulnerabilities-audit-report");
     const before = structuredClone(many);
 
-    buildPayload(many);
+    payloadOf(many);
 
     expect(many).toEqual(before);
   });
@@ -276,7 +297,7 @@ describe("buildPayload leaves the report alone", () => {
   it("builds the whole of a large report in one pass", () => {
     const many = readReport("many-vulnerabilities-audit-report");
     const started = performance.now();
-    const payload = buildPayload(many);
+    const payload = payloadOf(many);
     const elapsed = performance.now() - started;
 
     expect(payload.findings).toHaveLength(
@@ -288,6 +309,6 @@ describe("buildPayload leaves the report alone", () => {
   it("gives the same answer on a second call", () => {
     const many = readReport("many-vulnerabilities-audit-report");
 
-    expect(buildPayload(many)).toEqual(buildPayload(many));
+    expect(payloadOf(many)).toEqual(payloadOf(many));
   });
 });

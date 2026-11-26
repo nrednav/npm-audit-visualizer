@@ -36,6 +36,15 @@ const baseMetadata = {
 
 const mixedPayload: Payload = {
   schemaVersion: PAYLOAD_SCHEMA_VERSION,
+  sources: [
+    {
+      kind: "audit-report",
+      producer: { name: "npm", version: null },
+      schemaVersion: "2",
+      createdAt: null,
+      label: "report.json",
+    },
+  ],
   metadata: baseMetadata,
   findings: [
     {

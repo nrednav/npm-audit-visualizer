@@ -1,5 +1,17 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "sources": [
+    {
+      "kind": "audit-report",
+      "producer": {
+        "name": "npm",
+        "version": null
+      },
+      "schemaVersion": "2",
+      "createdAt": null,
+      "label": "report.json"
+    }
+  ],
   "metadata": {
     "vulnerabilities": {
       "info": 0,

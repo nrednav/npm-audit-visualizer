@@ -115,8 +115,10 @@ describe("usePayload", () => {
   });
 
   it("names both versions when the payload comes from another contract", async () => {
+    const other = PAYLOAD_SCHEMA_VERSION + 1;
+
     vi.stubGlobal("fetch", async () =>
-      respond({ ...parsedReportFixture, schemaVersion: 2 }),
+      respond({ ...parsedReportFixture, schemaVersion: other }),
     );
 
     const state = await settle();
@@ -125,8 +127,8 @@ describe("usePayload", () => {
 
     const cause = state.status === "failed" ? state.cause : "";
 
-    expect(cause).toContain("version 1");
-    expect(cause).toContain("2");
+    expect(cause).toContain(`version ${PAYLOAD_SCHEMA_VERSION}`);
+    expect(cause).toContain(String(other));
     expect(cause).not.toMatch(/does not match the expected shape/);
   });
 
@@ -142,7 +144,7 @@ describe("usePayload", () => {
     const cause = state.status === "failed" ? state.cause : "";
 
     expect(cause).toContain("no version");
-    expect(cause).toContain("version 1");
+    expect(cause).toContain(`version ${PAYLOAD_SCHEMA_VERSION}`);
   });
 
   it("never loads a mismatched payload, even when its findings are valid", async () => {

@@ -1,8 +1,12 @@
 import { parseArgs } from "node:util";
-import type { AuditReport } from "@npm-audit-visualizer/contract";
+import type {
+  AuditReport,
+  SourceDescriptor,
+} from "@npm-audit-visualizer/contract";
 import { type AuditResult, describeAuditFailure } from "./report/audit.js";
 import { buildPayload } from "./report/model.js";
 import { describeReadFailure, readReport } from "./report/read.js";
+import { sourceOfAudit, sourceOfFile } from "./report/source.js";
 import { describeServeFailure, startServing } from "./serve/server.js";
 
 export const DEFAULT_PORT = 1248;
@@ -148,6 +152,7 @@ export const run = async (argv: string[], io: CliIo): Promise<number> => {
 
   const { options } = intent;
   let report: AuditReport;
+  let sources: SourceDescriptor[];
 
   if (options.file === null) {
     if (options.debug) {
@@ -163,6 +168,7 @@ export const run = async (argv: string[], io: CliIo): Promise<number> => {
     }
 
     report = audited.report;
+    sources = [sourceOfAudit()];
   } else {
     if (options.debug) {
       io.out(`Reading ${options.file}`);
@@ -176,9 +182,10 @@ export const run = async (argv: string[], io: CliIo): Promise<number> => {
     }
 
     report = read.report;
+    sources = [sourceOfFile(options.file)];
   }
 
-  const payload = buildPayload(report);
+  const payload = buildPayload(report, sources);
 
   if (options.debug) {
     io.out(

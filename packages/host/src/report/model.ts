@@ -10,6 +10,7 @@ import {
   type Payload,
   type ReportedVulnerability,
   type Severity,
+  type SourceDescriptor,
   severityRank,
 } from "@npm-audit-visualizer/contract";
 
@@ -127,13 +128,21 @@ const buildGraph = (report: AuditReport): DependencyGraph => {
   };
 };
 
-export const buildPayload = (report: AuditReport): Payload => {
+/**
+ * The descriptors arrive as an argument rather than being derived here, because
+ * only the caller knows whether the report came from a file or from an audit.
+ */
+export const buildPayload = (
+  report: AuditReport,
+  sources: readonly SourceDescriptor[],
+): Payload => {
   const findings = Object.entries(report.vulnerabilities)
     .map(([id, vulnerability]) => toFinding(id, vulnerability))
     .sort(byUrgency);
 
   return {
     schemaVersion: PAYLOAD_SCHEMA_VERSION,
+    sources: [...sources],
     metadata: report.metadata,
     findings,
     graph: buildGraph(report),

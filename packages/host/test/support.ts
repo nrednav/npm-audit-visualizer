@@ -6,6 +6,15 @@ import { PAYLOAD_SCHEMA_VERSION } from "@npm-audit-visualizer/contract";
 
 export const FIXTURE_PAYLOAD: Payload = {
   schemaVersion: PAYLOAD_SCHEMA_VERSION,
+  sources: [
+    {
+      kind: "audit-report",
+      producer: { name: "npm", version: null },
+      schemaVersion: "2",
+      createdAt: null,
+      label: "report.json",
+    },
+  ],
   metadata: {
     vulnerabilities: {
       info: 0,
