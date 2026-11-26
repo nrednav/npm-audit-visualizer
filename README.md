@@ -90,7 +90,9 @@ npm-audit-visualizer --no-open
 For a guided walk through reading and acting on a report, see
 [How to read an npm audit report](docs/how-to-read-a-report.md). For option
 defaults, exit codes, routes, and the payload schema, see the
-[CLI and payload reference](docs/cli-reference.md).
+[CLI and payload reference](docs/cli-reference.md). For which artifact versions
+are accepted, what a refusal names, and what an unknown value means, see the
+[compatibility rules](docs/compatibility.md).
 
 ## Documentation
 
@@ -99,6 +101,7 @@ defaults, exit codes, routes, and the payload schema, see the
 | [How to read an npm audit report](docs/how-to-read-a-report.md) | you have a report and want to read, filter, and act on it          |
 | [Vocabulary](docs/vocabulary.md)                                | you need the exact sense of a word used in the interface           |
 | [CLI and payload reference](docs/cli-reference.md)              | you need an option default, an exit code, a route, or a field type |
+| [Compatibility rules](docs/compatibility.md)                    | you need to know what this tool accepts, what it refuses, and why  |
 | [Changelog](CHANGELOG.md)                                       | you want to know what changed between versions                     |
 
 ## About

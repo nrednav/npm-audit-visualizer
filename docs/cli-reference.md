@@ -253,7 +253,9 @@ npm's own report fields do not carry an origin object. They inherit the report's
 evidence record, `{ origin, value, note? }`, is used only for companion artifacts,
 derived claims, and human assertions.
 
-These four numbers answer different questions and are not interchangeable:
+These four numbers answer different questions and are not interchangeable. Which
+of them are compared, and what a mismatch does, is stated in the
+[compatibility rules](compatibility.md):
 
 | Number                    | Where it lives            | Answers                                      |
 | ------------------------- | ------------------------- | -------------------------------------------- |

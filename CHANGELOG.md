@@ -8,6 +8,13 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- [Compatibility rules](docs/compatibility.md): which artifact versions are
+  accepted, which are refused, what every refusal names, and what an unknown value
+  means. Each statement is executed by `test/compatibility.test.ts`, so the page
+  cannot drift from the behaviour.
+
 ### Changed
 
 - The payload version is now `6`. The payload carries required `timestamps`, so a
