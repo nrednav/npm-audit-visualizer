@@ -263,3 +263,32 @@ describe("the listener names its host", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("the payload contract is documented where a reader looks", () => {
+  const reference = (): string =>
+    readFileSync(path.join(repoRoot, "docs/cli-reference.md"), "utf8");
+
+  it("names the payload version and its current value", () => {
+    const text = reference();
+
+    expect(text).toMatch(/`schemaVersion`/);
+    expect(text).toMatch(/`schemaVersion`\s*\|\s*number\s*\|[^\n]*`1`/);
+  });
+
+  it("keeps the payload version apart from the npm report version", () => {
+    const text = reference();
+
+    expect(text).toMatch(/not the npm report's `auditReportVersion`/);
+    expect(text).toMatch(/`auditReportVersion`\s*\|\s*Which npm report shape/);
+  });
+
+  it("states that a mismatch and a missing version are refused", () => {
+    const text = reference();
+
+    expect(text).toMatch(/exact match on `schemaVersion`/);
+    expect(text).toMatch(/A different value, a\s+missing value/);
+    expect(text).toMatch(
+      /never falls back to treating an incompatible payload/,
+    );
+  });
+});

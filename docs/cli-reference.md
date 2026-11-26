@@ -94,13 +94,36 @@ response does not describe the served tree.
 
 ## Payload
 
-The `/report.json` route returns a payload with three top-level fields.
+The `/report.json` route returns a payload with four top-level fields.
 
-| Field      | Type   | Description                                                      |
-| ---------- | ------ | ---------------------------------------------------------------- |
-| `metadata` | object | Vulnerability and dependency counts.                             |
-| `findings` | array  | One entry per reported vulnerability, ordered most urgent first. |
-| `graph`    | object | Nodes and edges for the dependency view.                         |
+| Field           | Type   | Description                                                      |
+| --------------- | ------ | ---------------------------------------------------------------- |
+| `schemaVersion` | number | The payload contract this document describes. Currently `1`.     |
+| `metadata`      | object | Vulnerability and dependency counts.                             |
+| `findings`      | array  | One entry per reported vulnerability, ordered most urgent first. |
+| `graph`         | object | Nodes and edges for the dependency view.                         |
+
+### `schemaVersion`
+
+`schemaVersion` identifies the payload contract between the host and the page.
+It is not the npm report's `auditReportVersion` and not the package version.
+Those three numbers answer different questions:
+
+| Number               | Answers                                            |
+| -------------------- | -------------------------------------------------- |
+| `schemaVersion`      | Which payload shape the page can read.             |
+| `auditReportVersion` | Which npm report shape the host accepted as input. |
+| package version      | Which release of this command was installed.       |
+
+The page requires an exact match on `schemaVersion`. A different value, a
+missing value, or a value of another type is a compatibility failure. The page
+names the version it received and the version it supports, and shows no
+findings. It never falls back to treating an incompatible payload as a report
+with no findings.
+
+An incompatible payload is not repaired in the browser. The fix is to run a
+host and a page built from the same contract, which means reinstalling the
+package or rebuilding the workspace.
 
 ### Severity
 

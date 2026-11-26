@@ -8,6 +8,14 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- The payload carries `schemaVersion`, so the page can tell whether the report it
+  received is one it can read. A different, missing, or wrongly typed version is
+  a named compatibility failure that shows no findings, instead of an empty
+  report. The field is documented in the [CLI and payload
+reference](docs/cli-reference.md).
+
 ## [v1.0.0-alpha.11] - 2026-11-26
 
 ### Added
