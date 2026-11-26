@@ -95,6 +95,21 @@ describe("Visualizer", () => {
     expect(onClearSeverity).toHaveBeenCalledOnce();
   });
 
+  it("states the graph's basis and what it leaves out", async () => {
+    renderVisualizer();
+
+    await userEvent.click(screen.getByRole("tab", { name: /graph/i }));
+
+    expect(screen.getByText(payload.graph.derivation.note)).toBeVisible();
+    expect(screen.getByText(/not a complete dependency tree/i)).toBeVisible();
+  });
+
+  it("shows the basis only where the graph is, not on the table", () => {
+    renderVisualizer();
+
+    expect(screen.queryByText(payload.graph.derivation.note)).toBeNull();
+  });
+
   it("counts the packages and relationships the graph will draw", () => {
     renderVisualizer();
 

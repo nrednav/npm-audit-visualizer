@@ -188,10 +188,18 @@ const Visualizer = (props: VisualizerProps) => {
             onResetAll={resetAll}
           />
         ) : (
-          <VulnerabilityGraphComponent
-            data={graph}
-            filtersActive={filtersActive}
-          />
+          <>
+            {/* The graph omits what npm did not report, and only the payload
+                knows that. Saying it here keeps the page from implying a
+                complete tree. */}
+            <p className="mt-4 max-w-[75ch] text-xs text-ink-muted">
+              {graph.derivation.note}
+            </p>
+            <VulnerabilityGraphComponent
+              data={graph}
+              filtersActive={filtersActive}
+            />
+          </>
         )}
       </div>
     </section>
