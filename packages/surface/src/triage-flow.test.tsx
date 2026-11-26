@@ -1,4 +1,7 @@
-import type { Payload } from "@npm-audit-visualizer/contract";
+import {
+  PAYLOAD_SCHEMA_VERSION,
+  type Payload,
+} from "@npm-audit-visualizer/contract";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -32,6 +35,7 @@ const baseMetadata = {
 };
 
 const mixedPayload: Payload = {
+  schemaVersion: PAYLOAD_SCHEMA_VERSION,
   metadata: baseMetadata,
   findings: [
     {

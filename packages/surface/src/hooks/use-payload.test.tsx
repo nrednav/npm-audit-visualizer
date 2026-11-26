@@ -1,4 +1,8 @@
-import { PayloadSchema, REPORT_ROUTE } from "@npm-audit-visualizer/contract";
+import {
+  PAYLOAD_SCHEMA_VERSION,
+  PayloadSchema,
+  REPORT_ROUTE,
+} from "@npm-audit-visualizer/contract";
 import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import parsedReportFixture from "../../../contract/test/fixtures/parsed-report.json";
@@ -96,13 +100,60 @@ describe("usePayload", () => {
 
   it("fails when the body does not match the contract, naming what broke", async () => {
     vi.stubGlobal("fetch", async () =>
-      respond({ metadata: {}, findings: [], graph: { nodes: [], edges: [] } }),
+      respond({
+        schemaVersion: PAYLOAD_SCHEMA_VERSION,
+        metadata: {},
+        findings: [],
+        graph: { nodes: [], edges: [] },
+      }),
     );
 
     const state = await settle();
 
     expect(state.status).toBe("failed");
     expect(state.status === "failed" ? state.cause : "").toMatch(/metadata/);
+  });
+
+  it("names both versions when the payload comes from another contract", async () => {
+    vi.stubGlobal("fetch", async () =>
+      respond({ ...parsedReportFixture, schemaVersion: 2 }),
+    );
+
+    const state = await settle();
+
+    expect(state.status).toBe("failed");
+
+    const cause = state.status === "failed" ? state.cause : "";
+
+    expect(cause).toContain("version 1");
+    expect(cause).toContain("2");
+    expect(cause).not.toMatch(/does not match the expected shape/);
+  });
+
+  it("treats a payload with no version as incompatible, not as legacy", async () => {
+    const { schemaVersion: _omitted, ...withoutVersion } = parsedReportFixture;
+
+    vi.stubGlobal("fetch", async () => respond(withoutVersion));
+
+    const state = await settle();
+
+    expect(state.status).toBe("failed");
+
+    const cause = state.status === "failed" ? state.cause : "";
+
+    expect(cause).toContain("no version");
+    expect(cause).toContain("version 1");
+  });
+
+  it("never loads a mismatched payload, even when its findings are valid", async () => {
+    vi.stubGlobal("fetch", async () =>
+      respond({ ...parsedReportFixture, schemaVersion: 99 }),
+    );
+
+    const state = await settle();
+
+    expect(state.status).not.toBe("loaded");
+    expect(state).not.toHaveProperty("payload");
   });
 
   it("never renders a contract failure as a report with no findings", async () => {
@@ -112,5 +163,15 @@ describe("usePayload", () => {
 
     expect(state.status).toBe("failed");
     expect(PayloadSchema.safeParse({ findings: [] }).success).toBe(false);
+  });
+
+  it("reads again for a new reader instead of reusing the last payload", async () => {
+    const fetchSpy = vi.fn(async () => respond(parsedReportFixture));
+    vi.stubGlobal("fetch", fetchSpy);
+
+    await settle();
+    await settle();
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 });

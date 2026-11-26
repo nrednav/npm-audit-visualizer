@@ -20,6 +20,7 @@ vi.mock("./components/visualizer/index.tsx", () => ({
 }));
 
 const emptyPayload: Payload = {
+  schemaVersion: loadedPayload.schemaVersion,
   metadata: {
     vulnerabilities: {
       info: 0,
@@ -113,6 +114,25 @@ describe("App", () => {
     expect(screen.getByText(/404 for \/report\.json/)).toBeVisible();
     expect(screen.queryByText(/lists no vulnerabilities/i)).toBeNull();
     expect(screen.queryByText(/no findings match/i)).toBeNull();
+  });
+
+  it("never draws an incompatible payload as a report or as an empty one", () => {
+    setState({
+      status: "failed",
+      cause:
+        "This page expects payload version 1, but the report carries 2. The server and the page were built from different contracts, so the report has not been read.",
+    });
+    render(<App />);
+
+    expect(
+      screen.getByRole("heading", { name: /could not be read/i }),
+    ).toBeVisible();
+    expect(screen.getByText(/payload version 1/)).toBeVisible();
+    expect(screen.getByText(/carries 2/)).toBeVisible();
+    expect(screen.queryByText(/lists no vulnerabilities/i)).toBeNull();
+    expect(
+      screen.queryByRole("heading", { name: /findings reported/i }),
+    ).toBeNull();
   });
 
   it("treats a loaded report with no findings as empty, not as a failure", () => {
