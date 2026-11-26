@@ -10,7 +10,15 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- The payload version is now `5`. Every source descriptor carries a required
+- The payload version is now `6`. The payload carries required `timestamps`, so a
+  version-5 payload is refused by name.
+
+### Added
+
+- Audit time, observation time, and payload build time are separate fields, and the
+  companion artifact's creation time keeps its own. Audit time is always unknown
+  because npm states none. Observation time exists only where the tool observed
+  something. The page labels all four and the payload version is now `5`. Every source descriptor carries a required
   `digest`, so a version-4 payload is refused by name.
 
 ### Added

@@ -125,6 +125,43 @@ An incompatible payload is not repaired in the browser. The fix is to run a
 host and a page built from the same contract, which means reinstalling the
 package or rebuilding the workspace.
 
+### `timestamps`
+
+The four times a payload can name are four different facts, and each has its own
+field. None is ever shown in place of another.
+
+| Field                   | Meaning                                         | Known today                      |
+| ----------------------- | ----------------------------------------------- | -------------------------------- |
+| `timestamps.auditTime`  | When npm produced the report                    | Never; npm states no time        |
+| `sources[].createdAt`   | When the companion artifact was written         | Never for npm                    |
+| `timestamps.observedAt` | When this tool observed the project or a result | Only when the tool ran the audit |
+| `timestamps.builtAt`    | When this payload was built                     | Always; this process knows       |
+
+```json
+"timestamps": {
+  "auditTime": { "unknown": "npm audit --json states no creation time" },
+  "observedAt": { "unknown": "the report was read from a file, so this tool observed nothing" },
+  "builtAt": "2026-11-26T03:30:00.000Z"
+}
+```
+
+**Audit time is never inferred.** npm states no time, so `auditTime` is unknown.
+A file's modification time says when a file was written and is never used. The
+clock says only when this process ran, so it fills `builtAt` and nothing else.
+
+**Observation time exists only where something was observed.** The automatic audit
+observes the caller's project and stamps the instant it finished. Reading a report
+from a file observes nothing, so `observedAt` is unknown and says why.
+
+**Build time is not the read time.** `builtAt` is when the Host built this payload,
+which is the closest instant the payload can supply to the moment a page received
+it. A page that has been open for a while is older than its own `builtAt`, and no
+age is computed here. Freshness language belongs to a later milestone, and until
+then the page shows the instant and no adjective.
+
+All three are ISO 8601 with an offset. A local time with no offset cannot be
+compared to another and is refused.
+
 ### `sources`
 
 Each entry describes one artifact the payload was built from. The array holds at

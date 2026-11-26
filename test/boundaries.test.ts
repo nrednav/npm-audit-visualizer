@@ -331,6 +331,36 @@ describe("the payload contract is documented where a reader looks", () => {
     expect(text).toMatch(/modification time is not a creation time/);
   });
 
+  it("names the four times and keeps them apart", () => {
+    const text = reference();
+
+    expect(text).toMatch(/`timestamps\.auditTime`/);
+    expect(text).toMatch(/`timestamps\.observedAt`/);
+    expect(text).toMatch(/`timestamps\.builtAt`/);
+    expect(text).toMatch(/four different facts/);
+  });
+
+  it("forbids inferring audit time from a modification time or the clock", () => {
+    const text = reference();
+
+    expect(text).toMatch(/Audit time is never inferred/);
+    expect(text).toMatch(/modification time says when a file was written/);
+    expect(text).toMatch(/fills `builtAt` and nothing else/);
+  });
+
+  it("states that a file read observes nothing", () => {
+    const text = reference();
+
+    expect(text).toMatch(/Reading a report\s+from a file observes nothing/);
+  });
+
+  it("states that build time is not read time and computes no age", () => {
+    const text = reference();
+
+    expect(text).toMatch(/Build time is not the read time/);
+    expect(text).toMatch(/no\s+age is computed here/);
+  });
+
   it("documents the digest field and its exact encoding", () => {
     const text = reference();
 
