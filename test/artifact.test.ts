@@ -98,6 +98,7 @@ describe("the host bundle carries no renderer", () => {
 
     expect([...specifiers].sort()).toEqual([
       "child_process",
+      "crypto",
       "fs",
       "fs/promises",
       "http",

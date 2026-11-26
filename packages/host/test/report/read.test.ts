@@ -103,7 +103,10 @@ describe("readReport", () => {
     const fromFile = await readReport(filePath);
     const fromText = parseReport(text, filePath);
 
-    expect(fromFile).toEqual(fromText);
+    expect(fromFile.ok && fromText.ok ? fromFile.report : null).toEqual(
+      fromText.ok ? fromText.report : undefined,
+    );
+    expect(fromFile.ok && fromFile.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
   });
 
   it("keeps a missing file out of the report failure kinds", async () => {

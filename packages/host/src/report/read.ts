@@ -4,6 +4,7 @@ import {
   AuditReportSchema,
   SUPPORTED_AUDIT_REPORT_VERSION,
 } from "@npm-audit-visualizer/contract";
+import { digestOf } from "./identity.js";
 
 export type ReadFailure =
   | { kind: "missing"; source: string }
@@ -27,7 +28,7 @@ export type ParseResult =
   | { ok: false; failure: ParseFailure };
 
 export type ReadResult =
-  | { ok: true; report: AuditReport }
+  | { ok: true; report: AuditReport; digest: string }
   | { ok: false; failure: ReadFailure };
 
 const MAX_REPORTED_PATHS = 3;
@@ -122,16 +123,22 @@ export const parseReport = (text: string, source: string): ParseResult => {
   return { ok: true, report: report.data };
 };
 
+/**
+ * The bytes are read once, hashed, and decoded only for the parser. Reading as
+ * text first would hash the decoded string, which is not what is on disk.
+ */
 export const readReport = async (filePath: string): Promise<ReadResult> => {
-  let text: string;
+  let bytes: Uint8Array;
 
   try {
-    text = await readFile(filePath, "utf8");
+    bytes = await readFile(filePath);
   } catch (error) {
     return { ok: false, failure: describeFileError(filePath, error) };
   }
 
-  return parseReport(text, filePath);
+  const parsed = parseReport(Buffer.from(bytes).toString("utf8"), filePath);
+
+  return parsed.ok ? { ...parsed, digest: digestOf(bytes) } : parsed;
 };
 
 /**

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdtemp, readdir, readFile, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -12,6 +13,7 @@ import {
   type RunAuditProcess,
   runProcess,
 } from "../../src/report/audit.js";
+import { digestOf } from "../../src/report/identity.js";
 
 const fixtureText = async (): Promise<string> => {
   const text = await import("node:fs/promises").then((fs) =>
@@ -53,7 +55,69 @@ const completed = (
   exitCode: number | null,
   stdout: string,
   stderr = "",
-): ProcessResult => ({ kind: "completed", exitCode, stdout, stderr });
+): ProcessResult => ({
+  kind: "completed",
+  exitCode,
+  stdout: new TextEncoder().encode(stdout),
+  stderr,
+});
+
+describe("auditProject identity", () => {
+  it("hashes the bytes npm wrote, not the decoded text", async () => {
+    const text = await fixtureText();
+    const bytes = new TextEncoder().encode(text);
+    const result = await auditProject(
+      "/project",
+      new AbortController().signal,
+      run(async () => ({
+        kind: "completed",
+        exitCode: 1,
+        stdout: bytes,
+        stderr: "",
+      })),
+    );
+
+    expect(result.ok && result.digest).toBe(
+      `sha256:${createHash("sha256").update(bytes).digest("hex")}`,
+    );
+  });
+
+  it("changes the identity when npm writes the same report differently", async () => {
+    const text = await fixtureText();
+    const spaced = `${text}\n`;
+    const run1 = await auditProject(
+      "/project",
+      new AbortController().signal,
+      run(async () => completed(0, text)),
+    );
+    const run2 = await auditProject(
+      "/project",
+      new AbortController().signal,
+      run(async () => completed(0, spaced)),
+    );
+
+    expect(run1.ok && run1.report).toEqual(run2.ok && run2.report);
+    expect(run1.ok && run1.digest).not.toBe(run2.ok && run2.digest);
+  });
+
+  it("gives the same identity to the same bytes from either path", async () => {
+    const text = await fixtureText();
+    const bytes = new TextEncoder().encode(text);
+    const fromProcess = await auditProject(
+      "/project",
+      new AbortController().signal,
+      run(async () => ({
+        kind: "completed",
+        exitCode: 0,
+        stdout: bytes,
+        stderr: "",
+      })),
+    );
+    const direct = digestOf(bytes);
+
+    expect(fromProcess.ok && fromProcess.digest).toBe(direct);
+  });
+});
 
 describe("auditProject reads a completed audit", () => {
   it("accepts a clean report that exits zero", async () => {
@@ -337,11 +401,14 @@ process.stdout.write("done");
     const body = `
 const fs = require("node:fs");
 const path = require("node:path");
-fs.writeFileSync(path.join(process.cwd(), "started"), "1");
+// The handler is installed before "started" exists, so the marker means the
+// child can report its own termination. Writing first left a window in which a
+// kill arrived with no handler yet, and the test failed under load.
 process.on("SIGTERM", () => {
   fs.writeFileSync(path.join(process.cwd(), "terminated"), "1");
   process.exit(0);
 });
+fs.writeFileSync(path.join(process.cwd(), "started"), "1");
 setInterval(() => {}, 1000);
 `;
 

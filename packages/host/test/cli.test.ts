@@ -107,6 +107,7 @@ describe("run", () => {
       auditReturning({
         ok: true,
         report: await fixtureReport(),
+        digest: `sha256:${"1".repeat(64)}`,
       }),
     );
     const done = run(["--port", "0", "--no-open"], sink.io);

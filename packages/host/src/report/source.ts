@@ -29,7 +29,10 @@ const NO_CREATION_TIME = {
  * separator, so the fallback keeps construction total instead of letting an
  * unusual filename make the tool refuse a report it can read.
  */
-export const sourceOfFile = (filePath: string): SourceDescriptor => {
+export const sourceOfFile = (
+  filePath: string,
+  digest: string,
+): SourceDescriptor => {
   const name = path.basename(filePath);
 
   return {
@@ -38,6 +41,7 @@ export const sourceOfFile = (filePath: string): SourceDescriptor => {
     schemaVersion: String(SUPPORTED_AUDIT_REPORT_VERSION),
     createdAt: NO_CREATION_TIME,
     label: isSafeLabel(name) ? name : FILE_LABEL_FALLBACK,
+    digest,
   };
 };
 
@@ -46,10 +50,11 @@ export const sourceOfFile = (filePath: string): SourceDescriptor => {
  * It deliberately omits the project directory for the same reason the file
  * path is reduced to its basename.
  */
-export const sourceOfAudit = (): SourceDescriptor => ({
+export const sourceOfAudit = (digest: string): SourceDescriptor => ({
   kind: "audit-report",
   producer: { name: "npm", version: NO_PRODUCER_VERSION },
   schemaVersion: String(SUPPORTED_AUDIT_REPORT_VERSION),
   createdAt: NO_CREATION_TIME,
   label: "npm audit in the current project",
+  digest,
 });

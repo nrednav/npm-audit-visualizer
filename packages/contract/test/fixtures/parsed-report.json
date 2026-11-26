@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "sources": [
     {
       "kind": "audit-report",
@@ -13,7 +13,8 @@
       "createdAt": {
         "unknown": "npm audit --json states no creation time"
       },
-      "label": "report.json"
+      "label": "report.json",
+      "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
     }
   ],
   "metadata": {

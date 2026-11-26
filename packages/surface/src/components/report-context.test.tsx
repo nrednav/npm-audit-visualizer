@@ -31,6 +31,7 @@ const reportSource: Payload["sources"][number] = {
   schemaVersion: "2",
   createdAt: { unknown: "npm audit --json states no creation time" },
   label: "report.json",
+  digest: `sha256:${"5".repeat(64)}`,
 };
 
 const renderContext = (sources: Payload["sources"]) =>

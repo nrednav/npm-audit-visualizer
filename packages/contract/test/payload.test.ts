@@ -212,7 +212,8 @@ describe("decodePayload", () => {
   });
 
   it("requires a digest on every descriptor", () => {
-    const { digest: _omitted, ...withoutDigest } = payload.sources[0];
+    const source = payload.sources[0] as (typeof payload.sources)[number];
+    const { digest: _omitted, ...withoutDigest } = source;
 
     expect(
       PayloadSchema.safeParse({ ...payload, sources: [withoutDigest] }).success,

@@ -16,6 +16,7 @@ export const FIXTURE_PAYLOAD: Payload = {
       schemaVersion: "2",
       createdAt: { unknown: "npm audit --json states no creation time" },
       label: "report.json",
+      digest: `sha256:${"0".repeat(64)}`,
     },
   ],
   metadata: {

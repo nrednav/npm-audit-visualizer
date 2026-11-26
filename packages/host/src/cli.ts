@@ -168,7 +168,7 @@ export const run = async (argv: string[], io: CliIo): Promise<number> => {
     }
 
     report = audited.report;
-    sources = [sourceOfAudit()];
+    sources = [sourceOfAudit(audited.digest)];
   } else {
     if (options.debug) {
       io.out(`Reading ${options.file}`);
@@ -182,7 +182,7 @@ export const run = async (argv: string[], io: CliIo): Promise<number> => {
     }
 
     report = read.report;
-    sources = [sourceOfFile(options.file)];
+    sources = [sourceOfFile(options.file, read.digest)];
   }
 
   const payload = buildPayload(report, sources);

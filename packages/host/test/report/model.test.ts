@@ -30,9 +30,12 @@ const readReport = (name: string): AuditReport => {
 
 const ordered = readReport("few-vulnerabilities-audit-report");
 
+/** A well-formed identity; the model tests are not about the value. */
+const DIGEST = `sha256:${"2".repeat(64)}`;
+
 /** The report-only tests are about findings, so they share one fixed source. */
 const payloadOf = (report: AuditReport) =>
-  buildPayload(report, [sourceOfFile("report.json")]);
+  buildPayload(report, [sourceOfFile("report.json", DIGEST)]);
 
 describe("buildPayload", () => {
   it("presents every reported vulnerability and invents none", () => {
@@ -239,8 +242,8 @@ describe("buildPayload", () => {
   });
 
   it("carries the descriptors it was given, in order", () => {
-    const first = sourceOfFile("audit.json");
-    const second = sourceOfFile("other.json");
+    const first = sourceOfFile("audit.json", DIGEST);
+    const second = sourceOfFile("other.json", DIGEST);
     const payload = buildPayload(ordered, [first, second]);
 
     expect(payload.sources).toEqual([first, second]);
@@ -258,6 +261,7 @@ describe("buildPayload", () => {
       schemaVersion: String(ordered.auditReportVersion),
       createdAt: { unknown: "npm audit --json states no creation time" },
       label: "report.json",
+      digest: DIGEST,
     });
   });
 
