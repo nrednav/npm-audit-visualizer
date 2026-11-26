@@ -32,8 +32,15 @@ const derivation = {
   note: "derived from the via relationships npm reported",
 };
 
+const timestamps = {
+  auditTime: { unknown: "npm audit --json states no creation time" },
+  observedAt: { unknown: "nothing was observed" },
+  builtAt: "2026-11-26T00:00:00Z",
+};
+
 const payload: Payload = {
   schemaVersion: PAYLOAD_SCHEMA_VERSION,
+  timestamps,
   sources: [
     {
       kind: "audit-report",
@@ -79,6 +86,7 @@ describe("payload schema", () => {
     const result = PayloadSchema.safeParse({
       schemaVersion: PAYLOAD_SCHEMA_VERSION,
       sources: payload.sources,
+      timestamps,
       metadata,
       findings: [],
       graph: { nodes: [], edges: [], derivation },
@@ -111,7 +119,7 @@ describe("payload schema", () => {
   });
 
   it("requires the current payload version", () => {
-    expect(PAYLOAD_SCHEMA_VERSION).toBe(5);
+    expect(PAYLOAD_SCHEMA_VERSION).toBe(6);
     expect(PayloadSchema.safeParse(payload).success).toBe(true);
 
     const { schemaVersion: _omitted, ...withoutVersion } = payload;
@@ -195,12 +203,39 @@ describe("decodePayload", () => {
     expect(result.success).toBe(false);
   });
 
-  it("refuses the previous version, which carried no graph derivation", () => {
-    const { derivation: _omitted, ...graph } = payload.graph;
-    const result = decodePayload({
+  it("names timestamps when they are the missing object", () => {
+    const { timestamps: _omitted, ...rest } = payload;
+    const result = PayloadSchema.safeParse(rest);
+
+    expect(result.success).toBe(false);
+    expect(
+      result.success ? [] : result.error.issues.map((it) => it.path.join(".")),
+    ).toContain("timestamps");
+  });
+
+  it("refuses an audit time that is not an instant", () => {
+    const result = PayloadSchema.safeParse({
       ...payload,
+      timestamps: { ...payload.timestamps, auditTime: "yesterday" },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("refuses a built time that is unknown, because this process always knows it", () => {
+    const result = PayloadSchema.safeParse({
+      ...payload,
+      timestamps: { ...payload.timestamps, builtAt: { unknown: "no clock" } },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("refuses the previous version, which carried no timestamps", () => {
+    const { timestamps: _omitted, ...previous } = payload;
+    const result = decodePayload({
+      ...previous,
       schemaVersion: PAYLOAD_SCHEMA_VERSION - 1,
-      graph,
     });
 
     expect(result.success).toBe(false);
@@ -242,6 +277,7 @@ describe("decodePayload", () => {
     const failure = failureOf({
       schemaVersion: PAYLOAD_SCHEMA_VERSION,
       sources: payload.sources,
+      timestamps,
       metadata: {},
       findings: [],
       graph: { nodes: [], edges: [], derivation },

@@ -3,6 +3,7 @@ import { DerivationSchema } from "./evidence.js";
 import { AdvisorySchema, MetadataSchema } from "./report.js";
 import { SeveritySchema } from "./severity.js";
 import { SourceDescriptorSchema } from "./source.js";
+import { TimestampsSchema } from "./time.js";
 
 /**
  * Where the host serves the payload and where the surface fetches it. Stated
@@ -77,9 +78,10 @@ export type DependencyGraph = z.infer<typeof DependencyGraphSchema>;
  * `null` were the only way to say a value is missing. 4 added `graph.derivation`,
  * so a version-3 payload is refused rather than read as a graph of unknown origin.
  * 5 added `sources[].digest`, so a version-4 payload is refused rather than read
- * as an artifact with no identity.
+ * as an artifact with no identity. 6 added `timestamps`, so a version-5 payload is
+ * refused rather than read as a report whose times are all one unnamed instant.
  */
-export const PAYLOAD_SCHEMA_VERSION = 5;
+export const PAYLOAD_SCHEMA_VERSION = 6;
 
 export const PayloadSchema = z.object({
   schemaVersion: z.literal(PAYLOAD_SCHEMA_VERSION),
@@ -89,6 +91,7 @@ export const PayloadSchema = z.object({
    * field exists to remove.
    */
   sources: z.array(SourceDescriptorSchema).min(1),
+  timestamps: TimestampsSchema,
   metadata: MetadataSchema,
   findings: z.array(FindingSchema),
   graph: DependencyGraphSchema,
