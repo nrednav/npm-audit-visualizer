@@ -6,10 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-11-25
+## [Unreleased]
+
+## [v1.0.0-alpha.11] - 2026-11-26
 
 ### Added
 
+- `docs/vocabulary.md` gives one meaning each to reported, derived, asserted,
+  unknown, exception, and verification incomplete, and the README links to it
+- The README states the charter: what the tool reports and what it leaves to
+  npm and to the reader
 - Running the command with no arguments now audits the project in the current
   directory. It runs `npm audit --json` there and serves the result, so you no
   longer generate a report file and pass it in. `--file` remains for a saved
@@ -50,6 +56,18 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The empty state describes the report rather than the project: it says the
+  audit report lists no vulnerabilities instead of calling the project clean
+- npm's `nodes` are presented as install locations, and "Reach" is renamed
+  "Position". The reader is no longer told to follow a chain to a direct
+  dependency
+- Severity is presented as the level npm reported, and ordering critical first
+  is a default rather than a claim about risk
+- A fix is labelled "Reported fix" with its version and any major-change note,
+  or "No fix reported". A reported change is no longer called a resolution
+- Search covers advisory titles, advisory URLs, CWE identifiers, and fix
+  targets, which is what the placeholder promised
+- The report map no longer claims where the report came from
 - The toolchain now rests on Node.js 26.13.1, an Active LTS line supported until
   2029-04-30, instead of Node.js 20.19.0, which reached end of life on
   2026-04-30. `.nvmrc`, `.node-version`, both engine declarations, the lockfile,
