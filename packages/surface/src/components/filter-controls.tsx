@@ -71,7 +71,7 @@ export const FixableToggle = (props: FilterToggleProps) => {
           </svg>
         )}
       </span>
-      Fix available
+      Reported fix
     </button>
   );
 };

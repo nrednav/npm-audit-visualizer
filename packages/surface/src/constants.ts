@@ -30,7 +30,6 @@ type SeverityMeta = {
   color: string;
   surface: string;
   border: string;
-  description: string;
   onDark: string;
   cssColor: string;
   cssSurface: string;
@@ -47,7 +46,6 @@ export const SEVERITY_META: Record<Severity, SeverityMeta> = {
     color: "#9d174d",
     surface: "#fce7f0",
     border: "#f5c6da",
-    description: "Immediate action",
     onDark: "#f9a8d4",
     cssColor: "var(--severity-critical)",
     cssSurface: "var(--severity-critical-surface)",
@@ -62,7 +60,6 @@ export const SEVERITY_META: Record<Severity, SeverityMeta> = {
     color: "#c2410c",
     surface: "#ffedd5",
     border: "#fed7aa",
-    description: "Act soon",
     onDark: "#fdba74",
     cssColor: "var(--severity-high)",
     cssSurface: "var(--severity-high-surface)",
@@ -77,7 +74,6 @@ export const SEVERITY_META: Record<Severity, SeverityMeta> = {
     color: "#a16207",
     surface: "#fef9c3",
     border: "#fde68a",
-    description: "Plan a fix",
     onDark: "#fde047",
     cssColor: "var(--severity-moderate)",
     cssSurface: "var(--severity-moderate-surface)",
@@ -92,7 +88,6 @@ export const SEVERITY_META: Record<Severity, SeverityMeta> = {
     color: "#0b6b5c",
     surface: "#e1efea",
     border: "#c9e0d8",
-    description: "Monitor",
     onDark: "#5eead4",
     cssColor: "var(--severity-low)",
     cssSurface: "var(--severity-low-surface)",
@@ -107,7 +102,6 @@ export const SEVERITY_META: Record<Severity, SeverityMeta> = {
     color: "#334155",
     surface: "#edf0f2",
     border: "#d9dfe3",
-    description: "Context only",
     onDark: "#cbd5e1",
     cssColor: "var(--severity-info)",
     cssSurface: "var(--severity-info-surface)",

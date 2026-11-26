@@ -45,6 +45,13 @@ const Visualizer = (props: VisualizerProps) => {
         ...vulnerability.paths,
         ...vulnerability.via,
         ...vulnerability.effects,
+        ...vulnerability.advisories.flatMap((advisory) => [
+          advisory.title,
+          advisory.url,
+          ...advisory.cwe,
+        ]),
+        vulnerability.fix.name ?? "",
+        vulnerability.fix.version ?? "",
       ]
         .join(" ")
         .toLowerCase();
@@ -94,7 +101,7 @@ const Visualizer = (props: VisualizerProps) => {
           </h2>
           <p className="mt-1 max-w-[62ch] text-sm text-ink-muted">
             Read each finding in place. Open a row to see the advisory, the
-            vulnerable range, and the exact dependency paths it reaches.
+            vulnerable range, and the install locations npm reported.
           </p>
         </div>
 
@@ -117,7 +124,7 @@ const Visualizer = (props: VisualizerProps) => {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search package, path, or advisory"
+            placeholder="Search package, install location, or advisory"
             className="h-10 w-full rounded-lg border border-line bg-surface pl-8 pr-8 text-sm text-ink placeholder:text-ink-muted focus:border-teal/50 focus-visible:ring-2 focus-visible:ring-teal/20"
           />
           {query.length > 0 && (

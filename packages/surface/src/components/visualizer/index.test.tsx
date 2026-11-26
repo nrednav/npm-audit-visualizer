@@ -54,6 +54,19 @@ describe("Visualizer", () => {
     expect(summaryText()).toContain("1 of 3 findings");
   });
 
+  it("finds a finding by its advisory title", async () => {
+    const user = userEvent.setup();
+    renderVisualizer();
+
+    await user.type(
+      screen.getByRole("searchbox", { name: /search findings/i }),
+      "regular expression denial",
+    );
+
+    expect(screen.getAllByRole("rowheader")).toHaveLength(1);
+    expect(summaryText()).toContain("1 of 3 findings");
+  });
+
   it("derives the restriction, so clearing it restores the full set", async () => {
     const user = userEvent.setup();
     renderVisualizer();

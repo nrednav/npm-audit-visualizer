@@ -27,18 +27,18 @@ const AuditBriefing = (props: AuditBriefingProps) => {
             className="mt-3 max-w-[18ch] text-[2.25rem] font-semibold leading-[1.02] tracking-[-0.045em] lg:text-[3.375rem]"
           >
             {total === 0
-              ? "This dependency tree came back clean."
+              ? "This audit report lists no vulnerabilities."
               : `${total.toLocaleString("en-US")} ${
-                  total === 1 ? "finding needs" : "findings need"
-                } a decision.`}
+                  total === 1 ? "finding" : "findings"
+                } reported.`}
           </h1>
 
           <p className="mt-5 max-w-[58ch] text-[0.9375rem] leading-relaxed text-[#c3ccc5]">
             {total === 0
-              ? "No vulnerabilities were reported. Keep this report as evidence of the scan."
+              ? "npm reported no vulnerabilities for this report. Keep the report as the record of that audit."
               : actionRequired > 0
-                ? "Start with critical, then high. Every finding below keeps its advisory, affected paths, and fix status in one place."
-                : "No critical or high findings. Work through the moderate and low findings when it suits the maintenance window."}
+                ? "By default, review critical and high findings first. Adjust for dependency position and the reported change."
+                : "This report lists no critical or high findings. The moderate and low findings are listed below."}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -53,7 +53,7 @@ const AuditBriefing = (props: AuditBriefingProps) => {
               <span className="num text-[#e8eee9]">
                 {fixableCount.toLocaleString("en-US")}
               </span>{" "}
-              of {total.toLocaleString("en-US")} findings report a fix
+              of {total.toLocaleString("en-US")} findings carry a reported fix
             </p>
           </div>
         </div>
@@ -93,7 +93,7 @@ const AuditBriefing = (props: AuditBriefingProps) => {
                 </span>
                 {counts.high} high
               </span>
-              <span className="text-[#a9b5ad]">action required</span>
+              <span className="text-[#a9b5ad]">critical and high</span>
             </div>
           </div>
         </div>

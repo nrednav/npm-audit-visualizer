@@ -58,7 +58,7 @@ const AuditWorkspace = () => {
       <footer className="border-t border-line/80">
         <div className="page-shell flex flex-col gap-2 py-5 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between">
           <p>
-            Generated from a local <span className="font-mono">npm audit</span>{" "}
+            This page shows one <span className="font-mono">npm audit</span>{" "}
             report. No data leaves this browser tab.
           </p>
           <p>

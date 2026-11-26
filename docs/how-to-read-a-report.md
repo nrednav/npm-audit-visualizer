@@ -5,7 +5,8 @@ filter, and act on. You should already be comfortable running commands in a
 terminal and have a Node project that uses npm.
 
 For the full list of options and the payload shape, see the
-[CLI and payload reference](cli-reference.md).
+[CLI and payload reference](cli-reference.md). For the exact sense of terms such
+as finding, advisory, and reported fix, see the [vocabulary](vocabulary.md).
 
 ## Audit the project
 
@@ -69,19 +70,20 @@ npm-audit-visualizer --port 3000
 Confirm the address in the printed output. It is the port actually bound, which
 may differ from the one you asked for.
 
-## Trace a finding to something you can fix
+## Read a finding's evidence
 
-To act on a finding, open it in the explorer and read its dependency path and
-fix field.
+To act on a finding, open it in the explorer and read its reported install
+locations and fix field.
 
 1. Select a severity in the ledger to narrow the list. Select it again, or use
    the reset control, to clear the filter.
-2. Open a finding's row to see its advisories, vulnerable range, and dependency
-   paths.
-3. Follow the path to a direct dependency. A transitive finding offers a chain
-   through its `effects` to a package you can act on.
-4. Read the fix field. If `fix.available` is true, the named version resolves
-   it; if `fix.major` is true, expect a breaking change.
+2. Open a finding's row to see its advisories, vulnerable range, and the install
+   locations npm reported.
+3. Read the install locations. A nested location such as
+   `node_modules/a/node_modules/b` shows which copy npm found. Read `effects` to
+   see which packages npm said the finding affects.
+4. Read the fix field. If `fix.available` is true, npm reports that a change is
+   available. If `fix.major` is true, npm flags a semver-major change.
 
 ## Stop the server
 

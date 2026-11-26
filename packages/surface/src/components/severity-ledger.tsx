@@ -23,8 +23,12 @@ const SeverityLedger = (props: SeverityLedgerProps) => {
             id="severity-heading"
             className="mt-1 text-[1.5rem] font-semibold tracking-[-0.025em]"
           >
-            What needs attention
+            What npm reported
           </h2>
+          <p className="mt-1 max-w-[52ch] text-sm text-ink-muted">
+            The five levels order the list by default. They do not rank project
+            risk.
+          </p>
         </div>
         <p className="text-sm text-ink-muted">
           {selected
@@ -85,9 +89,6 @@ const SeverityLedger = (props: SeverityLedgerProps) => {
 
                 <span className="num mt-3 text-[1.75rem] font-semibold leading-none tracking-[-0.035em] text-ink">
                   {value.toLocaleString("en-US")}
-                </span>
-                <span className="mt-1 text-xs text-ink-muted">
-                  {meta.description}
                 </span>
 
                 <span className="bar-track mt-5 w-full">

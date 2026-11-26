@@ -57,12 +57,14 @@ describe("App", () => {
     await waitFor(() => {
       expect(
         screen.getByRole("heading", {
-          name: /3 findings need a decision/i,
+          name: /3 findings reported/i,
         }),
       ).toBeVisible();
     });
 
     expect(screen.getByText("Audit briefing")).toBeVisible();
+    expect(screen.getByText(/no data leaves this browser tab/i)).toBeVisible();
+    expect(screen.queryByText(/generated from a local/i)).toBeNull();
   });
 
   it("offers a skip link to the findings", () => {
@@ -77,11 +79,13 @@ describe("App", () => {
     render(<App />);
 
     const ledger = screen.getByRole("region", {
-      name: /what needs attention/i,
+      name: /what npm reported/i,
     });
 
     expect(within(ledger).getByText("Moderate")).toBeVisible();
     expect(ledger.querySelectorAll("button[aria-pressed]")).toHaveLength(5);
+    expect(screen.getByText(/do not rank project risk/i)).toBeVisible();
+    expect(screen.queryByText(/immediate action/i)).toBeNull();
     expect(screen.getByRole("region", { name: /report scope/i })).toBeVisible();
   });
 
@@ -91,9 +95,9 @@ describe("App", () => {
 
     expect(screen.getByText(/reading report/i)).toBeVisible();
     expect(
-      screen.queryByRole("heading", { name: /findings need a decision/i }),
+      screen.queryByRole("heading", { name: /findings reported/i }),
     ).toBeNull();
-    expect(screen.queryByText(/came back clean/i)).toBeNull();
+    expect(screen.queryByText(/lists no vulnerabilities/i)).toBeNull();
   });
 
   it("shows the cause when the report could not be read", () => {
@@ -107,7 +111,7 @@ describe("App", () => {
       screen.getByRole("heading", { name: /could not be read/i }),
     ).toBeVisible();
     expect(screen.getByText(/404 for \/report\.json/)).toBeVisible();
-    expect(screen.queryByText(/came back clean/i)).toBeNull();
+    expect(screen.queryByText(/lists no vulnerabilities/i)).toBeNull();
     expect(screen.queryByText(/no findings match/i)).toBeNull();
   });
 
@@ -116,8 +120,9 @@ describe("App", () => {
     render(<App />);
 
     expect(
-      screen.getByRole("heading", { name: /came back clean/i }),
+      screen.getByRole("heading", { name: /lists no vulnerabilities/i }),
     ).toBeVisible();
+    expect(screen.queryByText(/clean/i)).toBeNull();
     expect(
       screen.queryByRole("heading", { name: /could not be read/i }),
     ).toBeNull();
