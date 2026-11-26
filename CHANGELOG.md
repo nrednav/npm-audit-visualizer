@@ -6,10 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v1.0.0-alpha.12] - 2026-11-26
+
+Milestone M1, the versioned evidence and provenance contract. The payload moved
+from version 1 to version 6, and each move is refused by name rather than read
+approximately.
 
 ### Added
 
+- The payload carries `schemaVersion`, so the page can tell whether the report it
+  received is one it can read. A different, missing, or wrongly typed version is a
+  named compatibility failure that shows no findings instead of an empty report.
+- The payload carries `sources`, one descriptor per artifact it was built from: the
+  artifact kind, its producer, the artifact's own schema version, and a label. The
+  label is the file's own name with no directory, or a phrase for an automatic
+  audit, so a local path never reaches the page. The interface shows the source,
+  the producer, and the creation state beside the scope counts.
+- Four evidence origins: `reported`, `observed`, `derived`, and `asserted`.
+  `unknown` is a knowledge state and is refused as an origin, because an origin
+  says where a value came from and a value that does not exist has none.
+- An unknown carries the reason it is unknown, and the page shows that reason
+  beside the field. The descriptor's creation time and producer version are the
+  first unknowns, because npm states neither.
+- The graph states that it is derived from the `via` relationships npm reported,
+  and says that it is not a complete dependency tree. The page shows that sentence
+  wherever it draws the graph.
+- Every source descriptor states a SHA-256 digest of the exact bytes it was built
+  from, as `sha256:` and 64 lowercase hexadecimal characters. The page shows a
+  prefix and the whole value.
+- Audit time, observation time, and payload build time are separate fields, and the
+  companion artifact's creation time keeps its own. Audit time is always unknown
+  because npm states none. Observation time is stated only by the automatic audit.
+  The page labels all four.
 - [Compatibility rules](docs/compatibility.md): which artifact versions are
   accepted, which are refused, what every refusal names, and what an unknown value
   means. Each statement is executed by `test/compatibility.test.ts`, so the page
@@ -17,57 +45,24 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- The payload version is now `6`. The payload carries required `timestamps`, so a
-  version-5 payload is refused by name.
+- The payload version is now `6`. A version-5 payload is refused by name, as every
+  earlier version is.
+- A `null` no longer states an absence. Where the evidence does not supply a value,
+  the payload states an unknown with a reason, so a consumer cannot fill the gap
+  with a default.
+- The digest covers the bytes that arrived, not the text they decoded to, so a
+  report with a different encoding is a different subject.
 
-### Added
+### Fixed
 
-- Audit time, observation time, and payload build time are separate fields, and the
-  companion artifact's creation time keeps its own. Audit time is always unknown
-  because npm states none. Observation time exists only where the tool observed
-  something. The page labels all four and the payload version is now `5`. Every source descriptor carries a required
-  `digest`, so a version-4 payload is refused by name.
-
-### Added
-
-- Every source descriptor states a SHA-256 digest of the exact bytes it was built
-  from, as `sha256:` and 64 lowercase hexadecimal characters. The page shows a
-  prefix and the whole value. The payload version is now `4`. The graph carries a required `derivation`, so a
-  version-3 payload is refused by name.
-
-### Added
-
-- The graph states that it is derived from the `via` relationships npm reported,
-  and says it is not a complete dependency tree. The page shows that sentence
-  wherever it draws the graph.
-- The payload version is now `3`. Two descriptor fields became a union of a value
-  and an unknown, so a version-2 payload is refused by name. A `null` no longer
-  states an absence in the descriptor.
-
-### Added
-
-- Four evidence origins: `reported`, `observed`, `derived`, and `asserted`.
-  `unknown` is a knowledge state and is refused as an origin, because an origin
-  says where a value came from and a value that does not exist has none.
-- An unknown carries the reason it is unknown, and the page shows that reason
-  beside the field. The descriptor's creation time and producer version are the
-  first unknowns, because npm states neither.
-
-### Added
-
-- The payload carries `sources`, one descriptor per artifact it was built from.
-  A descriptor names the artifact kind, its producer, the artifact's own schema
-  version, and a label. A creation time stays `null` when the report states none,
-  and the page shows `not supplied` rather than guessing from a file's
-  modification time. The label is the file's own name with no directory, or a
-  phrase for an automatic audit, so a local path never reaches the page.
-- The interface shows the report's source, producer, and creation state beside
-  the scope counts.
-- The payload carries `schemaVersion`, so the page can tell whether the report it
-  received is one it can read. A different, missing, or wrongly typed version is
-  a named compatibility failure that shows no findings, instead of an empty
-  report. The field is documented in the [CLI and payload
-reference](docs/cli-reference.md).
+- An interrupted audit now waits for the producer to exit before it reports that
+  it stopped, so a run that has been declared finished leaves no child behind. A
+  producer that ignores the first signal is killed, and one that never reports its
+  exit cannot hold the caller forever.
+- The graph panel painted a single colour instead of a ring of packages. A node's
+  size is expressed in graph position units, and the circular layout placed every
+  node on a unit circle, so one node covered the whole viewport. The ring is now
+  stated in the same units as the sizes, and a test holds the ratio.
 
 ## [v1.0.0-alpha.11] - 2026-11-26
 
