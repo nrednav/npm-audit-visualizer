@@ -81,6 +81,18 @@ const byNodeUrgency = (left: GraphNode, right: GraphNode): number => {
 const byEdgeOrder = (left: GraphEdge, right: GraphEdge): number => {
   return left.from.localeCompare(right.from) || left.to.localeCompare(right.to);
 };
+/**
+ * The edges are computed from `via` and `nodes`, so the graph's origin is derived
+ * and its basis is those relationships. The note says what the graph omits,
+ * because a reader who is not told will read an absent package as an absent
+ * dependency, which this graph cannot show.
+ */
+const GRAPH_DERIVATION = {
+  origin: "derived",
+  basis: "audit-via",
+  note: "Derived from the via relationships npm reported. This is not a complete dependency tree: a package npm did not report is absent.",
+} as const;
+
 const buildGraph = (report: AuditReport): DependencyGraph => {
   const nodes = new Map<string, GraphNode>();
   const edges: DependencyGraph["edges"] = [];
@@ -125,6 +137,7 @@ const buildGraph = (report: AuditReport): DependencyGraph => {
   return {
     nodes: [...nodes.values()].sort(byNodeUrgency),
     edges: edges.sort(byEdgeOrder),
+    derivation: GRAPH_DERIVATION,
   };
 };
 

@@ -229,6 +229,15 @@ describe("buildPayload", () => {
     );
   });
 
+  it("states that the graph is derived from reported via relationships", () => {
+    const { derivation } = payloadOf(ordered).graph;
+
+    expect(derivation.origin).toBe("derived");
+    expect(derivation.basis).toBe("audit-via");
+    expect(derivation.note).toContain("via relationships npm reported");
+    expect(derivation.note).toContain("not a complete dependency tree");
+  });
+
   it("carries the descriptors it was given, in order", () => {
     const first = sourceOfFile("audit.json");
     const second = sourceOfFile("other.json");

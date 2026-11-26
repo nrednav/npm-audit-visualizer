@@ -93,6 +93,11 @@ const mixedPayload: Payload = {
     },
   ],
   graph: {
+    derivation: {
+      origin: "derived",
+      basis: "audit-via",
+      note: "Derived from the via relationships npm reported. This is not a complete dependency tree: a package npm did not report is absent.",
+    },
     nodes: [
       { id: "left-pad", name: "left-pad", severity: "critical" },
       { id: "minimist", name: "minimist", severity: "high" },

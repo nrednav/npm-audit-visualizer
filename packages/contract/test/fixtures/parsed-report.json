@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "sources": [
     {
       "kind": "audit-report",
@@ -129,6 +129,11 @@
         "from": "simple-update-notifier",
         "to": "semver"
       }
-    ]
+    ],
+    "derivation": {
+      "origin": "derived",
+      "basis": "audit-via",
+      "note": "Derived from the via relationships npm reported. This is not a complete dependency tree: a package npm did not report is absent."
+    }
   }
 }

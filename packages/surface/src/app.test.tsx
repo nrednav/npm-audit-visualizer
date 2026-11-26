@@ -45,7 +45,15 @@ const emptyPayload: Payload = {
     },
   },
   findings: [],
-  graph: { nodes: [], edges: [] },
+  graph: {
+    nodes: [],
+    edges: [],
+    derivation: {
+      origin: "derived",
+      basis: "audit-via",
+      note: "Derived from the via relationships npm reported. This is not a complete dependency tree: a package npm did not report is absent.",
+    },
+  },
 };
 
 const setState = (next: PayloadState): void => {
