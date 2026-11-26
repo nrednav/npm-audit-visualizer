@@ -40,6 +40,17 @@ export const isSafeLabel = (candidate: string): boolean =>
   !DRIVE_PREFIX.test(candidate) &&
   !DIRECTORY_REFERENCE.test(candidate);
 
+/**
+ * A content identity for one artifact: the SHA-256 of the exact bytes it arrived
+ * as, lowercase hexadecimal, with an algorithm prefix. Lowercase only, because
+ * two spellings of one digest would compare unequal as strings.
+ */
+export const DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/;
+
+export const DigestSchema = z.string().regex(DIGEST_PATTERN);
+
+export type Digest = z.infer<typeof DigestSchema>;
+
 export const SourceDescriptorSchema = z.object({
   kind: SourceKindSchema,
   producer: ProducerSchema,
@@ -51,6 +62,8 @@ export const SourceDescriptorSchema = z.object({
     message:
       "a label names an artifact and must not be a path: no separators, no drive prefix, at most 120 characters",
   }),
+  /** The identity of the exact bytes, so a later artifact can bind to them. */
+  digest: DigestSchema,
 });
 
 export type SourceDescriptor = z.infer<typeof SourceDescriptorSchema>;

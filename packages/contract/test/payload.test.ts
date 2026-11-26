@@ -41,6 +41,7 @@ const payload: Payload = {
       schemaVersion: "2",
       createdAt: { unknown: "npm states no creation time" },
       label: "report.json",
+      digest: `sha256:${"b".repeat(64)}`,
     },
   ],
   metadata,
@@ -110,7 +111,7 @@ describe("payload schema", () => {
   });
 
   it("requires the current payload version", () => {
-    expect(PAYLOAD_SCHEMA_VERSION).toBe(4);
+    expect(PAYLOAD_SCHEMA_VERSION).toBe(5);
     expect(PayloadSchema.safeParse(payload).success).toBe(true);
 
     const { schemaVersion: _omitted, ...withoutVersion } = payload;
@@ -208,6 +209,14 @@ describe("decodePayload", () => {
       received: PAYLOAD_SCHEMA_VERSION - 1,
       supported: PAYLOAD_SCHEMA_VERSION,
     });
+  });
+
+  it("requires a digest on every descriptor", () => {
+    const { digest: _omitted, ...withoutDigest } = payload.sources[0];
+
+    expect(
+      PayloadSchema.safeParse({ ...payload, sources: [withoutDigest] }).success,
+    ).toBe(false);
   });
 
   it("requires a derivation on the graph", () => {

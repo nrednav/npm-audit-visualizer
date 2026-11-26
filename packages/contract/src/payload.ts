@@ -76,8 +76,10 @@ export type DependencyGraph = z.infer<typeof DependencyGraphSchema>;
  * value and an unknown, so a version-2 payload is refused rather than read as if
  * `null` were the only way to say a value is missing. 4 added `graph.derivation`,
  * so a version-3 payload is refused rather than read as a graph of unknown origin.
+ * 5 added `sources[].digest`, so a version-4 payload is refused rather than read
+ * as an artifact with no identity.
  */
-export const PAYLOAD_SCHEMA_VERSION = 4;
+export const PAYLOAD_SCHEMA_VERSION = 5;
 
 export const PayloadSchema = z.object({
   schemaVersion: z.literal(PAYLOAD_SCHEMA_VERSION),

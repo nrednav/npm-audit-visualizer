@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { isSafeLabel, SourceDescriptorSchema } from "../src/source.js";
+import {
+  DIGEST_PATTERN,
+  DigestSchema,
+  isSafeLabel,
+  SourceDescriptorSchema,
+} from "../src/source.js";
+
+const digest = `sha256:${"a".repeat(64)}`;
 
 const descriptor = {
   kind: "audit-report" as const,
@@ -7,6 +14,7 @@ const descriptor = {
   schemaVersion: "2",
   createdAt: { unknown: "npm states no creation time" },
   label: "report.json",
+  digest,
 };
 
 describe("source descriptor", () => {
@@ -87,6 +95,44 @@ describe("isSafeLabel", () => {
   it("answers for any string without throwing", () => {
     for (const candidate of ["", " ", "\u0000", "é", "\u{1F600}report"]) {
       expect(() => isSafeLabel(candidate)).not.toThrow();
+    }
+  });
+});
+
+describe("digest", () => {
+  it("accepts the sha256 prefix with 64 lowercase hexadecimal characters", () => {
+    expect(DigestSchema.safeParse(digest).success).toBe(true);
+  });
+
+  it("refuses uppercase, a short body, and a bare hexadecimal string", () => {
+    expect(DigestSchema.safeParse(`sha256:${"A".repeat(64)}`).success).toBe(
+      false,
+    );
+    expect(DigestSchema.safeParse(`sha256:${"a".repeat(63)}`).success).toBe(
+      false,
+    );
+    expect(DigestSchema.safeParse("a".repeat(64)).success).toBe(false);
+    expect(DigestSchema.safeParse(`sha512:${"a".repeat(64)}`).success).toBe(
+      false,
+    );
+  });
+
+  it("is required on a descriptor, so no artifact lacks an identity", () => {
+    const { digest: _omitted, ...withoutDigest } = descriptor;
+
+    expect(SourceDescriptorSchema.safeParse(withoutDigest).success).toBe(false);
+  });
+
+  it("agrees with the exported pattern", () => {
+    for (const candidate of [
+      digest,
+      `sha256:${"A".repeat(64)}`,
+      "a".repeat(64),
+      "",
+    ]) {
+      expect(DigestSchema.safeParse(candidate).success).toBe(
+        DIGEST_PATTERN.test(candidate),
+      );
     }
   });
 });

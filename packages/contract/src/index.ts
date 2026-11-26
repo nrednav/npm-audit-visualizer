@@ -52,6 +52,9 @@ export {
 } from "./severity.js";
 
 export {
+  DIGEST_PATTERN,
+  type Digest,
+  DigestSchema,
   isSafeLabel,
   type Producer,
   ProducerSchema,
