@@ -2,6 +2,8 @@ import {
   isUnknown,
   type Payload,
   type SourceDescriptor,
+  type Timestamp,
+  type Unknown,
 } from "@npm-audit-visualizer/contract";
 
 const DIGEST_PREFIX_LENGTH = 12;
@@ -9,7 +11,15 @@ const DIGEST_PREFIX_LENGTH = 12;
 type ReportContextProps = {
   metadata: Payload["metadata"];
   sources: Payload["sources"];
+  timestamps: Payload["timestamps"];
 };
+
+/**
+ * A time that may be unknown is shown with its reason, never as a plausible
+ * instant. The page has no clock of its own to offer and must not offer one.
+ */
+const timeText = (value: Timestamp | Unknown): string =>
+  typeof value === "string" ? value : `not supplied (${value.unknown})`;
 
 const DEPENDENCY_LABELS: Record<string, string> = {
   prod: "Production",
@@ -61,7 +71,7 @@ const digestText = (digest: string): string => {
 };
 
 const ReportContext = (props: ReportContextProps) => {
-  const { metadata, sources } = props;
+  const { metadata, sources, timestamps } = props;
   const source = reportSource(sources);
   const entries = Object.entries(metadata.dependencies).filter(
     ([key]) => key !== "total",
@@ -112,11 +122,28 @@ const ReportContext = (props: ReportContextProps) => {
             </dd>
           </div>
           <div className="flex items-baseline gap-2">
-            <dt className="text-xs text-ink-muted">Created</dt>
+            <dt className="text-xs text-ink-muted">Artifact created</dt>
             <dd className="text-sm">
               {/* A time the report never stated stays unsaid, never guessed. */}
               {createdText(source)}
             </dd>
+          </div>
+          {/* Each of these is a different instant, so each keeps its own name. */}
+          <div className="flex items-baseline gap-2">
+            <dt className="text-xs text-ink-muted">Audit time</dt>
+            <dd className="max-w-[30ch] text-sm">
+              {timeText(timestamps.auditTime)}
+            </dd>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <dt className="text-xs text-ink-muted">Observed</dt>
+            <dd className="max-w-[30ch] text-sm">
+              {timeText(timestamps.observedAt)}
+            </dd>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <dt className="text-xs text-ink-muted">Payload built</dt>
+            <dd className="text-sm">{timestamps.builtAt}</dd>
           </div>
         </dl>
       )}

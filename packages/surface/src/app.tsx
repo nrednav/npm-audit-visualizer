@@ -45,7 +45,11 @@ const AuditWorkspace = () => {
           onSelect={setSeverityFilter}
         />
 
-        <ReportContext metadata={payload.metadata} sources={payload.sources} />
+        <ReportContext
+          metadata={payload.metadata}
+          sources={payload.sources}
+          timestamps={payload.timestamps}
+        />
 
         <Visualizer
           findings={payload.findings}
