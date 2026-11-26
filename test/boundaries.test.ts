@@ -331,6 +331,22 @@ describe("the payload contract is documented where a reader looks", () => {
     expect(text).toMatch(/modification time is not a creation time/);
   });
 
+  it("documents the digest field and its exact encoding", () => {
+    const text = reference();
+
+    expect(text).toMatch(/`sources\[\]\.digest`/);
+    expect(text).toMatch(/64 lowercase\s+hexadecimal/);
+    expect(text).toMatch(/Uppercase is refused/);
+  });
+
+  it("states that bytes are hashed and not their meaning", () => {
+    const text = reference();
+
+    expect(text).toMatch(/bytes are hashed, not the meaning/i);
+    expect(text).toMatch(/no canonical form is defined/);
+    expect(text).toMatch(/two subjects/);
+  });
+
   it("documents each of the four evidence origins", () => {
     const text = reference();
 

@@ -10,7 +10,14 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- The payload version is now `4`. The graph carries a required `derivation`, so a
+- The payload version is now `5`. Every source descriptor carries a required
+  `digest`, so a version-4 payload is refused by name.
+
+### Added
+
+- Every source descriptor states a SHA-256 digest of the exact bytes it was built
+  from, as `sha256:` and 64 lowercase hexadecimal characters. The page shows a
+  prefix and the whole value. The payload version is now `4`. The graph carries a required `derivation`, so a
   version-3 payload is refused by name.
 
 ### Added

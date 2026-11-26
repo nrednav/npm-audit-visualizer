@@ -146,6 +146,31 @@ name, with no directory. When the tool runs the audit itself, the label is the
 phrase `npm audit in the current project`. If a filename cannot be a safe label,
 the label falls back to `audit report from a file` rather than exposing it.
 
+### `sources[].digest`
+
+The digest names the exact bytes of the artifact, so a later file can bind to a
+report without naming a path, a time, or a version that two runs could share.
+
+```json
+"digest": "sha256:9f2c…"
+```
+
+**The encoding is exact.** The prefix is `sha256:`, the body is 64 lowercase
+hexadecimal characters, and nothing else is accepted. Uppercase is refused because
+two spellings of one digest would compare unequal as strings, which is the one
+thing an identity may never do.
+
+**The bytes are hashed, not the meaning.** A report and a copy of that report have
+one identity. A report and a reformatted report with the same findings have two,
+because a trailing newline or a change in spacing changes the bytes. This is
+deliberate: no canonical form is defined, so two artifacts that differ on disk are
+two subjects. If a canonical identity is ever wanted, it is a separate, chosen
+digest, not a silent change to this one.
+
+The file path hashes the bytes read from the file. The automatic audit hashes the
+bytes npm wrote to standard output. Neither hashes a parsed object, and the page
+never computes a digest; it shows the one the payload carries.
+
 **An unstated value stays unfilled, and says why.** `npm audit --json` states
 neither a creation time nor its own version, so both are unknown and the page
 shows `not supplied` followed by the reason:
