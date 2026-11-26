@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { unknownable } from "./evidence.js";
 
 /**
  * The only artifact a payload can be built from today. A second member is added
@@ -10,13 +11,12 @@ export const SourceKindSchema = z.literal("audit-report");
 export type SourceKind = z.infer<typeof SourceKindSchema>;
 
 /**
- * What produced the artifact, as the artifact or its producer states it. A null
- * version means the artifact did not state one, which is different from knowing
- * a version.
+ * What produced the artifact, as the artifact or its producer states it. A
+ * version may be unknown, which is a different claim from knowing one.
  */
 export const ProducerSchema = z.object({
   name: z.string().min(1).max(64),
-  version: z.string().min(1).max(64).nullable(),
+  version: unknownable(z.string().min(1).max(64)),
 });
 
 export type Producer = z.infer<typeof ProducerSchema>;
@@ -45,8 +45,8 @@ export const SourceDescriptorSchema = z.object({
   producer: ProducerSchema,
   /** The artifact's own schema version, when it states one. */
   schemaVersion: z.string().min(1).nullable(),
-  /** Creation time as the artifact states it. Null when it states none. */
-  createdAt: z.iso.datetime({ offset: true }).nullable(),
+  /** Creation time as the artifact states it, or an unknown carrying why not. */
+  createdAt: unknownable(z.iso.datetime({ offset: true })),
   label: z.string().refine(isSafeLabel, {
     message:
       "a label names an artifact and must not be a path: no separators, no drive prefix, at most 120 characters",

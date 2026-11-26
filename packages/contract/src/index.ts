@@ -1,4 +1,16 @@
 export {
+  EVIDENCE_ORIGINS,
+  type EvidenceOrigin,
+  EvidenceOriginSchema,
+  type EvidenceRecord,
+  EvidenceRecordSchema,
+  isEvidenceOrigin,
+  isUnknown,
+  type Unknown,
+  UnknownSchema,
+  unknownable,
+} from "./evidence.js";
+export {
   type DependencyGraph,
   DependencyGraphSchema,
   decodePayload,
@@ -17,7 +29,6 @@ export {
   PayloadSchema,
   REPORT_ROUTE,
 } from "./payload.js";
-
 export {
   type Advisory,
   AdvisorySchema,

@@ -3,9 +3,9 @@ import { isSafeLabel, SourceDescriptorSchema } from "../src/source.js";
 
 const descriptor = {
   kind: "audit-report" as const,
-  producer: { name: "npm", version: null },
+  producer: { name: "npm", version: { unknown: "npm states no version" } },
   schemaVersion: "2",
-  createdAt: null,
+  createdAt: { unknown: "npm states no creation time" },
   label: "report.json",
 };
 

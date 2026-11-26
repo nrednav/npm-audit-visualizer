@@ -68,10 +68,12 @@ export type DependencyGraph = z.infer<typeof DependencyGraphSchema>;
  * `auditReportVersion` and not the package version: both sides must agree on
  * this wire shape even when their releases differ.
  *
- * 2 adds `sources`, a required field, so a version-1 payload is refused rather
- * than read as if it had no provenance.
+ * 2 added `sources`, a required field, so a version-1 payload is refused rather
+ * than read as if it had no provenance. 3 made two descriptor fields unions of a
+ * value and an unknown, so a version-2 payload is refused rather than read as if
+ * `null` were the only way to say a value is missing.
  */
-export const PAYLOAD_SCHEMA_VERSION = 2;
+export const PAYLOAD_SCHEMA_VERSION = 3;
 
 export const PayloadSchema = z.object({
   schemaVersion: z.literal(PAYLOAD_SCHEMA_VERSION),

@@ -31,9 +31,9 @@ const payload: Payload = {
   sources: [
     {
       kind: "audit-report",
-      producer: { name: "npm", version: null },
+      producer: { name: "npm", version: { unknown: "npm states no version" } },
       schemaVersion: "2",
-      createdAt: null,
+      createdAt: { unknown: "npm states no creation time" },
       label: "report.json",
     },
   ],
@@ -99,7 +99,7 @@ describe("payload schema", () => {
   });
 
   it("requires the current payload version", () => {
-    expect(PAYLOAD_SCHEMA_VERSION).toBe(2);
+    expect(PAYLOAD_SCHEMA_VERSION).toBe(3);
     expect(PayloadSchema.safeParse(payload).success).toBe(true);
 
     const { schemaVersion: _omitted, ...withoutVersion } = payload;
