@@ -47,6 +47,22 @@ export const unknownable = <T extends z.ZodType>(value: T) =>
   z.union([value, UnknownSchema]);
 
 /**
+ * How a computed value was computed. The origin is a literal from the roster
+ * rather than the whole roster, so a derived graph cannot claim that npm reported
+ * it; a test holds the literal to `EVIDENCE_ORIGINS` so the two cannot drift.
+ *
+ * The note is required: a marker without a sentence tells a reader that something
+ * is derived without telling them what it is derived from or what it omits.
+ */
+export const DerivationSchema = z.object({
+  origin: z.literal("derived"),
+  basis: z.string().min(1).max(64),
+  note: z.string().min(1).max(MAX_REASON_LENGTH),
+});
+
+export type Derivation = z.infer<typeof DerivationSchema>;
+
+/**
  * A fact paired with its origin, for the companion artifacts, derived claims,
  * and human assertions that state one. npm's own report fields do not use this:
  * they inherit the report's `reported` origin instead of carrying a wrapper.

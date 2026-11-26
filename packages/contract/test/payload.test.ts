@@ -26,6 +26,12 @@ const metadata = {
   },
 };
 
+const derivation = {
+  origin: "derived" as const,
+  basis: "audit-via",
+  note: "derived from the via relationships npm reported",
+};
+
 const payload: Payload = {
   schemaVersion: PAYLOAD_SCHEMA_VERSION,
   sources: [
@@ -58,6 +64,7 @@ const payload: Payload = {
       { id: "minimatch", name: "minimatch", severity: null },
     ],
     edges: [{ from: "brace-expansion", to: "minimatch" }],
+    derivation,
   },
 };
 
@@ -73,7 +80,7 @@ describe("payload schema", () => {
       sources: payload.sources,
       metadata,
       findings: [],
-      graph: { nodes: [], edges: [] },
+      graph: { nodes: [], edges: [], derivation },
     });
     expect(result.success).toBe(true);
   });
@@ -89,7 +96,11 @@ describe("payload schema", () => {
   it("rejects a relation that loses its direction", () => {
     const result = PayloadSchema.safeParse({
       ...payload,
-      graph: { nodes: payload.graph.nodes, edges: [{ from: "a" }] },
+      graph: {
+        nodes: payload.graph.nodes,
+        edges: [{ from: "a" }],
+        derivation,
+      },
     });
     expect(result.success).toBe(false);
   });
@@ -99,7 +110,7 @@ describe("payload schema", () => {
   });
 
   it("requires the current payload version", () => {
-    expect(PAYLOAD_SCHEMA_VERSION).toBe(3);
+    expect(PAYLOAD_SCHEMA_VERSION).toBe(4);
     expect(PayloadSchema.safeParse(payload).success).toBe(true);
 
     const { schemaVersion: _omitted, ...withoutVersion } = payload;
@@ -183,16 +194,38 @@ describe("decodePayload", () => {
     expect(result.success).toBe(false);
   });
 
-  it("refuses the previous version, which carried no sources", () => {
-    const { sources: _omitted, ...previousShape } = payload;
-    const result = decodePayload({ ...previousShape, schemaVersion: 1 });
+  it("refuses the previous version, which carried no graph derivation", () => {
+    const { derivation: _omitted, ...graph } = payload.graph;
+    const result = decodePayload({
+      ...payload,
+      schemaVersion: PAYLOAD_SCHEMA_VERSION - 1,
+      graph,
+    });
 
     expect(result.success).toBe(false);
     expect(result.success ? undefined : result.error).toEqual({
       kind: "version",
-      received: 1,
+      received: PAYLOAD_SCHEMA_VERSION - 1,
       supported: PAYLOAD_SCHEMA_VERSION,
     });
+  });
+
+  it("requires a derivation on the graph", () => {
+    const { derivation: _omitted, ...graph } = payload.graph;
+
+    expect(PayloadSchema.safeParse({ ...payload, graph }).success).toBe(false);
+  });
+
+  it("refuses a graph that claims npm reported its edges", () => {
+    const result = PayloadSchema.safeParse({
+      ...payload,
+      graph: {
+        ...payload.graph,
+        derivation: { ...derivation, origin: "reported" },
+      },
+    });
+
+    expect(result.success).toBe(false);
   });
 
   it("reports where a matching version carries invalid contents", () => {
@@ -201,7 +234,7 @@ describe("decodePayload", () => {
       sources: payload.sources,
       metadata: {},
       findings: [],
-      graph: { nodes: [], edges: [] },
+      graph: { nodes: [], edges: [], derivation },
     }) as { kind: string; paths: string[] };
 
     expect(failure.kind).toBe("shape");

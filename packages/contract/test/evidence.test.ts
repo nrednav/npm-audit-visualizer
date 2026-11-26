@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import {
+  type Derivation,
+  DerivationSchema,
   EVIDENCE_ORIGINS,
   type EvidenceOrigin,
   EvidenceOriginSchema,
@@ -10,6 +12,12 @@ import {
   UnknownSchema,
   unknownable,
 } from "../src/evidence.js";
+
+const derivation: Derivation = {
+  origin: "derived",
+  basis: "audit-via",
+  note: "derived from the via relationships npm reported",
+};
 
 describe("evidence origins", () => {
   it("accepts each of the four origins", () => {
@@ -137,5 +145,56 @@ describe("evidence record", () => {
         EvidenceRecordSchema.safeParse({ origin, value: null }).success,
       ).toBe(true);
     }
+  });
+});
+
+describe("derivation", () => {
+  it("states a derived origin, a basis, and a note", () => {
+    expect(DerivationSchema.safeParse(derivation).success).toBe(true);
+  });
+
+  it("refuses any origin but derived, so a computed value cannot claim to be reported", () => {
+    for (const origin of EVIDENCE_ORIGINS.filter((it) => it !== "derived")) {
+      expect(
+        DerivationSchema.safeParse({ ...derivation, origin }).success,
+      ).toBe(false);
+    }
+    expect(
+      DerivationSchema.safeParse({ ...derivation, origin: "unknown" }).success,
+    ).toBe(false);
+  });
+
+  it("keeps its origin in the roster, so there is one vocabulary", () => {
+    expect(EVIDENCE_ORIGINS).toContain(derivation.origin);
+  });
+
+  it("requires a basis and a note, each bounded", () => {
+    expect(
+      DerivationSchema.safeParse({ ...derivation, basis: "" }).success,
+    ).toBe(false);
+    expect(
+      DerivationSchema.safeParse({ ...derivation, basis: "a".repeat(65) })
+        .success,
+    ).toBe(false);
+    expect(
+      DerivationSchema.safeParse({ ...derivation, note: "" }).success,
+    ).toBe(false);
+    expect(
+      DerivationSchema.safeParse({ ...derivation, note: "a".repeat(201) })
+        .success,
+    ).toBe(false);
+    expect(
+      DerivationSchema.safeParse({ ...derivation, note: "a".repeat(200) })
+        .success,
+    ).toBe(true);
+  });
+
+  it("refuses an unknown note, because a marker must say something", () => {
+    expect(
+      DerivationSchema.safeParse({
+        ...derivation,
+        note: { unknown: "nobody wrote it" },
+      }).success,
+    ).toBe(false);
   });
 });

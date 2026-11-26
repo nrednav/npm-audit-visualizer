@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DerivationSchema } from "./evidence.js";
 import { AdvisorySchema, MetadataSchema } from "./report.js";
 import { SeveritySchema } from "./severity.js";
 import { SourceDescriptorSchema } from "./source.js";
@@ -59,6 +60,8 @@ export type GraphEdge = z.infer<typeof GraphEdgeSchema>;
 export const DependencyGraphSchema = z.object({
   nodes: z.array(GraphNodeSchema),
   edges: z.array(GraphEdgeSchema),
+  /** Required, so no graph can be served without saying how it was built. */
+  derivation: DerivationSchema,
 });
 
 export type DependencyGraph = z.infer<typeof DependencyGraphSchema>;
@@ -71,9 +74,10 @@ export type DependencyGraph = z.infer<typeof DependencyGraphSchema>;
  * 2 added `sources`, a required field, so a version-1 payload is refused rather
  * than read as if it had no provenance. 3 made two descriptor fields unions of a
  * value and an unknown, so a version-2 payload is refused rather than read as if
- * `null` were the only way to say a value is missing.
+ * `null` were the only way to say a value is missing. 4 added `graph.derivation`,
+ * so a version-3 payload is refused rather than read as a graph of unknown origin.
  */
-export const PAYLOAD_SCHEMA_VERSION = 3;
+export const PAYLOAD_SCHEMA_VERSION = 4;
 
 export const PayloadSchema = z.object({
   schemaVersion: z.literal(PAYLOAD_SCHEMA_VERSION),
