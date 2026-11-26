@@ -62,10 +62,73 @@ export const DependencyGraphSchema = z.object({
 
 export type DependencyGraph = z.infer<typeof DependencyGraphSchema>;
 
+/**
+ * The payload contract's own identity. It is not the npm report's
+ * `auditReportVersion` and not the package version: both sides must agree on
+ * this wire shape even when their releases differ.
+ */
+export const PAYLOAD_SCHEMA_VERSION = 1;
+
 export const PayloadSchema = z.object({
+  schemaVersion: z.literal(PAYLOAD_SCHEMA_VERSION),
   metadata: MetadataSchema,
   findings: z.array(FindingSchema),
   graph: DependencyGraphSchema,
 });
 
 export type Payload = z.infer<typeof PayloadSchema>;
+
+export type PayloadDecodeFailure =
+  | {
+      kind: "version";
+      /** What the payload claimed, or undefined when the field was absent. */
+      received: unknown;
+      supported: typeof PAYLOAD_SCHEMA_VERSION;
+    }
+  | { kind: "shape"; paths: string[] };
+
+export type PayloadDecodeResult =
+  | { success: true; payload: Payload }
+  | { success: false; error: PayloadDecodeFailure };
+
+const MAX_REPORTED_PATHS = 3;
+
+const statedVersion = (input: object): unknown =>
+  "schemaVersion" in input ? input.schemaVersion : undefined;
+
+/**
+ * Compatibility is decided before report contents are accepted, so an
+ * incompatible payload never reaches a reader as an empty report. The check is
+ * exact: no coercion, and an absent version is a mismatch rather than a
+ * legacy default.
+ */
+export const decodePayload = (input: unknown): PayloadDecodeResult => {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
+    return { success: false, error: { kind: "shape", paths: ["(root)"] } };
+  }
+
+  const received = statedVersion(input);
+
+  if (received !== PAYLOAD_SCHEMA_VERSION) {
+    return {
+      success: false,
+      error: { kind: "version", received, supported: PAYLOAD_SCHEMA_VERSION },
+    };
+  }
+
+  const parsed = PayloadSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: {
+        kind: "shape",
+        paths: parsed.error.issues
+          .slice(0, MAX_REPORTED_PATHS)
+          .map((issue) => issue.path.map(String).join(".") || "(root)"),
+      },
+    };
+  }
+
+  return { success: true, payload: parsed.data };
+};

@@ -1,6 +1,7 @@
 export {
   type DependencyGraph,
   DependencyGraphSchema,
+  decodePayload,
   type Finding,
   FindingSchema,
   type Fix,
@@ -9,7 +10,10 @@ export {
   GraphEdgeSchema,
   type GraphNode,
   GraphNodeSchema,
+  PAYLOAD_SCHEMA_VERSION,
   type Payload,
+  type PayloadDecodeFailure,
+  type PayloadDecodeResult,
   PayloadSchema,
   REPORT_ROUTE,
 } from "./payload.js";
