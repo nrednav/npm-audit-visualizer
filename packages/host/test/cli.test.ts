@@ -119,13 +119,15 @@ describe("run", () => {
 
     const body = (await response.json()) as {
       findings: unknown[];
-      sources: { label: string; createdAt: string | null }[];
+      sources: { label: string; createdAt: unknown }[];
     };
     expect(body.findings.length).toBeGreaterThan(0);
     // The audit ran here, so the label must be the phrase and never the
     // caller's directory, which the run did receive as "/caller/project".
     expect(body.sources[0]?.label).toBe("npm audit in the current project");
-    expect(body.sources[0]?.createdAt).toBeNull();
+    expect(body.sources[0]?.createdAt).toEqual({
+      unknown: "npm audit --json states no creation time",
+    });
     expect(JSON.stringify(body.sources)).not.toContain("/caller/project");
 
     sink.controller.abort();

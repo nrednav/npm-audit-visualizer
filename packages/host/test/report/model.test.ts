@@ -242,9 +242,12 @@ describe("buildPayload", () => {
 
     expect(descriptor).toEqual({
       kind: "audit-report",
-      producer: { name: "npm", version: null },
+      producer: {
+        name: "npm",
+        version: { unknown: "npm audit --json does not state the npm version" },
+      },
       schemaVersion: String(ordered.auditReportVersion),
-      createdAt: null,
+      createdAt: { unknown: "npm audit --json states no creation time" },
       label: "report.json",
     });
   });

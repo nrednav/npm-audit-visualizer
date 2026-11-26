@@ -98,7 +98,7 @@ The `/report.json` route returns a payload with five top-level fields.
 
 | Field           | Type   | Description                                                      |
 | --------------- | ------ | ---------------------------------------------------------------- |
-| `schemaVersion` | number | The payload contract this document describes. Currently `2`.     |
+| `schemaVersion` | number | The payload contract this document describes. Currently `3`.     |
 | `sources`       | array  | The artifacts this payload was built from. At least one.         |
 | `metadata`      | object | Vulnerability and dependency counts.                             |
 | `findings`      | array  | One entry per reported vulnerability, ordered most urgent first. |

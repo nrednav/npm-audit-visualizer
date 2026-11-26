@@ -1,4 +1,8 @@
-import type { Payload, SourceDescriptor } from "@npm-audit-visualizer/contract";
+import {
+  isUnknown,
+  type Payload,
+  type SourceDescriptor,
+} from "@npm-audit-visualizer/contract";
 
 type ReportContextProps = {
   metadata: Payload["metadata"];
@@ -23,10 +27,24 @@ const reportSource = (
 ): SourceDescriptor | undefined =>
   sources.find((source) => source.kind === "audit-report");
 
-const producerText = (source: SourceDescriptor): string =>
-  source.producer.version === null
-    ? `${source.producer.name} (version not supplied)`
-    : `${source.producer.name} ${source.producer.version}`;
+/**
+ * The reason is shown verbatim. Shortening it here would mean the page inventing
+ * an explanation for an absence the payload already explained.
+ */
+const producerText = (source: SourceDescriptor): string => {
+  const { name, version } = source.producer;
+
+  if (!isUnknown(version)) {
+    return `${name} ${version}`;
+  }
+
+  return `${name} (version not supplied: ${version.unknown})`;
+};
+
+const createdText = (source: SourceDescriptor): string =>
+  isUnknown(source.createdAt)
+    ? `not supplied (${source.createdAt.unknown})`
+    : source.createdAt;
 
 const ReportContext = (props: ReportContextProps) => {
   const { metadata, sources } = props;
@@ -77,7 +95,7 @@ const ReportContext = (props: ReportContextProps) => {
             <dt className="text-xs text-ink-muted">Created</dt>
             <dd className="text-sm">
               {/* A time the report never stated stays unsaid, never guessed. */}
-              {source.createdAt ?? "not supplied"}
+              {createdText(source)}
             </dd>
           </div>
         </dl>

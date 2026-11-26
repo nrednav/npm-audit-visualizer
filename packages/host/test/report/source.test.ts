@@ -48,14 +48,21 @@ describe("sourceOfFile", () => {
     }
   });
 
-  it("states the artifact's own version and leaves what npm does not state unfilled", () => {
+  it("states the artifact's own version and records why npm states nothing else", () => {
     expect(sourceOfFile("report.json")).toEqual({
       kind: "audit-report",
-      producer: { name: "npm", version: null },
+      producer: {
+        name: "npm",
+        version: { unknown: "npm audit --json does not state the npm version" },
+      },
       schemaVersion: "2",
-      createdAt: null,
+      createdAt: { unknown: "npm audit --json states no creation time" },
       label: "report.json",
     });
+  });
+
+  it("never states an absence as null, which no longer means anything", () => {
+    expect(JSON.stringify(sourceOfFile("report.json"))).not.toContain("null");
   });
 
   it("gives the same answer for the same path", () => {

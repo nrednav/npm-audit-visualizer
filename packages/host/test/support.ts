@@ -9,9 +9,12 @@ export const FIXTURE_PAYLOAD: Payload = {
   sources: [
     {
       kind: "audit-report",
-      producer: { name: "npm", version: null },
+      producer: {
+        name: "npm",
+        version: { unknown: "npm audit --json does not state the npm version" },
+      },
       schemaVersion: "2",
-      createdAt: null,
+      createdAt: { unknown: "npm audit --json states no creation time" },
       label: "report.json",
     },
   ],

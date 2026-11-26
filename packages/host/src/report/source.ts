@@ -8,8 +8,20 @@ import {
 const FILE_LABEL_FALLBACK = "audit report from a file";
 
 /**
+ * npm states neither of these, so the reason is recorded beside the field
+ * instead of being inferred from a file or a process that happens to be nearby.
+ */
+const NO_PRODUCER_VERSION = {
+  unknown: "npm audit --json does not state the npm version",
+} as const;
+
+const NO_CREATION_TIME = {
+  unknown: "npm audit --json states no creation time",
+} as const;
+
+/**
  * npm states neither its own version nor a completion time in its report, so
- * both stay unfilled rather than being replaced by anything this process knows.
+ * both stay unknown rather than being replaced by anything this process knows.
  *
  * The label carries only the file's own name: the directory is none of the
  * reader's business. A basename can still be unsafe, because a backslash is a
@@ -22,9 +34,9 @@ export const sourceOfFile = (filePath: string): SourceDescriptor => {
 
   return {
     kind: "audit-report",
-    producer: { name: "npm", version: null },
+    producer: { name: "npm", version: NO_PRODUCER_VERSION },
     schemaVersion: String(SUPPORTED_AUDIT_REPORT_VERSION),
-    createdAt: null,
+    createdAt: NO_CREATION_TIME,
     label: isSafeLabel(name) ? name : FILE_LABEL_FALLBACK,
   };
 };
@@ -36,8 +48,8 @@ export const sourceOfFile = (filePath: string): SourceDescriptor => {
  */
 export const sourceOfAudit = (): SourceDescriptor => ({
   kind: "audit-report",
-  producer: { name: "npm", version: null },
+  producer: { name: "npm", version: NO_PRODUCER_VERSION },
   schemaVersion: String(SUPPORTED_AUDIT_REPORT_VERSION),
-  createdAt: null,
+  createdAt: NO_CREATION_TIME,
   label: "npm audit in the current project",
 });

@@ -24,9 +24,12 @@ const metadata: Payload["metadata"] = {
 
 const reportSource: Payload["sources"][number] = {
   kind: "audit-report",
-  producer: { name: "npm", version: null },
+  producer: {
+    name: "npm",
+    version: { unknown: "npm audit --json does not state the npm version" },
+  },
   schemaVersion: "2",
-  createdAt: null,
+  createdAt: { unknown: "npm audit --json states no creation time" },
   label: "report.json",
 };
 
@@ -42,19 +45,27 @@ describe("ReportContext", () => {
     expect(screen.getByText("Production")).toBeVisible();
   });
 
-  it("says the creation time was not supplied instead of inventing one", () => {
+  it("names the reason the creation time is not supplied, instead of inventing one", () => {
     renderContext([reportSource]);
 
     expect(screen.getByText("Created")).toBeVisible();
-    expect(screen.getByText("not supplied")).toBeVisible();
+    expect(
+      screen.getByText(
+        "not supplied (npm audit --json states no creation time)",
+      ),
+    ).toBeVisible();
     expect(screen.queryByText(/^\d{4}-\d{2}-\d{2}/)).toBeNull();
     expect(screen.queryByText(/today|ago|just now/i)).toBeNull();
   });
 
-  it("says the producer version was not supplied instead of showing a bare name", () => {
+  it("states the producer version and its reason rather than a bare name", () => {
     renderContext([reportSource]);
 
-    expect(screen.getByText("npm (version not supplied)")).toBeVisible();
+    expect(
+      screen.getByText(
+        "npm (version not supplied: npm audit --json does not state the npm version)",
+      ),
+    ).toBeVisible();
   });
 
   it("shows a stated creation time and producer version when the artifact has them", () => {
@@ -68,7 +79,7 @@ describe("ReportContext", () => {
 
     expect(screen.getByText("npm 11.2.0")).toBeVisible();
     expect(screen.getByText("2026-11-26T00:00:00Z")).toBeVisible();
-    expect(screen.queryByText("not supplied")).toBeNull();
+    expect(screen.queryByText(/not supplied/)).toBeNull();
   });
 
   it("renders the scope without a source row when no report source is described", () => {
