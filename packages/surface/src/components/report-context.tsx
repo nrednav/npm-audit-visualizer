@@ -1,7 +1,8 @@
-import type { Payload } from "@npm-audit-visualizer/contract";
+import type { Payload, SourceDescriptor } from "@npm-audit-visualizer/contract";
 
 type ReportContextProps = {
   metadata: Payload["metadata"];
+  sources: Payload["sources"];
 };
 
 const DEPENDENCY_LABELS: Record<string, string> = {
@@ -13,8 +14,23 @@ const DEPENDENCY_LABELS: Record<string, string> = {
   total: "Total",
 };
 
+/**
+ * The only artifact a payload can name today is the audit report. Later kinds
+ * get their own row rather than being folded into this one.
+ */
+const reportSource = (
+  sources: Payload["sources"],
+): SourceDescriptor | undefined =>
+  sources.find((source) => source.kind === "audit-report");
+
+const producerText = (source: SourceDescriptor): string =>
+  source.producer.version === null
+    ? `${source.producer.name} (version not supplied)`
+    : `${source.producer.name} ${source.producer.version}`;
+
 const ReportContext = (props: ReportContextProps) => {
-  const { metadata } = props;
+  const { metadata, sources } = props;
+  const source = reportSource(sources);
   const entries = Object.entries(metadata.dependencies).filter(
     ([key]) => key !== "total",
   );
@@ -44,6 +60,28 @@ const ReportContext = (props: ReportContextProps) => {
           </dd>
         </div>
       </dl>
+
+      {source === undefined ? null : (
+        <dl className="flex flex-wrap items-baseline gap-x-5 gap-y-2 lg:border-l lg:border-line lg:pl-8">
+          <div className="flex items-baseline gap-2">
+            <dt className="text-xs text-ink-muted">Source</dt>
+            <dd className="max-w-[22ch] truncate text-sm font-semibold">
+              {source.label}
+            </dd>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <dt className="text-xs text-ink-muted">Produced by</dt>
+            <dd className="text-sm">{producerText(source)}</dd>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <dt className="text-xs text-ink-muted">Created</dt>
+            <dd className="text-sm">
+              {/* A time the report never stated stays unsaid, never guessed. */}
+              {source.createdAt ?? "not supplied"}
+            </dd>
+          </div>
+        </dl>
+      )}
     </section>
   );
 };
