@@ -117,8 +117,16 @@ describe("run", () => {
     const response = await fetch(`${address}/report.json`);
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as { findings: unknown[] };
+    const body = (await response.json()) as {
+      findings: unknown[];
+      sources: { label: string; createdAt: string | null }[];
+    };
     expect(body.findings.length).toBeGreaterThan(0);
+    // The audit ran here, so the label must be the phrase and never the
+    // caller's directory, which the run did receive as "/caller/project".
+    expect(body.sources[0]?.label).toBe("npm audit in the current project");
+    expect(body.sources[0]?.createdAt).toBeNull();
+    expect(JSON.stringify(body.sources)).not.toContain("/caller/project");
 
     sink.controller.abort();
     expect(await done).toBe(0);
@@ -267,6 +275,29 @@ describe("run", () => {
 
     expect(code).toBe(130);
     expect(sink.out.join("\n")).not.toContain("http://localhost");
+  });
+
+  it("labels a file source with the file's own name and no directory", async () => {
+    const sink = harness();
+    const filePath = fixturePath("few-vulnerabilities-audit-report");
+    const done = run(["--file", filePath, "--port", "0", "--no-open"], sink.io);
+
+    const address = await addressOf(sink);
+    const response = await fetch(`${address}/report.json`);
+    const body = (await response.json()) as {
+      sources: { label: string; schemaVersion: string | null }[];
+    };
+
+    expect(body.sources[0]?.label).toBe(
+      "few-vulnerabilities-audit-report.json",
+    );
+    expect(body.sources[0]?.schemaVersion).toBe("2");
+    expect(JSON.stringify(body.sources)).not.toContain(
+      path.dirname(filePath).replace(/^\//, ""),
+    );
+
+    sink.controller.abort();
+    expect(await done).toBe(0);
   });
 
   it("prints the stages it goes through when asked to debug", async () => {
