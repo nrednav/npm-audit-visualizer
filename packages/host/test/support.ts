@@ -2,8 +2,10 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { Payload } from "@npm-audit-visualizer/contract";
+import { PAYLOAD_SCHEMA_VERSION } from "@npm-audit-visualizer/contract";
 
 export const FIXTURE_PAYLOAD: Payload = {
+  schemaVersion: PAYLOAD_SCHEMA_VERSION,
   metadata: {
     vulnerabilities: {
       info: 0,

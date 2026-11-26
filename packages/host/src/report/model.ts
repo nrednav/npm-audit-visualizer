@@ -6,6 +6,7 @@ import {
   type Fix,
   type GraphEdge,
   type GraphNode,
+  PAYLOAD_SCHEMA_VERSION,
   type Payload,
   type ReportedVulnerability,
   type Severity,
@@ -132,6 +133,7 @@ export const buildPayload = (report: AuditReport): Payload => {
     .sort(byUrgency);
 
   return {
+    schemaVersion: PAYLOAD_SCHEMA_VERSION,
     metadata: report.metadata,
     findings,
     graph: buildGraph(report),

@@ -4,6 +4,7 @@ import {
   type AuditReport,
   AuditReportSchema,
   type Finding,
+  PAYLOAD_SCHEMA_VERSION,
   PayloadSchema,
   severityRank,
 } from "@npm-audit-visualizer/contract";
@@ -206,6 +207,25 @@ describe("buildPayload", () => {
     const result = PayloadSchema.safeParse(buildPayload(ordered));
 
     expect(result.success).toBe(true);
+  });
+
+  it("stamps the payload with the contract's version", () => {
+    expect(buildPayload(ordered).schemaVersion).toBe(PAYLOAD_SCHEMA_VERSION);
+  });
+
+  it("keeps every reported finding and the whole graph under a version stamp", () => {
+    const payload = buildPayload(
+      readReport("many-vulnerabilities-audit-report"),
+    );
+
+    expect(payload.findings).toHaveLength(
+      Object.keys(
+        readReport("many-vulnerabilities-audit-report").vulnerabilities,
+      ).length,
+    );
+    expect(payload.graph.nodes.length).toBeGreaterThanOrEqual(
+      payload.findings.length,
+    );
   });
 
   it("normalises each way a fix can be reported", () => {
