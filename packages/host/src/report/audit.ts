@@ -67,10 +67,17 @@ export const npmAuditCommand = (): ProcessCommand => ({
   shell: process.platform === "win32",
 });
 
+/** Long enough for a producer to write its last byte and exit on SIGTERM. */
+export const KILL_GRACE_MS = 2_000;
+
+/** If a killed child never reports its exit, the caller is not held forever. */
+export const KILL_GIVE_UP_MS = 2_000;
+
 export const runProcess = (
   spec: ProcessCommand,
   cwd: string,
   signal: AbortSignal,
+  killGraceMs: number = KILL_GRACE_MS,
 ): Promise<ProcessResult> =>
   new Promise<ProcessResult>((resolve) => {
     if (signal.aborted) {
@@ -88,6 +95,19 @@ export const runProcess = (
     let stderr = "";
     let bytes = 0;
     let settled = false;
+    /** Set once the caller has demanded the child stop, by abort or by size. */
+    let stopping: "aborted" | "too-large" | null = null;
+    let escalate: ReturnType<typeof setTimeout> | undefined;
+    let giveUp: ReturnType<typeof setTimeout> | undefined;
+
+    const clearTimers = (): void => {
+      if (escalate !== undefined) {
+        clearTimeout(escalate);
+      }
+      if (giveUp !== undefined) {
+        clearTimeout(giveUp);
+      }
+    };
 
     const finish = (result: ProcessResult): void => {
       if (settled) {
@@ -95,15 +115,42 @@ export const runProcess = (
       }
 
       settled = true;
+      clearTimers();
       signal.removeEventListener("abort", onAbort);
       child.stdout?.removeAllListeners("data");
       child.stderr?.removeAllListeners("data");
       resolve(result);
     };
 
-    const onAbort = (): void => {
+    const stoppingResult = (): ProcessResult =>
+      stopping === "too-large"
+        ? { kind: "too-large", limit: MAX_AUDIT_OUTPUT_BYTES }
+        : { kind: "aborted" };
+
+    /**
+     * A killed child is still a running child until it reports its exit. The
+     * promise settles on `close`, never on the kill, so a caller that has been
+     * told the run finished is not left with a live producer behind it.
+     */
+    const stop = (reason: "aborted" | "too-large"): void => {
+      if (stopping !== null || settled) {
+        return;
+      }
+
+      stopping = reason;
       child.kill();
-      finish({ kind: "aborted" });
+
+      escalate = setTimeout(() => {
+        child.kill("SIGKILL");
+      }, killGraceMs);
+
+      giveUp = setTimeout(() => {
+        finish(stoppingResult());
+      }, killGraceMs + KILL_GIVE_UP_MS);
+    };
+
+    const onAbort = (): void => {
+      stop("aborted");
     };
 
     signal.addEventListener("abort", onAbort, { once: true });
@@ -118,8 +165,7 @@ export const runProcess = (
       }
 
       if (bytes > MAX_AUDIT_OUTPUT_BYTES) {
-        child.kill();
-        finish({ kind: "too-large", limit: MAX_AUDIT_OUTPUT_BYTES });
+        stop("too-large");
       }
     };
 
@@ -131,6 +177,12 @@ export const runProcess = (
     });
 
     child.once("close", (exitCode: number | null) => {
+      // A run that was told to stop reports why, not what it managed to print.
+      if (stopping !== null) {
+        finish(stoppingResult());
+        return;
+      }
+
       finish({
         kind: "completed",
         exitCode,

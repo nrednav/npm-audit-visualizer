@@ -423,6 +423,69 @@ process.stdout.write("done");
     }
   }, 20000);
 
+  it("waits for the child to exit before reporting an interrupt", async () => {
+    // The child writes its marker from its own SIGTERM handler and only then
+    // exits. If the promise settled on the kill rather than on the exit, the
+    // marker would be missing here.
+    const body = `
+const fs = require("node:fs");
+const path = require("node:path");
+process.on("SIGTERM", () => {
+  fs.writeFileSync(path.join(process.cwd(), "terminated"), "1");
+  process.exit(0);
+});
+fs.writeFileSync(path.join(process.cwd(), "started"), "1");
+setInterval(() => {}, 1000);
+`;
+
+    const controller = new AbortController();
+    const pending = auditProject(project, controller.signal, runNode(body));
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 300);
+    });
+    controller.abort();
+
+    const result = await pending;
+    expect(result.ok).toBe(false);
+
+    // No delay is allowed between the promise settling and this read: the run
+    // is over, so the child is gone.
+    expect(await readdir(project)).toEqual(
+      expect.arrayContaining(["started", "terminated"]),
+    );
+  }, 20000);
+
+  it("escalates to SIGKILL for a child that ignores SIGTERM", async () => {
+    const body = `
+const fs = require("node:fs");
+const path = require("node:path");
+process.on("SIGTERM", () => {
+  fs.writeFileSync(path.join(process.cwd(), "ignored"), "1");
+});
+fs.writeFileSync(path.join(process.cwd(), "started"), "1");
+setInterval(() => {}, 1000);
+`;
+
+    const controller = new AbortController();
+    const pending = auditProject(project, controller.signal, (cwd, signal) =>
+      runProcess(nodeProcess(body), cwd, signal, 50),
+    );
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 300);
+    });
+    controller.abort();
+
+    const result = await pending;
+    const entries = await readdir(project);
+
+    expect(result.ok).toBe(false);
+    expect(entries).toContain("ignored");
+    // The child is gone: SIGKILL is not caught, so no exit marker is written.
+    expect(entries).not.toContain("survived");
+  }, 20000);
+
   it("terminates the child when the caller interrupts", async () => {
     const body = `
 const fs = require("node:fs");
