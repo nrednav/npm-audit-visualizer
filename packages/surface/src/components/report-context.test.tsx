@@ -59,6 +59,25 @@ describe("ReportContext", () => {
     expect(screen.queryByText(/today|ago|just now/i)).toBeNull();
   });
 
+  it("shows the payload's identity, shortened, with the whole value available", () => {
+    renderContext([reportSource]);
+
+    const shown = screen.getByText(/^sha256:[0-9a-f]{12}…$/);
+
+    expect(shown).toBeVisible();
+    expect(shown.getAttribute("title")).toBe(reportSource.digest);
+    expect(shown.textContent?.length).toBeLessThan(reportSource.digest.length);
+  });
+
+  it("shows the digest it was given, not one it computed from what it has", () => {
+    const other = `sha256:${"9".repeat(64)}`;
+
+    renderContext([{ ...reportSource, digest: other }]);
+
+    expect(screen.getByText(`sha256:${"9".repeat(12)}…`)).toBeVisible();
+    expect(screen.queryByText(/^sha256:[0-9a-f]{12}…$/)).not.toBeNull();
+  });
+
   it("states the producer version and its reason rather than a bare name", () => {
     renderContext([reportSource]);
 

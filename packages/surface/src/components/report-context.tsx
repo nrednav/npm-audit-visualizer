@@ -4,6 +4,8 @@ import {
   type SourceDescriptor,
 } from "@npm-audit-visualizer/contract";
 
+const DIGEST_PREFIX_LENGTH = 12;
+
 type ReportContextProps = {
   metadata: Payload["metadata"];
   sources: Payload["sources"];
@@ -45,6 +47,18 @@ const createdText = (source: SourceDescriptor): string =>
   isUnknown(source.createdAt)
     ? `not supplied (${source.createdAt.unknown})`
     : source.createdAt;
+
+/**
+ * A prefix of the identity, with the whole value in a title attribute. The page
+ * shows what the payload states and computes nothing: it has the bytes of a
+ * payload, not of the report.
+ */
+const digestText = (digest: string): string => {
+  const [algorithm, body] = digest.split(":");
+  const shown = body.slice(0, DIGEST_PREFIX_LENGTH);
+
+  return `${algorithm}:${shown}…`;
+};
 
 const ReportContext = (props: ReportContextProps) => {
   const { metadata, sources } = props;
@@ -90,6 +104,12 @@ const ReportContext = (props: ReportContextProps) => {
           <div className="flex items-baseline gap-2">
             <dt className="text-xs text-ink-muted">Produced by</dt>
             <dd className="text-sm">{producerText(source)}</dd>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <dt className="text-xs text-ink-muted">Identity</dt>
+            <dd className="num text-sm" title={source.digest}>
+              {digestText(source.digest)}
+            </dd>
           </div>
           <div className="flex items-baseline gap-2">
             <dt className="text-xs text-ink-muted">Created</dt>
