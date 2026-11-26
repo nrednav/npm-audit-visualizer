@@ -165,6 +165,36 @@ describe("usePayload", () => {
     expect(PayloadSchema.safeParse({ findings: [] }).success).toBe(false);
   });
 
+  it("does not settle after the reader goes away", async () => {
+    let release: (value: Response) => void = () => undefined;
+    const pending = new Promise<Response>((resolve) => {
+      release = resolve;
+    });
+    const fetchSpy = vi.fn(
+      async (_route: string, _init?: { signal?: AbortSignal }) => pending,
+    );
+
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const { result, unmount } = renderHook(() => usePayload());
+
+    expect(result.current.status).toBe("loading");
+
+    unmount();
+    release(respond({ ...parsedReportFixture, schemaVersion: 99 }));
+
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+    });
+
+    // The reader is gone, so the only observable claim left is that the
+    // controller was aborted and no state was published to a dead component.
+    const init = fetchSpy.mock.calls[0]?.[1];
+
+    expect(init?.signal?.aborted).toBe(true);
+    expect(result.current.status).toBe("loading");
+  });
+
   it("reads again for a new reader instead of reusing the last payload", async () => {
     const fetchSpy = vi.fn(async () => respond(parsedReportFixture));
     vi.stubGlobal("fetch", fetchSpy);
