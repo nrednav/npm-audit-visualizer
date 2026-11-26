@@ -28,6 +28,15 @@ const metadata = {
 
 const payload: Payload = {
   schemaVersion: PAYLOAD_SCHEMA_VERSION,
+  sources: [
+    {
+      kind: "audit-report",
+      producer: { name: "npm", version: null },
+      schemaVersion: "2",
+      createdAt: null,
+      label: "report.json",
+    },
+  ],
   metadata,
   findings: [
     {
@@ -61,6 +70,7 @@ describe("payload schema", () => {
   it("accepts a payload with no findings", () => {
     const result = PayloadSchema.safeParse({
       schemaVersion: PAYLOAD_SCHEMA_VERSION,
+      sources: payload.sources,
       metadata,
       findings: [],
       graph: { nodes: [], edges: [] },
@@ -89,14 +99,33 @@ describe("payload schema", () => {
   });
 
   it("requires the current payload version", () => {
-    expect(PAYLOAD_SCHEMA_VERSION).toBe(1);
+    expect(PAYLOAD_SCHEMA_VERSION).toBe(2);
     expect(PayloadSchema.safeParse(payload).success).toBe(true);
 
     const { schemaVersion: _omitted, ...withoutVersion } = payload;
 
     expect(PayloadSchema.safeParse(withoutVersion).success).toBe(false);
     expect(
-      PayloadSchema.safeParse({ ...payload, schemaVersion: 2 }).success,
+      PayloadSchema.safeParse({ ...payload, schemaVersion: 1 }).success,
+    ).toBe(false);
+  });
+
+  it("requires at least one source descriptor", () => {
+    expect(PayloadSchema.safeParse({ ...payload, sources: [] }).success).toBe(
+      false,
+    );
+
+    const { sources: _omitted, ...withoutSources } = payload;
+
+    expect(PayloadSchema.safeParse(withoutSources).success).toBe(false);
+  });
+
+  it("refuses a source label that is a path", () => {
+    expect(
+      PayloadSchema.safeParse({
+        ...payload,
+        sources: [{ ...payload.sources[0], label: "/home/me/report.json" }],
+      }).success,
     ).toBe(false);
   });
 });
@@ -120,9 +149,11 @@ describe("decodePayload", () => {
   });
 
   it("names both versions when the payload is from another release", () => {
-    expect(failureOf({ ...payload, schemaVersion: 2 })).toEqual({
+    const future = PAYLOAD_SCHEMA_VERSION + 1;
+
+    expect(failureOf({ ...payload, schemaVersion: future })).toEqual({
       kind: "version",
-      received: 2,
+      received: future,
       supported: PAYLOAD_SCHEMA_VERSION,
     });
   });
@@ -152,9 +183,22 @@ describe("decodePayload", () => {
     expect(result.success).toBe(false);
   });
 
+  it("refuses the previous version, which carried no sources", () => {
+    const { sources: _omitted, ...previousShape } = payload;
+    const result = decodePayload({ ...previousShape, schemaVersion: 1 });
+
+    expect(result.success).toBe(false);
+    expect(result.success ? undefined : result.error).toEqual({
+      kind: "version",
+      received: 1,
+      supported: PAYLOAD_SCHEMA_VERSION,
+    });
+  });
+
   it("reports where a matching version carries invalid contents", () => {
     const failure = failureOf({
       schemaVersion: PAYLOAD_SCHEMA_VERSION,
+      sources: payload.sources,
       metadata: {},
       findings: [],
       graph: { nodes: [], edges: [] },
@@ -183,7 +227,7 @@ describe("decodePayload", () => {
       "",
       [],
       {},
-      { schemaVersion: 1 },
+      { schemaVersion: PAYLOAD_SCHEMA_VERSION },
     ]) {
       expect(() => decodePayload(input)).not.toThrow();
     }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { AdvisorySchema, MetadataSchema } from "./report.js";
 import { SeveritySchema } from "./severity.js";
+import { SourceDescriptorSchema } from "./source.js";
 
 /**
  * Where the host serves the payload and where the surface fetches it. Stated
@@ -66,11 +67,20 @@ export type DependencyGraph = z.infer<typeof DependencyGraphSchema>;
  * The payload contract's own identity. It is not the npm report's
  * `auditReportVersion` and not the package version: both sides must agree on
  * this wire shape even when their releases differ.
+ *
+ * 2 adds `sources`, a required field, so a version-1 payload is refused rather
+ * than read as if it had no provenance.
  */
-export const PAYLOAD_SCHEMA_VERSION = 1;
+export const PAYLOAD_SCHEMA_VERSION = 2;
 
 export const PayloadSchema = z.object({
   schemaVersion: z.literal(PAYLOAD_SCHEMA_VERSION),
+  /**
+   * The artifacts this payload was built from, in the order they were supplied.
+   * At least one, because a payload with no stated origin is the ambiguity this
+   * field exists to remove.
+   */
+  sources: z.array(SourceDescriptorSchema).min(1),
   metadata: MetadataSchema,
   findings: z.array(FindingSchema),
   graph: DependencyGraphSchema,

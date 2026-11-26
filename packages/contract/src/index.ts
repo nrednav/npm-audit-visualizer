@@ -39,3 +39,13 @@ export {
   SeveritySchema,
   severityRank,
 } from "./severity.js";
+
+export {
+  isSafeLabel,
+  type Producer,
+  ProducerSchema,
+  type SourceDescriptor,
+  SourceDescriptorSchema,
+  type SourceKind,
+  SourceKindSchema,
+} from "./source.js";
