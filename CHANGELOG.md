@@ -10,8 +10,18 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- The payload version is now `2`. `sources` is a required field, so a version-1
-  payload is refused by name instead of being read as if it had no provenance.
+- The payload version is now `3`. Two descriptor fields became a union of a value
+  and an unknown, so a version-2 payload is refused by name. A `null` no longer
+  states an absence in the descriptor.
+
+### Added
+
+- Four evidence origins: `reported`, `observed`, `derived`, and `asserted`.
+  `unknown` is a knowledge state and is refused as an origin, because an origin
+  says where a value came from and a value that does not exist has none.
+- An unknown carries the reason it is unknown, and the page shows that reason
+  beside the field. The descriptor's creation time and producer version are the
+  first unknowns, because npm states neither.
 
 ### Added
 

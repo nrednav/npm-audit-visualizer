@@ -1,7 +1,10 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { PAYLOAD_SCHEMA_VERSION } from "@npm-audit-visualizer/contract";
+import {
+  EVIDENCE_ORIGINS,
+  PAYLOAD_SCHEMA_VERSION,
+} from "@npm-audit-visualizer/contract";
 import { describe, expect, it } from "vitest";
 
 const repoRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -326,5 +329,34 @@ describe("the payload contract is documented where a reader looks", () => {
 
     expect(text).toMatch(/An unstated value stays unfilled/);
     expect(text).toMatch(/modification time is not a creation time/);
+  });
+
+  it("documents each of the four evidence origins", () => {
+    const text = reference();
+
+    for (const origin of EVIDENCE_ORIGINS) {
+      expect(text).toContain(`\`${origin}\``);
+    }
+  });
+
+  it("states that unknown is a knowledge state and not an origin", () => {
+    const text = reference();
+
+    expect(text).toMatch(/`unknown` is \*\*not\*\* an origin/);
+    expect(text).toMatch(/refuses `unknown` as an origin/);
+  });
+
+  it("states that an unknown carries a reason and that null states nothing", () => {
+    const text = reference();
+
+    expect(text).toMatch(/reason is required/i);
+    expect(text).toMatch(/A `null` does not mean unknown/);
+    expect(text).toMatch(/states an unknown with a\s+reason instead/);
+  });
+
+  it("states that npm fields carry no origin wrapper", () => {
+    const text = reference();
+
+    expect(text).toMatch(/inherit the report's\s+`reported` origin/);
   });
 });

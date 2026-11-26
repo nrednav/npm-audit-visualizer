@@ -109,9 +109,11 @@ The `/report.json` route returns a payload with five top-level fields.
 `schemaVersion` identifies the payload contract between the host and the page.
 It is not the npm report's `auditReportVersion` and not the package version.
 
-Version `2` added `sources`, which is required, so the version changed with the
-shape. A version-1 payload is refused by name rather than read as if it carried
-no provenance. The versions a payload mentions are compared below.
+Version `2` added `sources`, which is required. Version `3` made two descriptor
+fields a union of a value and an unknown, so a `null` is no longer how an absence
+is stated. Each change moved the version, and a payload from an earlier version is
+refused by name rather than read as if it carried the new shape. The versions a
+payload mentions are compared below.
 
 The page requires an exact match on `schemaVersion`. A different value, a
 missing value, or a value of another type is a compatibility failure. The page
@@ -129,13 +131,13 @@ Each entry describes one artifact the payload was built from. The array holds at
 least one entry. Today the only artifact is the audit report itself, so the
 array holds exactly one.
 
-| Field           | Type           | Description                                                   |
-| --------------- | -------------- | ------------------------------------------------------------- |
-| `kind`          | string         | The artifact kind. Currently `audit-report`.                  |
-| `producer`      | object         | `{ name, version }`. `version` is `null` when unstated.       |
-| `schemaVersion` | string or null | The artifact's own schema version, as the artifact states it. |
-| `createdAt`     | string or null | ISO 8601 creation time as the artifact states it.             |
-| `label`         | string         | A name for the artifact that is not a path.                   |
+| Field           | Type              | Description                                                   |
+| --------------- | ----------------- | ------------------------------------------------------------- |
+| `kind`          | string            | The artifact kind. Currently `audit-report`.                  |
+| `producer`      | object            | `{ name, version }`. `version` is a string or an unknown.     |
+| `schemaVersion` | string or null    | The artifact's own schema version, as the artifact states it. |
+| `createdAt`     | string or unknown | ISO 8601 creation time, or an unknown carrying the reason.    |
+| `label`         | string            | A name for the artifact that is not a path.                   |
 
 **The label is never a path.** It must be between 1 and 120 characters and
 contain no `/` or `\` character, no drive prefix such as `C:`, and must not be
@@ -144,10 +146,50 @@ name, with no directory. When the tool runs the audit itself, the label is the
 phrase `npm audit in the current project`. If a filename cannot be a safe label,
 the label falls back to `audit report from a file` rather than exposing it.
 
-**An unstated value stays unfilled.** `npm audit --json` states neither a
-creation time nor its own version, so both are `null` and the page shows `not
-supplied`. A file's modification time is not a creation time and is never used
-in its place.
+**An unstated value stays unfilled, and says why.** `npm audit --json` states
+neither a creation time nor its own version, so both are unknown and the page
+shows `not supplied` followed by the reason:
+
+```json
+"createdAt": { "unknown": "npm audit --json states no creation time" }
+```
+
+A file's modification time is not a creation time and is never used in its place.
+
+### Evidence origins and unknowns
+
+Every stated fact has one origin:
+
+| Origin     | Meaning                                                     |
+| ---------- | ----------------------------------------------------------- |
+| `reported` | A source artifact states the value. npm reports a severity. |
+| `observed` | A tool observes a command or environment result.            |
+| `derived`  | The visualizer computes the value from supplied evidence.   |
+| `asserted` | A person records a judgment.                                |
+
+`unknown` is **not** an origin. It is a knowledge state: the tool does not know
+the value. An origin says where a value came from, so a value that does not exist
+has no origin to state. The payload refuses `unknown` as an origin.
+
+An unknown is an object with a required reason, between 1 and 200 characters:
+
+```json
+{ "unknown": "npm audit --json states no creation time" }
+```
+
+The reason is required because "the artifact never states this" and "we did not
+look" lead a reader to different next steps.
+
+A `null` does not mean unknown. In this payload a `null` appears only where a
+value does not apply: `fix.name` and `fix.version` are `null` when no fix is
+reported, and a graph node carries `severity: null` when no finding sits on it.
+Where a value is missing because the evidence does not supply it, the payload
+states an unknown with a reason instead.
+
+npm's own report fields do not carry an origin object. They inherit the report's
+`reported` origin, so `findings[].severity` is a plain string. An explicit
+evidence record, `{ origin, value, note? }`, is used only for companion artifacts,
+derived claims, and human assertions.
 
 These four numbers answer different questions and are not interchangeable:
 
