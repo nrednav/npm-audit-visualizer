@@ -1,4 +1,4 @@
-import { chmod, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -6,8 +6,11 @@ import {
   auditProject,
   describeAuditFailure,
   MAX_AUDIT_OUTPUT_BYTES,
+  npmAuditCommand,
+  type ProcessCommand,
   type ProcessResult,
   type RunAuditProcess,
+  runProcess,
 } from "../../src/report/audit.js";
 
 const fixtureText = async (): Promise<string> => {
@@ -44,27 +47,6 @@ const workspace = async (): Promise<string> => {
   directories.push(directory);
 
   return directory;
-};
-
-const fakeNpm = async (body: string): Promise<string> => {
-  const directory = await workspace();
-  const executable = path.join(directory, "npm");
-  await writeFile(executable, `#!${process.execPath}\n${body}\n`, "utf8");
-  await chmod(executable, 0o755);
-
-  return directory;
-};
-
-const withPath = async <T>(bin: string, body: () => Promise<T>): Promise<T> => {
-  const original = process.env.PATH;
-
-  process.env.PATH = `${bin}${path.delimiter}${original ?? ""}`;
-
-  try {
-    return await body();
-  } finally {
-    process.env.PATH = original;
-  }
 };
 
 const completed = (
@@ -235,47 +217,74 @@ describe("auditProject stops at an interruption", () => {
   });
 });
 
-describe("runNpmAudit drives the real npm command", () => {
+const nodeProcess = (body: string): ProcessCommand => ({
+  command: process.execPath,
+  args: ["-e", body],
+  shell: false,
+});
+
+const runNode =
+  (body: string) =>
+  (cwd: string, signal: AbortSignal): Promise<ProcessResult> =>
+    runProcess(nodeProcess(body), cwd, signal);
+
+describe("npmAuditCommand names the product invocation", () => {
+  it("asks npm for the JSON audit without a shell", () => {
+    const spec = npmAuditCommand();
+
+    expect(spec.args).toEqual(["audit", "--json"]);
+
+    if (process.platform === "win32") {
+      expect(spec.command).toBe("npm.cmd");
+      expect(spec.shell).toBe(true);
+    } else {
+      expect(spec.command).toBe("npm");
+      expect(spec.shell).toBe(false);
+    }
+  });
+});
+
+describe("runProcess drives a real child process", () => {
   let project: string;
 
   beforeEach(async () => {
     project = await workspace();
   });
 
-  it("audits the supplied directory with no shell and piped streams", async () => {
-    const bin = await fakeNpm(`
+  it("runs the child in the supplied directory and reads its report", async () => {
+    const body = `
 const fs = require("node:fs");
 const path = require("node:path");
-const record = {
-  argv: process.argv.slice(2),
-  cwd: process.cwd(),
-  shell: process.env.SHELL ?? null,
-};
-fs.writeFileSync(path.join(process.cwd(), "invocation.json"), JSON.stringify(record));
+fs.writeFileSync(
+  path.join(process.cwd(), "invocation.json"),
+  JSON.stringify({ cwd: process.cwd() }),
+);
 process.stdout.write(${JSON.stringify(await fixtureText())});
-`);
+`;
 
-    const result = await withPath(bin, () =>
-      auditProject(project, new AbortController().signal),
+    const result = await auditProject(
+      project,
+      new AbortController().signal,
+      runNode(body),
     );
 
-    expect(result.ok).toBe(true);
+    expect(result.ok, JSON.stringify(result, null, 2)).toBe(true);
 
     const record = JSON.parse(
-      await (await import("node:fs/promises")).readFile(
-        path.join(project, "invocation.json"),
-        "utf8",
-      ),
-    ) as { argv: string[]; cwd: string };
+      await readFile(path.join(project, "invocation.json"), "utf8"),
+    ) as { cwd: string };
 
-    expect(record.argv).toEqual(["audit", "--json"]);
-    expect(record.cwd).toBe(project);
+    expect(await realpath(record.cwd)).toBe(await realpath(project));
   });
 
   it("settles once when the command cannot start", async () => {
+    const missing = path.join(project, "absent");
+
     const result = await auditProject(
-      path.join(project, "absent"),
+      project,
       new AbortController().signal,
+      (cwd, signal) =>
+        runProcess({ command: missing, args: [], shell: false }, cwd, signal),
     );
 
     expect(result.ok).toBe(false);
@@ -286,40 +295,46 @@ process.stdout.write(${JSON.stringify(await fixtureText())});
   });
 
   it("accepts a valid report from a process that exits nonzero", async () => {
-    const bin = await fakeNpm(`
+    const body = `
 process.stdout.write(${JSON.stringify(await fixtureText())});
 process.exitCode = 1;
-`);
+`;
 
-    const result = await withPath(bin, () =>
-      auditProject(project, new AbortController().signal),
+    const result = await auditProject(
+      project,
+      new AbortController().signal,
+      runNode(body),
     );
 
-    expect(result.ok).toBe(true);
+    expect(result.ok, JSON.stringify(result, null, 2)).toBe(true);
   });
 
   it("kills a producer that passes the output bound", async () => {
-    const bin = await fakeNpm(`
+    const body = `
 const chunk = "x".repeat(1024 * 1024);
 for (let index = 0; index < 20; index += 1) {
   process.stdout.write(chunk);
 }
 process.stdout.write("done");
-`);
+`;
 
-    const result = await withPath(bin, () =>
-      auditProject(project, new AbortController().signal),
+    const result = await auditProject(
+      project,
+      new AbortController().signal,
+      runNode(body),
     );
 
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
-      expect(result.failure.kind).toBe("too-large");
+      expect(result.failure.kind, JSON.stringify(result.failure, null, 2)).toBe(
+        "too-large",
+      );
     }
   }, 20000);
 
   it("terminates the child when the caller interrupts", async () => {
-    const bin = await fakeNpm(`
+    const body = `
 const fs = require("node:fs");
 const path = require("node:path");
 fs.writeFileSync(path.join(process.cwd(), "started"), "1");
@@ -328,12 +343,10 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 setInterval(() => {}, 1000);
-`);
+`;
 
     const controller = new AbortController();
-    const pending = withPath(bin, () =>
-      auditProject(project, controller.signal),
-    );
+    const pending = auditProject(project, controller.signal, runNode(body));
 
     await new Promise((resolve) => {
       setTimeout(resolve, 300);
@@ -344,7 +357,9 @@ setInterval(() => {}, 1000);
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
-      expect(result.failure.kind).toBe("aborted");
+      expect(result.failure.kind, JSON.stringify(result.failure, null, 2)).toBe(
+        "aborted",
+      );
     }
 
     const entries = await readdir(project);

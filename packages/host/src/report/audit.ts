@@ -37,25 +37,36 @@ export type RunAuditProcess = (
   signal: AbortSignal,
 ) => Promise<ProcessResult>;
 
-const npmCommand = (): string =>
-  process.platform === "win32" ? "npm.cmd" : "npm";
+export type ProcessCommand = {
+  command: string;
+  args: readonly string[];
+  shell: boolean;
+};
 
 /**
  * Windows starts `.cmd` shims only through a command interpreter. The command
  * and its arguments are constants, so this shell carries no caller input.
  */
-const needsShell = (): boolean => process.platform === "win32";
+export const npmAuditCommand = (): ProcessCommand => ({
+  command: process.platform === "win32" ? "npm.cmd" : "npm",
+  args: ["audit", "--json"],
+  shell: process.platform === "win32",
+});
 
-export const runNpmAudit: RunAuditProcess = (cwd, signal) =>
+export const runProcess = (
+  spec: ProcessCommand,
+  cwd: string,
+  signal: AbortSignal,
+): Promise<ProcessResult> =>
   new Promise<ProcessResult>((resolve) => {
     if (signal.aborted) {
       resolve({ kind: "aborted" });
       return;
     }
 
-    const child = spawn(npmCommand(), ["audit", "--json"], {
+    const child = spawn(spec.command, [...spec.args], {
       cwd,
-      shell: needsShell(),
+      shell: spec.shell,
       stdio: ["ignore", "pipe", "pipe"],
     });
 
@@ -111,6 +122,9 @@ export const runNpmAudit: RunAuditProcess = (cwd, signal) =>
       finish({ kind: "completed", exitCode, stdout, stderr });
     });
   });
+
+export const runNpmAudit: RunAuditProcess = (cwd, signal) =>
+  runProcess(npmAuditCommand(), cwd, signal);
 
 /**
  * A valid report wins over the exit status. `npm audit` exits nonzero when it

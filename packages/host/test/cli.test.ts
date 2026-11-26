@@ -1,5 +1,4 @@
 import {
-  chmod,
   mkdtemp,
   readdir,
   readFile,
@@ -11,7 +10,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { run } from "../src/cli.js";
-import { type AuditResult, auditProject } from "../src/report/audit.js";
+import {
+  type AuditResult,
+  auditProject,
+  runProcess,
+} from "../src/report/audit.js";
 import { readReport } from "../src/report/read.js";
 import {
   createTemporaryAssets,
@@ -328,10 +331,16 @@ const snapshot = async (directory: string): Promise<string[]> => {
 };
 
 const addressOf = async (sink: Harness): Promise<string> => {
-  await waitFor(
-    () => sink.out.some((line) => line.includes("http://localhost")),
-    "the address to be printed",
-  );
+  try {
+    await waitFor(
+      () => sink.out.some((line) => line.includes("http://localhost")),
+      "the address to be printed",
+    );
+  } catch (error) {
+    throw new Error(
+      `${(error as Error).message}\nstdout: ${sink.out.join("\n")}\nstderr: ${sink.err.join("\n")}`,
+    );
+  }
 
   return (
     sink.opened[0] ??
@@ -444,48 +453,40 @@ describe("a complete run leaves the asset directory untouched", () => {
   });
 });
 
-describe("an automatic run reads the project through the real npm command", () => {
+describe("an automatic run reads the project through a real child process", () => {
   it("serves the findings and writes no report file", async () => {
     const project = await mkdtemp(path.join(tmpdir(), "nav-project-"));
     temporaryDirectories.push(project);
 
-    const bin = await mkdtemp(path.join(tmpdir(), "nav-bin-"));
-    temporaryDirectories.push(bin);
-    const executable = path.join(bin, "npm");
     const text = await readFile(
       fixturePath("few-vulnerabilities-audit-report"),
       "utf8",
     );
+    const script = `process.stdout.write(${JSON.stringify(text)});`;
 
-    await writeFile(
-      executable,
-      `#!${process.execPath}\nprocess.stdout.write(${JSON.stringify(text)});\n`,
-      "utf8",
-    );
-    await chmod(executable, 0o755);
-
-    const original = process.env.PATH;
-    process.env.PATH = `${bin}${path.delimiter}${original ?? ""}`;
     const before = await snapshot(project);
-    const sink = harness(undefined, auditProject);
+    const sink = harness(undefined, (cwd, signal) =>
+      auditProject(cwd, signal, (directory, innerSignal) =>
+        runProcess(
+          { command: process.execPath, args: ["-e", script], shell: false },
+          directory,
+          innerSignal,
+        ),
+      ),
+    );
 
-    try {
-      const done = run(["--port", "0", "--no-open"], {
-        ...sink.io,
-        cwd: project,
-      });
-      const address = await addressOf(sink);
-      const response = await fetch(`${address}/report.json`);
-      const body = (await response.json()) as { findings: unknown[] };
+    const done = run(["--port", "0", "--no-open"], {
+      ...sink.io,
+      cwd: project,
+    });
+    const address = await addressOf(sink);
+    const response = await fetch(`${address}/report.json`);
+    const body = (await response.json()) as { findings: unknown[] };
 
-      expect(body.findings.length).toBeGreaterThan(0);
+    expect(body.findings.length).toBeGreaterThan(0);
 
-      sink.controller.abort();
-      expect(await done).toBe(0);
-    } finally {
-      process.env.PATH = original;
-    }
-
+    sink.controller.abort();
+    expect(await done).toBe(0);
     expect(await snapshot(project)).toEqual(before);
   });
 });
