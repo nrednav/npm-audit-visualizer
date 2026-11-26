@@ -74,6 +74,7 @@ const harness = (
         audited.push(cwd);
         return audit(cwd, innerSignal);
       },
+      now: () => new Date("2026-11-26T03:30:00Z"),
       out: (line) => out.push(line),
       err: (line) => err.push(line),
       openSurface: (url) => opened.push(url),
@@ -100,6 +101,63 @@ afterEach(async () => {
   );
 });
 
+describe("run timestamps", () => {
+  it("serves an unknown audit time and no observation when it reads a file", async () => {
+    const sink = harness();
+    const filePath = fixturePath("few-vulnerabilities-audit-report");
+    const done = run(["--file", filePath, "--port", "0", "--no-open"], sink.io);
+
+    const address = await addressOf(sink);
+    const response = await fetch(`${address}/report.json`);
+    const body = (await response.json()) as {
+      timestamps: {
+        auditTime: unknown;
+        observedAt: unknown;
+        builtAt: string;
+      };
+    };
+
+    expect(body.timestamps.auditTime).toEqual({
+      unknown: "npm audit --json states no creation time",
+    });
+    // A file read observed nothing, so it must not borrow the read instant.
+    expect(body.timestamps.observedAt).toEqual({
+      unknown: "the report was read from a file, so this tool observed nothing",
+    });
+    expect(body.timestamps.builtAt).toBe("2026-11-26T03:30:00.000Z");
+
+    sink.controller.abort();
+    expect(await done).toBe(0);
+  });
+
+  it("serves the observation instant when it ran the audit", async () => {
+    const sink = harness(
+      undefined,
+      auditReturning({
+        ok: true,
+        report: await fixtureReport(),
+        digest: `sha256:${"1".repeat(64)}`,
+        observedAt: "2026-11-26T03:29:00.000Z",
+      }),
+    );
+    const done = run(["--port", "0", "--no-open"], sink.io);
+
+    const address = await addressOf(sink);
+    const response = await fetch(`${address}/report.json`);
+    const body = (await response.json()) as {
+      timestamps: { auditTime: unknown; observedAt: unknown };
+    };
+
+    expect(body.timestamps.observedAt).toBe("2026-11-26T03:29:00.000Z");
+    expect(body.timestamps.auditTime).toEqual({
+      unknown: "npm audit --json states no creation time",
+    });
+
+    sink.controller.abort();
+    expect(await done).toBe(0);
+  });
+});
+
 describe("run", () => {
   it("audits the caller's directory when no report is given", async () => {
     const sink = harness(
@@ -108,6 +166,7 @@ describe("run", () => {
         ok: true,
         report: await fixtureReport(),
         digest: `sha256:${"1".repeat(64)}`,
+        observedAt: "2026-11-26T03:29:00Z",
       }),
     );
     const done = run(["--port", "0", "--no-open"], sink.io);

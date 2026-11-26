@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "sources": [
     {
       "kind": "audit-report",
@@ -17,6 +17,15 @@
       "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
     }
   ],
+  "timestamps": {
+    "auditTime": {
+      "unknown": "npm audit --json states no creation time"
+    },
+    "observedAt": {
+      "unknown": "nothing was observed"
+    },
+    "builtAt": "2026-11-26T03:30:00.000Z"
+  },
   "metadata": {
     "vulnerabilities": {
       "info": 0,

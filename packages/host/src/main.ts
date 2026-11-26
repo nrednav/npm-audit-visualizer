@@ -27,7 +27,8 @@ const toStderr = writeLine(process.stderr);
 process.exitCode = await run(process.argv.slice(2), {
   cwd: process.cwd(),
   assetsDir: fileURLToPath(new URL("./surface", import.meta.url)),
-  auditProject,
+  auditProject: (cwd, signal) => auditProject(cwd, signal),
+  now: () => new Date(),
   out: writeLine(process.stdout),
   err: toStderr,
   openSurface: (url) => {

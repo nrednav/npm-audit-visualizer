@@ -26,6 +26,7 @@ vi.mock("./components/visualizer/index.tsx", () => ({
 const emptyPayload: Payload = {
   schemaVersion: loadedPayload.schemaVersion,
   sources: loadedPayload.sources,
+  timestamps: loadedPayload.timestamps,
   metadata: {
     vulnerabilities: {
       info: 0,

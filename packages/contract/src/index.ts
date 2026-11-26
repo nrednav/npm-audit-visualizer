@@ -63,3 +63,10 @@ export {
   type SourceKind,
   SourceKindSchema,
 } from "./source.js";
+
+export {
+  type Timestamp,
+  TimestampSchema,
+  type Timestamps,
+  TimestampsSchema,
+} from "./time.js";

@@ -19,7 +19,16 @@ export type AuditFailure =
     };
 
 export type AuditResult =
-  | { ok: true; report: AuditReport; digest: string }
+  | {
+      ok: true;
+      report: AuditReport;
+      digest: string;
+      /**
+       * When the audit finished, which is the instant this project was observed.
+       * Stamped here because this is the only place that observed anything.
+       */
+      observedAt: string;
+    }
   | { ok: false; failure: AuditFailure };
 
 export type ProcessResult =
@@ -142,6 +151,7 @@ export const auditProject = async (
   cwd: string,
   signal: AbortSignal,
   run: RunAuditProcess = runNpmAudit,
+  now: () => Date = () => new Date(),
 ): Promise<AuditResult> => {
   if (signal.aborted) {
     return { ok: false, failure: { kind: "aborted" } };
@@ -169,7 +179,11 @@ export const auditProject = async (
       );
 
       if (parsed.ok) {
-        return { ...parsed, digest: digestOf(outcome.stdout) };
+        return {
+          ...parsed,
+          digest: digestOf(outcome.stdout),
+          observedAt: now().toISOString(),
+        };
       }
 
       if (outcome.exitCode !== null && outcome.exitCode !== 0) {

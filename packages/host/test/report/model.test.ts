@@ -34,8 +34,13 @@ const ordered = readReport("few-vulnerabilities-audit-report");
 const DIGEST = `sha256:${"2".repeat(64)}`;
 
 /** The report-only tests are about findings, so they share one fixed source. */
-const payloadOf = (report: AuditReport) =>
-  buildPayload(report, [sourceOfFile("report.json", DIGEST)]);
+const NOW = new Date("2026-11-26T03:30:00Z");
+
+const payloadOf = (report: AuditReport, now: () => Date = () => NOW) =>
+  buildPayload(report, [sourceOfFile("report.json", DIGEST)], {
+    observedAt: { unknown: "nothing was observed" },
+    now,
+  });
 
 describe("buildPayload", () => {
   it("presents every reported vulnerability and invents none", () => {
@@ -230,6 +235,63 @@ describe("buildPayload", () => {
     expect(payload.graph.nodes.length).toBeGreaterThanOrEqual(
       payload.findings.length,
     );
+  });
+
+  it("names all four times and keeps each in its own field", () => {
+    const {
+      timestamps,
+      sources: [source],
+    } = payloadOf(ordered);
+
+    expect(Object.keys(timestamps as object).sort()).toEqual([
+      "auditTime",
+      "builtAt",
+      "observedAt",
+    ]);
+    expect(source?.createdAt).toEqual({
+      unknown: "npm audit --json states no creation time",
+    });
+  });
+
+  it("never states an audit time, whatever the clock says", () => {
+    const clock = () => new Date("2025-01-02T03:04:05Z");
+    const { timestamps } = payloadOf(ordered, clock);
+
+    expect(timestamps.auditTime).toEqual({
+      unknown: "npm audit --json states no creation time",
+    });
+    expect(JSON.stringify(timestamps.auditTime)).not.toContain("2025");
+    expect(timestamps.builtAt).toBe("2025-01-02T03:04:05.000Z");
+  });
+
+  it("stamps build time from the clock it was given, once per build", () => {
+    let calls = 0;
+    const clock = () => {
+      calls += 1;
+      return new Date(`2026-11-26T03:3${calls}:00Z`);
+    };
+
+    const first = payloadOf(ordered, clock).timestamps.builtAt;
+    const second = payloadOf(ordered, clock).timestamps.builtAt;
+
+    expect(first).toBe("2026-11-26T03:31:00.000Z");
+    expect(second).toBe("2026-11-26T03:32:00.000Z");
+  });
+
+  it("keeps an unknown observation for a payload built without one", () => {
+    const { timestamps } = payloadOf(ordered);
+
+    expect(timestamps.observedAt).toEqual({ unknown: "nothing was observed" });
+  });
+
+  it("changes no finding, node, or edge when it states its times", () => {
+    const payload = payloadOf(ordered);
+
+    expect(payload.findings).toHaveLength(
+      Object.keys(ordered.vulnerabilities).length,
+    );
+    expect(payload.graph.nodes.length).toBeGreaterThan(0);
+    expect(payload.graph.edges.length).toBeGreaterThan(0);
   });
 
   it("states that the graph is derived from reported via relationships", () => {

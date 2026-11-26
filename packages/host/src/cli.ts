@@ -2,6 +2,7 @@ import { parseArgs } from "node:util";
 import type {
   AuditReport,
   SourceDescriptor,
+  Timestamps,
 } from "@npm-audit-visualizer/contract";
 import { type AuditResult, describeAuditFailure } from "./report/audit.js";
 import { buildPayload } from "./report/model.js";
@@ -36,6 +37,8 @@ export type CliIo = {
   assetsDir: string;
   /** Obtains a report from the caller's project when no file is given. */
   auditProject: (cwd: string, signal: AbortSignal) => Promise<AuditResult>;
+  /** The clock that stamps payload build time, injected so tests can fix it. */
+  now: () => Date;
   out: (line: string) => void;
   err: (line: string) => void;
   openSurface: (url: string) => void;
@@ -153,6 +156,8 @@ export const run = async (argv: string[], io: CliIo): Promise<number> => {
   const { options } = intent;
   let report: AuditReport;
   let sources: SourceDescriptor[];
+  /** Only the automatic audit observes anything, so a file read leaves this unset. */
+  let observedAt: Timestamps["observedAt"] | undefined;
 
   if (options.file === null) {
     if (options.debug) {
@@ -169,6 +174,7 @@ export const run = async (argv: string[], io: CliIo): Promise<number> => {
 
     report = audited.report;
     sources = [sourceOfAudit(audited.digest)];
+    observedAt = audited.observedAt;
   } else {
     if (options.debug) {
       io.out(`Reading ${options.file}`);
@@ -185,7 +191,12 @@ export const run = async (argv: string[], io: CliIo): Promise<number> => {
     sources = [sourceOfFile(options.file, read.digest)];
   }
 
-  const payload = buildPayload(report, sources);
+  const payload = buildPayload(report, sources, {
+    observedAt: observedAt ?? {
+      unknown: "the report was read from a file, so this tool observed nothing",
+    },
+    now: io.now,
+  });
 
   if (options.debug) {
     io.out(

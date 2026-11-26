@@ -6,6 +6,11 @@ import { PAYLOAD_SCHEMA_VERSION } from "@npm-audit-visualizer/contract";
 
 export const FIXTURE_PAYLOAD: Payload = {
   schemaVersion: PAYLOAD_SCHEMA_VERSION,
+  timestamps: {
+    auditTime: { unknown: "npm audit --json states no creation time" },
+    observedAt: { unknown: "nothing was observed" },
+    builtAt: "2026-11-26T03:30:00Z",
+  },
   sources: [
     {
       kind: "audit-report",

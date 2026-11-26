@@ -62,6 +62,32 @@ const completed = (
   stderr,
 });
 
+describe("auditProject observation time", () => {
+  it("stamps the instant the audit finished, from the clock it was given", async () => {
+    const clock = () => new Date("2026-11-26T04:05:06Z");
+    const result = await auditProject(
+      "/project",
+      new AbortController().signal,
+      run(async () => completed(1, await fixtureText())),
+      clock,
+    );
+
+    expect(result.ok && result.observedAt).toBe("2026-11-26T04:05:06.000Z");
+  });
+
+  it("claims no observation when the audit fails", async () => {
+    const result = await auditProject(
+      "/project",
+      new AbortController().signal,
+      run(async () => ({ kind: "aborted" as const })),
+      () => new Date("2026-11-26T04:05:06Z"),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result).not.toHaveProperty("observedAt");
+  });
+});
+
 describe("auditProject identity", () => {
   it("hashes the bytes npm wrote, not the decoded text", async () => {
     const text = await fixtureText();

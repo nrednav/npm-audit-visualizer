@@ -12,6 +12,7 @@ import {
   type Severity,
   type SourceDescriptor,
   severityRank,
+  type Timestamps,
 } from "@npm-audit-visualizer/contract";
 
 const isAdvisory = (entry: unknown): entry is Advisory =>
@@ -145,9 +146,29 @@ const buildGraph = (report: AuditReport): DependencyGraph => {
  * The descriptors arrive as an argument rather than being derived here, because
  * only the caller knows whether the report came from a file or from an audit.
  */
+/**
+ * npm states no time in its report, and nothing else may be put in its place: a
+ * file's modification time says when a file was written, not when the project was
+ * audited, and the clock says only when this process ran.
+ */
+export const NO_AUDIT_TIME = {
+  unknown: "npm audit --json states no creation time",
+} as const;
+
+export type BuildTimes = {
+  /** When the tool observed the project, if it observed anything at all. */
+  observedAt: Timestamps["observedAt"];
+  /** The clock is injected so that a test can fix time and the model stays pure. */
+  now: () => Date;
+};
+
 export const buildPayload = (
   report: AuditReport,
   sources: readonly SourceDescriptor[],
+  times: BuildTimes = {
+    observedAt: { unknown: "nothing was observed" },
+    now: () => new Date(),
+  },
 ): Payload => {
   const findings = Object.entries(report.vulnerabilities)
     .map(([id, vulnerability]) => toFinding(id, vulnerability))
@@ -156,6 +177,11 @@ export const buildPayload = (
   return {
     schemaVersion: PAYLOAD_SCHEMA_VERSION,
     sources: [...sources],
+    timestamps: {
+      auditTime: NO_AUDIT_TIME,
+      observedAt: times.observedAt,
+      builtAt: times.now().toISOString(),
+    },
     metadata: report.metadata,
     findings,
     graph: buildGraph(report),

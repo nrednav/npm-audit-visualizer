@@ -36,6 +36,11 @@ const baseMetadata = {
 
 const mixedPayload: Payload = {
   schemaVersion: PAYLOAD_SCHEMA_VERSION,
+  timestamps: {
+    auditTime: { unknown: "npm audit --json states no creation time" },
+    observedAt: { unknown: "nothing was observed" },
+    builtAt: "2026-11-26T03:30:00.000Z",
+  },
   sources: [
     {
       kind: "audit-report",
