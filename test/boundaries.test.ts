@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { PAYLOAD_SCHEMA_VERSION } from "@npm-audit-visualizer/contract";
 import { describe, expect, it } from "vitest";
 
 const repoRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -268,18 +269,24 @@ describe("the payload contract is documented where a reader looks", () => {
   const reference = (): string =>
     readFileSync(path.join(repoRoot, "docs/cli-reference.md"), "utf8");
 
-  it("names the payload version and its current value", () => {
-    const text = reference();
+  const rowStarting = (prefix: string): string | undefined =>
+    reference()
+      .split("\n")
+      .find((line) => line.startsWith(prefix));
 
-    expect(text).toMatch(/`schemaVersion`/);
-    expect(text).toMatch(/`schemaVersion`\s*\|\s*number\s*\|[^\n]*`1`/);
+  it("names the payload version and its current value", () => {
+    const row = rowStarting("| `schemaVersion` ");
+
+    expect(row).toBeDefined();
+    expect(row).toContain("| number |");
+    expect(row).toContain(String(PAYLOAD_SCHEMA_VERSION));
   });
 
   it("keeps the payload version apart from the npm report version", () => {
     const text = reference();
 
     expect(text).toMatch(/not the npm report's `auditReportVersion`/);
-    expect(text).toMatch(/`auditReportVersion`\s*\|\s*Which npm report shape/);
+    expect(text).toMatch(/`auditReportVersion`[^\n]*npm report shape/);
   });
 
   it("states that a mismatch and a missing version are refused", () => {
@@ -290,5 +297,34 @@ describe("the payload contract is documented where a reader looks", () => {
     expect(text).toMatch(
       /never falls back to treating an incompatible payload/,
     );
+  });
+
+  it("documents every source descriptor field", () => {
+    const text = reference();
+
+    for (const field of [
+      "`kind`",
+      "`producer`",
+      "`schemaVersion`",
+      "`createdAt`",
+      "`label`",
+    ]) {
+      expect(text).toContain(field);
+    }
+  });
+
+  it("states that a label is never a path", () => {
+    const text = reference();
+
+    expect(text).toMatch(/The label is never a path/);
+    expect(text).toContain("no `/` or `\\` character");
+    expect(text).toMatch(/audit report from a file/);
+  });
+
+  it("states that an unstated value stays unfilled", () => {
+    const text = reference();
+
+    expect(text).toMatch(/An unstated value stays unfilled/);
+    expect(text).toMatch(/modification time is not a creation time/);
   });
 });

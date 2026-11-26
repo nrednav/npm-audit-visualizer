@@ -8,8 +8,21 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The payload version is now `2`. `sources` is a required field, so a version-1
+  payload is refused by name instead of being read as if it had no provenance.
+
 ### Added
 
+- The payload carries `sources`, one descriptor per artifact it was built from.
+  A descriptor names the artifact kind, its producer, the artifact's own schema
+  version, and a label. A creation time stays `null` when the report states none,
+  and the page shows `not supplied` rather than guessing from a file's
+  modification time. The label is the file's own name with no directory, or a
+  phrase for an automatic audit, so a local path never reaches the page.
+- The interface shows the report's source, producer, and creation state beside
+  the scope counts.
 - The payload carries `schemaVersion`, so the page can tell whether the report it
   received is one it can read. A different, missing, or wrongly typed version is
   a named compatibility failure that shows no findings, instead of an empty

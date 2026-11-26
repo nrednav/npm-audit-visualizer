@@ -94,11 +94,12 @@ response does not describe the served tree.
 
 ## Payload
 
-The `/report.json` route returns a payload with four top-level fields.
+The `/report.json` route returns a payload with five top-level fields.
 
 | Field           | Type   | Description                                                      |
 | --------------- | ------ | ---------------------------------------------------------------- |
-| `schemaVersion` | number | The payload contract this document describes. Currently `1`.     |
+| `schemaVersion` | number | The payload contract this document describes. Currently `2`.     |
+| `sources`       | array  | The artifacts this payload was built from. At least one.         |
 | `metadata`      | object | Vulnerability and dependency counts.                             |
 | `findings`      | array  | One entry per reported vulnerability, ordered most urgent first. |
 | `graph`         | object | Nodes and edges for the dependency view.                         |
@@ -107,13 +108,10 @@ The `/report.json` route returns a payload with four top-level fields.
 
 `schemaVersion` identifies the payload contract between the host and the page.
 It is not the npm report's `auditReportVersion` and not the package version.
-Those three numbers answer different questions:
 
-| Number               | Answers                                            |
-| -------------------- | -------------------------------------------------- |
-| `schemaVersion`      | Which payload shape the page can read.             |
-| `auditReportVersion` | Which npm report shape the host accepted as input. |
-| package version      | Which release of this command was installed.       |
+Version `2` added `sources`, which is required, so the version changed with the
+shape. A version-1 payload is refused by name rather than read as if it carried
+no provenance. The versions a payload mentions are compared below.
 
 The page requires an exact match on `schemaVersion`. A different value, a
 missing value, or a value of another type is a compatibility failure. The page
@@ -124,6 +122,41 @@ with no findings.
 An incompatible payload is not repaired in the browser. The fix is to run a
 host and a page built from the same contract, which means reinstalling the
 package or rebuilding the workspace.
+
+### `sources`
+
+Each entry describes one artifact the payload was built from. The array holds at
+least one entry. Today the only artifact is the audit report itself, so the
+array holds exactly one.
+
+| Field           | Type           | Description                                                   |
+| --------------- | -------------- | ------------------------------------------------------------- |
+| `kind`          | string         | The artifact kind. Currently `audit-report`.                  |
+| `producer`      | object         | `{ name, version }`. `version` is `null` when unstated.       |
+| `schemaVersion` | string or null | The artifact's own schema version, as the artifact states it. |
+| `createdAt`     | string or null | ISO 8601 creation time as the artifact states it.             |
+| `label`         | string         | A name for the artifact that is not a path.                   |
+
+**The label is never a path.** It must be between 1 and 120 characters and
+contain no `/` or `\` character, no drive prefix such as `C:`, and must not be
+`.` or `..`. When a report is read from a file, the label is that file's own
+name, with no directory. When the tool runs the audit itself, the label is the
+phrase `npm audit in the current project`. If a filename cannot be a safe label,
+the label falls back to `audit report from a file` rather than exposing it.
+
+**An unstated value stays unfilled.** `npm audit --json` states neither a
+creation time nor its own version, so both are `null` and the page shows `not
+supplied`. A file's modification time is not a creation time and is never used
+in its place.
+
+These four numbers answer different questions and are not interchangeable:
+
+| Number                    | Where it lives            | Answers                                      |
+| ------------------------- | ------------------------- | -------------------------------------------- |
+| `schemaVersion`           | payload, top level        | Which payload shape the page can read.       |
+| `sources[].schemaVersion` | inside a descriptor       | Which version the artifact itself declared.  |
+| `auditReportVersion`      | inside the raw npm report | Which npm report shape the host accepted.    |
+| package version           | `package.json`            | Which release of this command was installed. |
 
 ### Severity
 
