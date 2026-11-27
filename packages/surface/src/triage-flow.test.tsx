@@ -159,6 +159,33 @@ describe("the triage flow", () => {
     expect(rowNames()).toHaveLength(3);
   });
 
+  it("keeps every finding with a reported change, and counts the same set", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(
+      screen.getByText(
+        (_, element) =>
+          element?.tagName === "P" &&
+          element.textContent?.trim() ===
+            "1 of 3 findings carry a reported fix",
+      ),
+    ).toBeVisible();
+
+    const reportedFix = screen.getByRole("button", { name: /reported fix/i });
+
+    await user.click(reportedFix);
+
+    expect(rowNames()).toHaveLength(1);
+    expect(rowNames()[0]).toContain("left-pad");
+    expect(summary()).toContain("1 of 3 findings");
+
+    await user.click(reportedFix);
+
+    expect(rowNames()).toHaveLength(3);
+    expect(screen.getByText(/select a level to filter/i)).toBeVisible();
+  });
+
   it("keeps the restriction derived, so selecting the same level twice clears it", async () => {
     const user = userEvent.setup();
     render(<App />);
