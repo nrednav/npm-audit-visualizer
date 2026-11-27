@@ -70,6 +70,24 @@ npm-audit-visualizer --port 3000
 Confirm the address in the printed output. It is the port actually bound, which
 may differ from the one you asked for.
 
+## Decide what to fix first
+
+Start with the critical and high findings, then adjust for where a package sits in
+the tree and for what changing it would cost.
+
+The order is a default, not a verdict. A critical finding in a package you never
+load and a moderate finding in your request path can deserve opposite treatment,
+and the report does not know which is which. It states severity, the reported
+change, the dependency position, and the install locations a finding reaches. Use
+those four, and your knowledge of the project, to decide.
+
+Change cost is the axis this report adds. A reported fix that npm marks as a major
+change costs more than one that stays within a version range, because it can bring
+breaking changes with it. A reported fix that names no target costs more again,
+because npm states that a fix exists but does not say which package version
+provides it, so you must find the path yourself. Neither is a reason to skip a
+finding: a major change to a package you load is still a fix worth planning.
+
 ## Read a finding's evidence
 
 To act on a finding, open it in the explorer and read its reported install
