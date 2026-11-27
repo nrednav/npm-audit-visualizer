@@ -5,6 +5,7 @@ import {
   AuditReportSchema,
   type Finding,
   PAYLOAD_SCHEMA_VERSION,
+  type Payload,
   PayloadSchema,
   REMEDIATION_STATES,
   severityRank,
@@ -42,6 +43,65 @@ const payloadOf = (report: AuditReport, now: () => Date = () => NOW) =>
     observedAt: { unknown: "nothing was observed" },
     now,
   });
+
+describe("the remediation matrix", () => {
+  const matrix = () => payloadOf(readReport("remediation-matrix-audit-report"));
+  const stateOf = (payload: Payload, id: string) =>
+    payload.findings.find((finding) => finding.id === id)?.remediation.state;
+  const directOf = (payload: Payload, id: string) =>
+    payload.findings.find((finding) => finding.id === id)?.direct;
+
+  it("maps every shape npm states, and withholds a target whenever npm named none", () => {
+    const payload = matrix();
+
+    expect(stateOf(payload, "reported-direct")).toBe("change-reported");
+    expect(stateOf(payload, "reported-transitive")).toBe("change-reported");
+    expect(stateOf(payload, "major-direct")).toBe("major-change-reported");
+    expect(stateOf(payload, "major-transitive")).toBe("major-change-reported");
+    expect(stateOf(payload, "true-direct")).toBe("change-target-incomplete");
+    expect(stateOf(payload, "true-transitive")).toBe(
+      "change-target-incomplete",
+    );
+    expect(stateOf(payload, "empty-version")).toBe("change-target-incomplete");
+    expect(stateOf(payload, "none-transitive")).toBe("no-reported-change");
+
+    for (const finding of payload.findings) {
+      const named =
+        finding.remediation.state === "change-reported" ||
+        finding.remediation.state === "major-change-reported";
+
+      expect(finding.remediation.target === null).toBe(!named);
+    }
+  });
+
+  it("keeps position independent of state across the matrix", () => {
+    const payload = matrix();
+
+    expect(directOf(payload, "reported-direct")).toBe(true);
+    expect(directOf(payload, "reported-transitive")).toBe(false);
+    expect(directOf(payload, "major-direct")).toBe(true);
+    expect(directOf(payload, "major-transitive")).toBe(false);
+    expect(directOf(payload, "true-direct")).toBe(true);
+    expect(directOf(payload, "true-transitive")).toBe(false);
+    expect(directOf(payload, "none-transitive")).toBe(false);
+  });
+
+  it("serves the committed payload the model builds, so the fixture cannot drift", () => {
+    const committed: unknown = JSON.parse(
+      readFileSync(
+        fileURLToPath(
+          new URL(
+            "../../../contract/test/fixtures/remediation-matrix-payload.json",
+            import.meta.url,
+          ),
+        ),
+        "utf8",
+      ),
+    );
+
+    expect(committed).toEqual(matrix());
+  });
+});
 
 describe("buildPayload", () => {
   it("presents every reported vulnerability and invents none", () => {

@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 7,
+  "sources": [
+    {
+      "kind": "audit-report",
+      "producer": {
+        "name": "npm",
+        "version": {
+          "unknown": "npm audit --json does not state the npm version"
+        }
+      },
+      "schemaVersion": "2",
+      "createdAt": {
+        "unknown": "npm audit --json states no creation time"
+      },
+      "label": "report.json",
+      "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  ],
+  "timestamps": {
+    "auditTime": {
+      "unknown": "npm audit --json states no creation time"
+    },
+    "observedAt": {
+      "unknown": "nothing was observed"
+    },
+    "builtAt": "2026-11-26T03:30:00.000Z"
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 1,
+      "low": 2,
+      "moderate": 2,
+      "high": 2,
+      "critical": 1,
+      "total": 8
+    },
+    "dependencies": {
+      "prod": 8,
+      "dev": 253,
+      "optional": 37,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 260
+    }
+  },
+  "findings": [
+    {
+      "id": "major-direct",
+      "name": "major-direct",
+      "severity": "critical",
+      "direct": true,
+      "range": "<1.0.0",
+      "paths": ["node_modules/absent-change"],
+      "via": [],
+      "effects": [],
+      "advisories": [],
+      "remediation": {
+        "state": "major-change-reported",
+        "target": {
+          "name": "major-direct",
+          "version": "6.0.0"
+        }
+      }
+    },
+    {
+      "id": "major-transitive",
+      "name": "major-transitive",
+      "severity": "high",
+      "direct": false,
+      "range": "<1.0.0",
+      "paths": ["node_modules/absent-change"],
+      "via": [],
+      "effects": [],
+      "advisories": [],
+      "remediation": {
+        "state": "major-change-reported",
+        "target": {
+          "name": "major-transitive",
+          "version": "9.2.0"
+        }
+      }
+    },
+    {
+      "id": "reported-direct",
+      "name": "reported-direct",
+      "severity": "high",
+      "direct": true,
+      "range": "<1.0.0",
+      "paths": ["node_modules/absent-change"],
+      "via": [],
+      "effects": [],
+      "advisories": [],
+      "remediation": {
+        "state": "change-reported",
+        "target": {
+          "name": "reported-direct",
+          "version": "2.0.0"
+        }
+      }
+    },
+    {
+      "id": "reported-transitive",
+      "name": "reported-transitive",
+      "severity": "moderate",
+      "direct": false,
+      "range": "<1.0.0",
+      "paths": ["node_modules/absent-change"],
+      "via": [],
+      "effects": [],
+      "advisories": [],
+      "remediation": {
+        "state": "change-reported",
+        "target": {
+          "name": "reported-transitive",
+          "version": "3.1.4"
+        }
+      }
+    },
+    {
+      "id": "true-transitive",
+      "name": "true-transitive",
+      "severity": "moderate",
+      "direct": false,
+      "range": "<1.0.0",
+      "paths": ["node_modules/absent-change"],
+      "via": [],
+      "effects": [],
+      "advisories": [],
+      "remediation": {
+        "state": "change-target-incomplete",
+        "target": null
+      }
+    },
+    {
+      "id": "empty-version",
+      "name": "empty-version",
+      "severity": "low",
+      "direct": true,
+      "range": "<1.0.0",
+      "paths": ["node_modules/absent-change"],
+      "via": [],
+      "effects": [],
+      "advisories": [],
+      "remediation": {
+        "state": "change-target-incomplete",
+        "target": null
+      }
+    },
+    {
+      "id": "true-direct",
+      "name": "true-direct",
+      "severity": "low",
+      "direct": true,
+      "range": "<1.0.0",
+      "paths": ["node_modules/absent-change"],
+      "via": [],
+      "effects": [],
+      "advisories": [],
+      "remediation": {
+        "state": "change-target-incomplete",
+        "target": null
+      }
+    },
+    {
+      "id": "none-transitive",
+      "name": "none-transitive",
+      "severity": "info",
+      "direct": false,
+      "range": "<1.0.0",
+      "paths": ["node_modules/absent-change"],
+      "via": [],
+      "effects": [],
+      "advisories": [],
+      "remediation": {
+        "state": "no-reported-change",
+        "target": null
+      }
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "major-direct",
+        "name": "major-direct",
+        "severity": "critical"
+      },
+      {
+        "id": "major-transitive",
+        "name": "major-transitive",
+        "severity": "high"
+      },
+      {
+        "id": "reported-direct",
+        "name": "reported-direct",
+        "severity": "high"
+      },
+      {
+        "id": "reported-transitive",
+        "name": "reported-transitive",
+        "severity": "moderate"
+      },
+      {
+        "id": "true-transitive",
+        "name": "true-transitive",
+        "severity": "moderate"
+      },
+      {
+        "id": "empty-version",
+        "name": "empty-version",
+        "severity": "low"
+      },
+      {
+        "id": "true-direct",
+        "name": "true-direct",
+        "severity": "low"
+      },
+      {
+        "id": "none-transitive",
+        "name": "none-transitive",
+        "severity": "info"
+      }
+    ],
+    "edges": [],
+    "derivation": {
+      "origin": "derived",
+      "basis": "audit-via",
+      "note": "Derived from the via relationships npm reported. This is not a complete dependency tree: a package npm did not report is absent."
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "reported-direct": {
+      "name": "reported-direct",
+      "severity": "high",
+      "isDirect": true,
+      "via": [],
+      "effects": [],
+      "range": "<1.0.0",
+      "nodes": ["node_modules/absent-change"],
+      "fixAvailable": {
+        "name": "reported-direct",
+        "version": "2.0.0",
+        "isSemVerMajor": false
+      }
+    },
+    "reported-transitive": {
+      "name": "reported-transitive",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [],
+      "effects": [],
+      "range": "<1.0.0",
+      "nodes": ["node_modules/absent-change"],
+      "fixAvailable": {
+        "name": "reported-transitive",
+        "version": "3.1.4",
+        "isSemVerMajor": false
+      }
+    },
+    "major-direct": {
+      "name": "major-direct",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [],
+      "effects": [],
+      "range": "<1.0.0",
+      "nodes": ["node_modules/absent-change"],
+      "fixAvailable": {
+        "name": "major-direct",
+        "version": "6.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "major-transitive": {
+      "name": "major-transitive",
+      "severity": "high",
+      "isDirect": false,
+      "via": [],
+      "effects": [],
+      "range": "<1.0.0",
+      "nodes": ["node_modules/absent-change"],
+      "fixAvailable": {
+        "name": "major-transitive",
+        "version": "9.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "true-direct": {
+      "name": "true-direct",
+      "severity": "low",
+      "isDirect": true,
+      "via": [],
+      "effects": [],
+      "range": "<1.0.0",
+      "nodes": ["node_modules/absent-change"],
+      "fixAvailable": true
+    },
+    "true-transitive": {
+      "name": "true-transitive",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [],
+      "effects": [],
+      "range": "<1.0.0",
+      "nodes": ["node_modules/absent-change"],
+      "fixAvailable": true
+    },
+    "empty-version": {
+      "name": "empty-version",
+      "severity": "low",
+      "isDirect": true,
+      "via": [],
+      "effects": [],
+      "range": "<1.0.0",
+      "nodes": ["node_modules/absent-change"],
+      "fixAvailable": {
+        "name": "empty-version",
+        "version": "",
+        "isSemVerMajor": false
+      }
+    },
+    "none-transitive": {
+      "name": "none-transitive",
+      "severity": "info",
+      "isDirect": false,
+      "via": [],
+      "effects": [],
+      "range": "<1.0.0",
+      "nodes": ["node_modules/absent-change"],
+      "fixAvailable": false
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 1,
+      "low": 2,
+      "moderate": 2,
+      "high": 2,
+      "critical": 1,
+      "total": 8
+    },
+    "dependencies": {
+      "prod": 8,
+      "dev": 253,
+      "optional": 37,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 260
+    }
+  }
+}
