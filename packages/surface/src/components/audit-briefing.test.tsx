@@ -3,15 +3,20 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import parsedReportFixture from "../../../contract/test/fixtures/parsed-report.json";
 import AuditBriefing from "./audit-briefing";
+import { TRIAGE_DEFAULT, TRIAGE_NO_ACTION } from "./guidance";
 import { countBySeverity, countReport } from "./report-counts";
 
 const payload = PayloadSchema.parse(parsedReportFixture);
 
-const renderBriefing = (metadata = payload.metadata, fixableCount = 1) => {
+const renderBriefing = (
+  metadata = payload.metadata,
+  fixableCount = 1,
+  severityCounts = countBySeverity(payload.findings),
+) => {
   render(
     <AuditBriefing
       counts={countReport(payload.findings, metadata)}
-      severityCounts={countBySeverity(payload.findings)}
+      severityCounts={severityCounts}
       fixableCount={fixableCount}
     />,
   );
@@ -41,6 +46,24 @@ describe("AuditBriefing", () => {
 
     expect(reconciliation).toHaveTextContent("5");
     expect(reconciliation).toHaveTextContent("3");
+  });
+
+  it("advises the default order with its basis when a serious finding exists", () => {
+    renderBriefing(payload.metadata, 1, {
+      ...countBySeverity(payload.findings),
+      critical: 2,
+      moderate: 1,
+    });
+
+    expect(screen.getByText(TRIAGE_DEFAULT)).toBeVisible();
+    expect(screen.queryByText(TRIAGE_NO_ACTION)).toBeNull();
+  });
+
+  it("advises the maintenance window when no serious finding exists", () => {
+    renderBriefing();
+
+    expect(screen.getByText(TRIAGE_NO_ACTION)).toBeVisible();
+    expect(screen.queryByText(TRIAGE_DEFAULT)).toBeNull();
   });
 
   it("states the denominator of the reported-fix sentence in findings", () => {

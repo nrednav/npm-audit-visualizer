@@ -1,3 +1,4 @@
+import { TRIAGE_DEFAULT, TRIAGE_NO_ACTION } from "src/components/guidance";
 import { ArrowRightIcon } from "src/components/icons";
 import type { ReportCounts } from "src/components/report-counts";
 import { SEVERITY_META, SEVERITY_ORDER } from "src/constants";
@@ -37,8 +38,8 @@ const AuditBriefing = (props: AuditBriefingProps) => {
             {total === 0
               ? "npm reported no vulnerabilities for this report. Keep the report as the record of that audit."
               : actionRequired > 0
-                ? "By default, review critical and high findings first. Adjust for dependency position and the reported change."
-                : "This report lists no critical or high findings. The moderate and low findings are listed below."}
+                ? TRIAGE_DEFAULT
+                : TRIAGE_NO_ACTION}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
