@@ -2,6 +2,7 @@ import { reportsChange } from "@npm-audit-visualizer/contract";
 import { useState } from "react";
 import AuditBriefing from "src/components/audit-briefing";
 import ReportContext from "src/components/report-context";
+import { countBySeverity, countReport } from "src/components/report-counts";
 import SeverityLedger from "src/components/severity-ledger";
 import SiteHeader from "src/components/site-header";
 import Visualizer from "src/components/visualizer";
@@ -22,6 +23,8 @@ const AuditWorkspace = () => {
   }
 
   const { payload } = state;
+  const counts = countReport(payload.findings, payload.metadata);
+  const severityCounts = countBySeverity(payload.findings);
   const fixableCount = payload.findings.filter((finding) =>
     reportsChange(finding.remediation.state),
   ).length;
@@ -36,12 +39,13 @@ const AuditWorkspace = () => {
 
       <main id="main-content" className="page-shell pb-[4.5rem] pt-8 sm:pt-8">
         <AuditBriefing
-          metadata={payload.metadata}
+          counts={counts}
+          severityCounts={severityCounts}
           fixableCount={fixableCount}
         />
 
         <SeverityLedger
-          metadata={payload.metadata}
+          findings={payload.findings}
           selected={severityFilter}
           onSelect={setSeverityFilter}
         />

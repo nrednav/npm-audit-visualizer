@@ -1,18 +1,21 @@
-import type { Payload } from "@npm-audit-visualizer/contract";
+import type { Finding } from "@npm-audit-visualizer/contract";
 import { ResetIcon } from "src/components/icons";
+import { countBySeverity } from "src/components/report-counts";
 import { SeverityMarker } from "src/components/severity-marker";
 import { SEVERITY_META, SEVERITY_ORDER, type Severity } from "src/constants";
 
 type SeverityLedgerProps = {
-  metadata: Payload["metadata"];
+  findings: readonly Finding[];
   selected: Severity | null;
   onSelect: (severity: Severity | null) => void;
 };
 
 const SeverityLedger = (props: SeverityLedgerProps) => {
-  const { metadata, selected, onSelect } = props;
-  const counts = metadata.vulnerabilities;
-  const total = counts.total;
+  const { findings, selected, onSelect } = props;
+  // The counts come from the findings, not from npm's metadata, so each level's
+  // number is the number of rows its click leaves.
+  const counts = countBySeverity(findings);
+  const total = findings.length;
 
   return (
     <section aria-labelledby="severity-heading" className="mt-8">

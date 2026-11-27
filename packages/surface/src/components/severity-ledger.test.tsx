@@ -5,11 +5,13 @@ import { describe, expect, it, vi } from "vitest";
 import parsedReportFixture from "../../../contract/test/fixtures/parsed-report.json";
 import SeverityLedger from "./severity-ledger";
 
+const payload = PayloadSchema.parse(parsedReportFixture);
+
 describe("SeverityLedger", () => {
   it("renders one filter control per severity level", () => {
     render(
       <SeverityLedger
-        metadata={PayloadSchema.parse(parsedReportFixture).metadata}
+        findings={payload.findings}
         selected={null}
         onSelect={() => undefined}
       />,
@@ -22,13 +24,30 @@ describe("SeverityLedger", () => {
     expect(screen.getByRole("button", { name: /info/i })).toBeVisible();
   });
 
+  it("states the number of findings its click will leave, not npm's metadata total", () => {
+    render(
+      <SeverityLedger
+        findings={payload.findings}
+        selected={null}
+        onSelect={() => undefined}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /critical: 0 findings/i }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: /moderate: 3 findings/i }),
+    ).toBeVisible();
+  });
+
   it("reports the selected severity when a level is chosen", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
     render(
       <SeverityLedger
-        metadata={PayloadSchema.parse(parsedReportFixture).metadata}
+        findings={payload.findings}
         selected={null}
         onSelect={onSelect}
       />,
@@ -45,7 +64,7 @@ describe("SeverityLedger", () => {
 
     render(
       <SeverityLedger
-        metadata={PayloadSchema.parse(parsedReportFixture).metadata}
+        findings={payload.findings}
         selected="moderate"
         onSelect={onSelect}
       />,
