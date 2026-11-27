@@ -87,6 +87,13 @@ locations and remediation state.
    as semver-major; `change-target-incomplete` says npm reported a change and
    named no target; `no-reported-change` says npm reported none.
 
+The collapsed row states seven facts for every finding, at every width: the
+package name, the advisory count, the severity, whether the package is a direct
+or a transitive dependency, the target npm named, whether npm flagged the change
+as semver-major, and the number of install locations. The full lists stay behind
+step 2, so the summary never becomes the evidence. The location count counts
+distinct locations, so one npm repeated is counted once.
+
 ## Stop the server
 
 To stop the server and release the port, press `Ctrl-C`. The process exits
