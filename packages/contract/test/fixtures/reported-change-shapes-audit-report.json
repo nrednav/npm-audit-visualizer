@@ -1,0 +1,100 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "absent-change": {
+      "name": "absent-change",
+      "severity": "high",
+      "isDirect": true,
+      "via": [],
+      "effects": [],
+      "range": "<1.0.0",
+      "nodes": ["node_modules/absent-change"]
+    },
+    "false-change": {
+      "name": "false-change",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [],
+      "effects": [],
+      "range": "<2.0.0",
+      "nodes": ["node_modules/false-change"],
+      "fixAvailable": false
+    },
+    "true-change": {
+      "name": "true-change",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["absent-change"],
+      "effects": ["absent-change"],
+      "range": "<3.0.0",
+      "nodes": ["node_modules/true-change"],
+      "fixAvailable": true
+    },
+    "named-change": {
+      "name": "named-change",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["true-change"],
+      "effects": ["true-change"],
+      "range": "<4.0.0",
+      "nodes": ["node_modules/named-change"],
+      "fixAvailable": {
+        "name": "semver",
+        "version": "7.5.2",
+        "isSemVerMajor": false
+      }
+    },
+    "major-change": {
+      "name": "major-change",
+      "severity": "critical",
+      "isDirect": false,
+      "via": ["named-change"],
+      "effects": ["named-change"],
+      "range": "<5.0.0",
+      "nodes": ["node_modules/major-change"],
+      "fixAvailable": {
+        "name": "react-scripts",
+        "version": "5.0.1",
+        "isSemVerMajor": true
+      }
+    },
+    "empty-name-change": {
+      "name": "empty-name-change",
+      "severity": "low",
+      "isDirect": true,
+      "via": [],
+      "effects": [],
+      "range": "<6.0.0",
+      "nodes": ["node_modules/empty-name-change"],
+      "fixAvailable": { "name": "", "version": "2.0.0", "isSemVerMajor": false }
+    },
+    "empty-version-change": {
+      "name": "empty-version-change",
+      "severity": "high",
+      "isDirect": true,
+      "via": [],
+      "effects": [],
+      "range": "<7.0.0",
+      "nodes": ["node_modules/empty-version-change"],
+      "fixAvailable": { "name": "lodash", "version": "", "isSemVerMajor": true }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 1,
+      "moderate": 2,
+      "high": 3,
+      "critical": 1,
+      "total": 7
+    },
+    "dependencies": {
+      "prod": 8,
+      "dev": 253,
+      "optional": 37,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 260
+    }
+  }
+}

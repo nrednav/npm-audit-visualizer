@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 6,
+  "schemaVersion": 7,
   "sources": [
     {
       "kind": "audit-report",
@@ -55,11 +55,9 @@
       "via": ["simple-update-notifier"],
       "effects": [],
       "advisories": [],
-      "fix": {
-        "available": true,
-        "name": null,
-        "version": null,
-        "major": false
+      "remediation": {
+        "state": "change-target-incomplete",
+        "target": null
       }
     },
     {
@@ -87,11 +85,9 @@
           "range": ">=7.0.0 <7.5.2"
         }
       ],
-      "fix": {
-        "available": true,
-        "name": null,
-        "version": null,
-        "major": false
+      "remediation": {
+        "state": "change-target-incomplete",
+        "target": null
       }
     },
     {
@@ -104,11 +100,9 @@
       "via": ["semver"],
       "effects": ["nodemon"],
       "advisories": [],
-      "fix": {
-        "available": true,
-        "name": null,
-        "version": null,
-        "major": false
+      "remediation": {
+        "state": "change-target-incomplete",
+        "target": null
       }
     }
   ],

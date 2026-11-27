@@ -66,11 +66,9 @@ const mixedPayload: Payload = {
       via: [],
       effects: [],
       advisories: [],
-      fix: {
-        available: true,
-        name: "left-pad",
-        version: "1.3.0",
-        major: false,
+      remediation: {
+        state: "change-reported",
+        target: { name: "left-pad", version: "1.3.0" },
       },
     },
     {
@@ -83,7 +81,7 @@ const mixedPayload: Payload = {
       via: ["left-pad"],
       effects: ["left-pad"],
       advisories: [],
-      fix: { available: false, name: null, version: null, major: false },
+      remediation: { state: "no-reported-change", target: null },
     },
     {
       id: "brace-expansion",
@@ -95,7 +93,7 @@ const mixedPayload: Payload = {
       via: ["minimist"],
       effects: ["minimist"],
       advisories: [],
-      fix: { available: false, name: null, version: null, major: false },
+      remediation: { state: "no-reported-change", target: null },
     },
   ],
   graph: {

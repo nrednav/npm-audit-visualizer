@@ -53,11 +53,9 @@ export const FIXTURE_PAYLOAD: Payload = {
       via: [],
       effects: [],
       advisories: [],
-      fix: {
-        available: true,
-        name: "left-pad",
-        version: "1.3.0",
-        major: false,
+      remediation: {
+        state: "change-reported",
+        target: { name: "left-pad", version: "1.3.0" },
       },
     },
   ],

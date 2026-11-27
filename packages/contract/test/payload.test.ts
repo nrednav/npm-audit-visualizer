@@ -63,7 +63,7 @@ const payload: Payload = {
       via: ["minimatch"],
       effects: ["minimatch"],
       advisories: [],
-      fix: { available: false, name: null, version: null, major: false },
+      remediation: { state: "no-reported-change", target: null },
     },
   ],
   graph: {
@@ -119,7 +119,7 @@ describe("payload schema", () => {
   });
 
   it("requires the current payload version", () => {
-    expect(PAYLOAD_SCHEMA_VERSION).toBe(6);
+    expect(PAYLOAD_SCHEMA_VERSION).toBe(7);
     expect(PayloadSchema.safeParse(payload).success).toBe(true);
 
     const { schemaVersion: _omitted, ...withoutVersion } = payload;
@@ -197,7 +197,7 @@ describe("decodePayload", () => {
   });
 
   it("never returns a payload alongside a version failure", () => {
-    const result = decodePayload({ ...payload, schemaVersion: 7 });
+    const result = decodePayload({ ...payload, schemaVersion: 8 });
 
     expect(result).not.toHaveProperty("payload");
     expect(result.success).toBe(false);
@@ -231,11 +231,18 @@ describe("decodePayload", () => {
     expect(result.success).toBe(false);
   });
 
-  it("refuses the previous version, which carried no timestamps", () => {
-    const { timestamps: _omitted, ...previous } = payload;
+  it("refuses the previous version, which carried a fix object per finding", () => {
+    const { remediation: _omitted, ...finding } = payload
+      .findings[0] as Payload["findings"][number];
     const result = decodePayload({
-      ...previous,
+      ...payload,
       schemaVersion: PAYLOAD_SCHEMA_VERSION - 1,
+      findings: [
+        {
+          ...finding,
+          fix: { available: false, name: null, version: null, major: false },
+        },
+      ],
     });
 
     expect(result.success).toBe(false);

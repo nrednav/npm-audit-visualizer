@@ -1,3 +1,4 @@
+import { reportsChange } from "@npm-audit-visualizer/contract";
 import { useState } from "react";
 import AuditBriefing from "src/components/audit-briefing";
 import ReportContext from "src/components/report-context";
@@ -21,8 +22,8 @@ const AuditWorkspace = () => {
   }
 
   const { payload } = state;
-  const fixableCount = payload.findings.filter(
-    (finding) => finding.fix.available,
+  const fixableCount = payload.findings.filter((finding) =>
+    reportsChange(finding.remediation.state),
   ).length;
 
   return (

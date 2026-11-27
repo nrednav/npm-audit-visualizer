@@ -3,11 +3,11 @@ import {
   type AuditReport,
   type DependencyGraph,
   type Finding,
-  type Fix,
   type GraphEdge,
   type GraphNode,
   PAYLOAD_SCHEMA_VERSION,
   type Payload,
+  type Remediation,
   type ReportedVulnerability,
   type Severity,
   type SourceDescriptor,
@@ -21,21 +21,42 @@ const isAdvisory = (entry: unknown): entry is Advisory =>
 const isPackageName = (entry: unknown): entry is string =>
   typeof entry === "string";
 
-const toFix = (fixAvailable: ReportedVulnerability["fixAvailable"]): Fix => {
+const named = (
+  fixAvailable: Exclude<
+    ReportedVulnerability["fixAvailable"],
+    boolean | undefined
+  >,
+): Remediation | null => {
+  if (fixAvailable.name === "" || fixAvailable.version === "") {
+    return null;
+  }
+
+  const target = { name: fixAvailable.name, version: fixAvailable.version };
+
+  return fixAvailable.isSemVerMajor
+    ? { state: "major-change-reported", target }
+    : { state: "change-reported", target };
+};
+
+/**
+ * npm reports a change in three shapes, and only two of them name a target. The
+ * mapping is total: `true` says a change exists without saying to what, which is
+ * not the same claim as `false`, and an empty string is a name npm did not give.
+ */
+const toRemediation = (
+  fixAvailable: ReportedVulnerability["fixAvailable"],
+): Remediation => {
+  if (typeof fixAvailable === "object") {
+    return (
+      named(fixAvailable) ?? { state: "change-target-incomplete", target: null }
+    );
+  }
+
   if (fixAvailable === true) {
-    return { available: true, name: null, version: null, major: false };
+    return { state: "change-target-incomplete", target: null };
   }
 
-  if (fixAvailable !== undefined && fixAvailable !== false) {
-    return {
-      available: true,
-      name: fixAvailable.name,
-      version: fixAvailable.version,
-      major: fixAvailable.isSemVerMajor,
-    };
-  }
-
-  return { available: false, name: null, version: null, major: false };
+  return { state: "no-reported-change", target: null };
 };
 
 const toFinding = (
@@ -52,7 +73,7 @@ const toFinding = (
   effects:
     vulnerability.effects === undefined ? [] : [...vulnerability.effects],
   advisories: vulnerability.via.filter(isAdvisory),
-  fix: toFix(vulnerability.fixAvailable),
+  remediation: toRemediation(vulnerability.fixAvailable),
 });
 
 const byUrgency = (left: Finding, right: Finding): number => {

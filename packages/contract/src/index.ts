@@ -16,8 +16,6 @@ export {
   decodePayload,
   type Finding,
   FindingSchema,
-  type Fix,
-  FixSchema,
   type GraphEdge,
   GraphEdgeSchema,
   type GraphNode,
@@ -29,6 +27,15 @@ export {
   PayloadSchema,
   REPORT_ROUTE,
 } from "./payload.js";
+export {
+  REMEDIATION_STATES,
+  type Remediation,
+  RemediationSchema,
+  type RemediationState,
+  type RemediationTarget,
+  RemediationTargetSchema,
+  reportsChange,
+} from "./remediation.js";
 export {
   type Advisory,
   AdvisorySchema,

@@ -6,6 +6,7 @@ import {
   type Finding,
   PAYLOAD_SCHEMA_VERSION,
   PayloadSchema,
+  REMEDIATION_STATES,
   severityRank,
 } from "@npm-audit-visualizer/contract";
 import { describe, expect, it } from "vitest";
@@ -327,20 +328,91 @@ describe("buildPayload", () => {
     });
   });
 
-  it("normalises each way a fix can be reported", () => {
-    const payload = payloadOf(ordered);
-    const available = payload.findings.filter(
-      (finding) => finding.fix.available,
+  it("reads npm's three input shapes as four states", () => {
+    const payload = payloadOf(
+      readReport("reported-change-shapes-audit-report"),
     );
+    const remediationOf = (id: string) =>
+      payload.findings.find((finding) => finding.id === id)?.remediation;
 
-    expect(available.length).toBeGreaterThan(0);
+    expect(remediationOf("absent-change")).toEqual({
+      state: "no-reported-change",
+      target: null,
+    });
+    expect(remediationOf("false-change")).toEqual({
+      state: "no-reported-change",
+      target: null,
+    });
+    expect(remediationOf("true-change")).toEqual({
+      state: "change-target-incomplete",
+      target: null,
+    });
+    expect(remediationOf("named-change")).toEqual({
+      state: "change-reported",
+      target: { name: "semver", version: "7.5.2" },
+    });
+    expect(remediationOf("major-change")).toEqual({
+      state: "major-change-reported",
+      target: { name: "react-scripts", version: "5.0.1" },
+    });
+  });
 
-    for (const finding of payload.findings) {
-      if (!finding.fix.available) {
-        expect(finding.fix.name).toBeNull();
-        expect(finding.fix.major).toBe(false);
+  it("withholds a target npm left blank, even when the change is called major", () => {
+    const payload = payloadOf(
+      readReport("reported-change-shapes-audit-report"),
+    );
+    const remediationOf = (id: string) =>
+      payload.findings.find((finding) => finding.id === id)?.remediation;
+
+    expect(remediationOf("empty-name-change")).toEqual({
+      state: "change-target-incomplete",
+      target: null,
+    });
+    expect(remediationOf("empty-version-change")).toEqual({
+      state: "change-target-incomplete",
+      target: null,
+    });
+  });
+
+  it("states one state per finding and a target only where a state names one", () => {
+    const reports = [
+      "one-vulnerability-audit-report",
+      "few-vulnerabilities-audit-report",
+      "many-vulnerabilities-audit-report",
+      "reported-change-shapes-audit-report",
+      "no-vulnerabilities-audit-report",
+    ];
+
+    for (const name of reports) {
+      for (const finding of payloadOf(readReport(name)).findings) {
+        expect(REMEDIATION_STATES).toContain(finding.remediation.state);
+
+        const namesTarget =
+          finding.remediation.state === "change-reported" ||
+          finding.remediation.state === "major-change-reported";
+
+        expect(finding.remediation.target === null).toBe(!namesTarget);
       }
     }
+  });
+
+  it("adds no field to a finding beyond the contract's declared shape", () => {
+    const finding = payloadOf(readReport("many-vulnerabilities-audit-report"))
+      .findings[0];
+
+    expect(finding).toBeDefined();
+    expect(Object.keys(finding as Finding).sort()).toEqual([
+      "advisories",
+      "direct",
+      "effects",
+      "id",
+      "name",
+      "paths",
+      "range",
+      "remediation",
+      "severity",
+      "via",
+    ]);
   });
 });
 

@@ -24,13 +24,14 @@ use these words in these senses only.
 
 ## Change and risk
 
-| Word                | Means                                                                                                                              | Does not mean                                                                                      |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Reported fix        | npm states that a change is available, either as `fixAvailable: true` or as a named target with a version and a major-change flag. | A compatible change, a sufficient change, or a change that resolves every advisory in the finding. |
-| No npm-reported fix | npm states no change, or the report carries no `fixAvailable` value.                                                               | No patch exists anywhere, and no workaround exists.                                                |
-| Major change        | npm's `isSemVerMajor` flag on a reported fix target.                                                                               | A breaking change for this project, which only the project can decide.                             |
-| Severity            | The level npm reported for a finding or advisory: critical, high, moderate, low, info.                                             | Project risk.                                                                                      |
-| Risk                | The chance and consequence of harm in the running system. The tool does not observe it.                                            | A sortable field.                                                                                  |
+| Word                | Means                                                                                                                                           | Does not mean                                                                                      |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Reported fix        | npm states that a change is available, either as `fixAvailable: true` or as a named target with a version and a major-change flag.              | A compatible change, a sufficient change, or a change that resolves every advisory in the finding. |
+| Named target        | The package and version npm named for a change. A `true` value names a change and no target; the payload calls that `change-target-incomplete`. | A resolved version, a compatible version, or an instruction to upgrade.                            |
+| No npm-reported fix | npm states no change, or the report carries no `fixAvailable` value.                                                                            | No patch exists anywhere, and no workaround exists.                                                |
+| Major change        | npm's `isSemVerMajor` flag on a reported fix target. An incomplete target cannot be major, because there is no target to qualify.               | A breaking change for this project, which only the project can decide.                             |
+| Severity            | The level npm reported for a finding or advisory: critical, high, moderate, low, info.                                                          | Project risk.                                                                                      |
+| Risk                | The chance and consequence of harm in the running system. The tool does not observe it.                                                         | A sortable field.                                                                                  |
 
 ## Lifecycle and accepted risk
 

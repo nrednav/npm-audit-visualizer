@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DerivationSchema } from "./evidence.js";
+import { RemediationSchema } from "./remediation.js";
 import { AdvisorySchema, MetadataSchema } from "./report.js";
 import { SeveritySchema } from "./severity.js";
 import { SourceDescriptorSchema } from "./source.js";
@@ -10,15 +11,6 @@ import { TimestampsSchema } from "./time.js";
  * once so the two sides cannot disagree about the address.
  */
 export const REPORT_ROUTE = "/report.json";
-
-export const FixSchema = z.object({
-  available: z.boolean(),
-  name: z.string().nullable(),
-  version: z.string().nullable(),
-  major: z.boolean(),
-});
-
-export type Fix = z.infer<typeof FixSchema>;
 
 export const FindingSchema = z.object({
   /** The report's own key. Stable across runs because it is not derived. */
@@ -33,7 +25,7 @@ export const FindingSchema = z.object({
   via: z.array(z.string()),
   effects: z.array(z.string()),
   advisories: z.array(AdvisorySchema),
-  fix: FixSchema,
+  remediation: RemediationSchema,
 });
 
 export type Finding = z.infer<typeof FindingSchema>;
@@ -80,8 +72,10 @@ export type DependencyGraph = z.infer<typeof DependencyGraphSchema>;
  * 5 added `sources[].digest`, so a version-4 payload is refused rather than read
  * as an artifact with no identity. 6 added `timestamps`, so a version-5 payload is
  * refused rather than read as a report whose times are all one unnamed instant.
+ * 7 replaced each finding's `fix` with `remediation`, so a version-6 payload is
+ * refused rather than read as a state this contract cannot name.
  */
-export const PAYLOAD_SCHEMA_VERSION = 6;
+export const PAYLOAD_SCHEMA_VERSION = 7;
 
 export const PayloadSchema = z.object({
   schemaVersion: z.literal(PAYLOAD_SCHEMA_VERSION),

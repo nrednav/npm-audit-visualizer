@@ -1,4 +1,8 @@
-import type { DependencyGraph, Finding } from "@npm-audit-visualizer/contract";
+import {
+  type DependencyGraph,
+  type Finding,
+  reportsChange,
+} from "@npm-audit-visualizer/contract";
 import { useMemo, useState } from "react";
 import { FixableToggle, SeverityChip } from "src/components/filter-controls";
 import {
@@ -33,7 +37,7 @@ const Visualizer = (props: VisualizerProps) => {
         return false;
       }
 
-      if (fixableOnly && !vulnerability.fix.available) {
+      if (fixableOnly && !reportsChange(vulnerability.remediation.state)) {
         return false;
       }
 
@@ -50,8 +54,8 @@ const Visualizer = (props: VisualizerProps) => {
           advisory.url,
           ...advisory.cwe,
         ]),
-        vulnerability.fix.name ?? "",
-        vulnerability.fix.version ?? "",
+        vulnerability.remediation.target?.name ?? "",
+        vulnerability.remediation.target?.version ?? "",
       ]
         .join(" ")
         .toLowerCase();

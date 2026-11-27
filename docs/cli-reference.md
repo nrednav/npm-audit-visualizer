@@ -98,7 +98,7 @@ The `/report.json` route returns a payload with five top-level fields.
 
 | Field           | Type   | Description                                                      |
 | --------------- | ------ | ---------------------------------------------------------------- |
-| `schemaVersion` | number | The payload contract this document describes. Currently `6`.     |
+| `schemaVersion` | number | The payload contract this document describes. Currently `7`.     |
 | `sources`       | array  | The artifacts this payload was built from. At least one.         |
 | `metadata`      | object | Vulnerability and dependency counts.                             |
 | `findings`      | array  | One entry per reported vulnerability, ordered most urgent first. |
@@ -111,7 +111,9 @@ It is not the npm report's `auditReportVersion` and not the package version.
 
 Version `2` added `sources`, which is required. Version `3` made two descriptor
 fields a union of a value and an unknown, so a `null` is no longer how an absence
-is stated. Each change moved the version, and a payload from an earlier version is
+is stated. Version `7` replaced each finding's `fix` with `remediation`, so a
+change whose target npm withheld is its own state rather than a fix with two null
+fields. Each change moved the version, and a payload from an earlier version is
 refused by name rather than read as if it carried the new shape. The versions a
 payload mentions are compared below.
 
@@ -243,8 +245,8 @@ The reason is required because "the artifact never states this" and "we did not
 look" lead a reader to different next steps.
 
 A `null` does not mean unknown. In this payload a `null` appears only where a
-value does not apply: `fix.name` and `fix.version` are `null` when no fix is
-reported, and a graph node carries `severity: null` when no finding sits on it.
+value does not apply: `remediation.target` is `null` when npm named no target,
+and a graph node carries `severity: null` when no finding sits on it.
 Where a value is missing because the evidence does not supply it, the payload
 states an unknown with a reason instead.
 
@@ -280,21 +282,24 @@ order.
 
 ### `findings[]`
 
-| Field        | Type     | Description                                                  |
-| ------------ | -------- | ------------------------------------------------------------ |
-| `id`         | string   | The report's key for this vulnerability. Stable across runs. |
-| `name`       | string   | The vulnerable package's name.                               |
-| `severity`   | enum     | One of the five levels.                                      |
-| `direct`     | boolean  | Whether the package is a direct dependency.                  |
-| `range`      | string   | The vulnerable version range.                                |
-| `paths`      | string[] | Dependency paths the finding was reported against.           |
-| `via`        | string[] | Names of packages that introduce this vulnerability.         |
-| `effects`    | string[] | Names of packages this vulnerability affects.                |
-| `advisories` | array    | Advisory records for this finding.                           |
-| `fix`        | object   | Fix availability.                                            |
+| Field         | Type     | Description                                                  |
+| ------------- | -------- | ------------------------------------------------------------ |
+| `id`          | string   | The report's key for this vulnerability. Stable across runs. |
+| `name`        | string   | The vulnerable package's name.                               |
+| `severity`    | enum     | One of the five levels.                                      |
+| `direct`      | boolean  | Whether the package is a direct dependency.                  |
+| `range`       | string   | The vulnerable version range.                                |
+| `paths`       | string[] | Dependency paths the finding was reported against.           |
+| `via`         | string[] | Names of packages that introduce this vulnerability.         |
+| `effects`     | string[] | Names of packages this vulnerability affects.                |
+| `advisories`  | array    | Advisory records for this finding.                           |
+| `remediation` | object   | What npm reported about a possible change, and its target.   |
 
-`fix` fields: `available` (boolean), `name` (string or null), `version` (string
-or null), `major` (boolean, whether the fix is a semver-major change).
+`remediation.state` is one of `change-reported`, `major-change-reported`,
+`change-target-incomplete`, or `no-reported-change`. `remediation.target` is
+`{ name, version }` for the two states that name a change target, and `null` for
+the other two. A state whose target npm withheld cannot carry one: the payload
+contract refuses that pairing instead of reading it.
 
 `advisories[]` fields: `source` (number, optional), `name`, `dependency`,
 `title`, `url`, `severity`, `cwe` (string[]), `cvss` (`score` and

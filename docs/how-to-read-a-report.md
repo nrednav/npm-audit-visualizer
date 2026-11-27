@@ -73,7 +73,7 @@ may differ from the one you asked for.
 ## Read a finding's evidence
 
 To act on a finding, open it in the explorer and read its reported install
-locations and fix field.
+locations and remediation state.
 
 1. Select a severity in the ledger to narrow the list. Select it again, or use
    the reset control, to clear the filter.
@@ -82,8 +82,10 @@ locations and fix field.
 3. Read the install locations. A nested location such as
    `node_modules/a/node_modules/b` shows which copy npm found. Read `effects` to
    see which packages npm said the finding affects.
-4. Read the fix field. If `fix.available` is true, npm reports that a change is
-   available. If `fix.major` is true, npm flags a semver-major change.
+4. Read the remediation state. `change-reported` names the package and version
+   npm said to change to; `major-change-reported` adds that npm flags the change
+   as semver-major; `change-target-incomplete` says npm reported a change and
+   named no target; `no-reported-change` says npm reported none.
 
 ## Stop the server
 
