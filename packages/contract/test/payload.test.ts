@@ -253,6 +253,51 @@ describe("decodePayload", () => {
     });
   });
 
+  it("names the finding whose state and target disagree", () => {
+    const finding = payload.findings[0] as Payload["findings"][number];
+    const result = decodePayload({
+      ...payload,
+      findings: [
+        {
+          ...finding,
+          remediation: {
+            state: "change-target-incomplete",
+            target: { name: "semver", version: "7.5.2" },
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.success ? undefined : result.error.kind).toBe("shape");
+    const paths = result.success
+      ? []
+      : result.error.kind === "shape"
+        ? result.error.paths
+        : [];
+
+    expect(paths[0]).toMatch(/^findings\.0\.remediation/);
+  });
+
+  it("names the finding that carries no remediation state at all", () => {
+    const finding = payload.findings[0] as Payload["findings"][number];
+    const { remediation: _omitted, ...withoutRemediation } = finding;
+
+    const result = decodePayload({
+      ...payload,
+      findings: [withoutRemediation],
+    });
+
+    expect(result.success).toBe(false);
+    expect(
+      result.success
+        ? []
+        : result.error.kind === "shape"
+          ? result.error.paths
+          : [],
+    ).toEqual(["findings.0.remediation"]);
+  });
+
   it("requires a digest on every descriptor", () => {
     const source = payload.sources[0] as (typeof payload.sources)[number];
     const { digest: _omitted, ...withoutDigest } = source;
