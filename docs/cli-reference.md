@@ -158,8 +158,8 @@ from a file observes nothing, so `observedAt` is unknown and says why.
 **Build time is not the read time.** `builtAt` is when the Host built this payload,
 which is the closest instant the payload can supply to the moment a page received
 it. A page that has been open for a while is older than its own `builtAt`, and no
-age is computed here. Freshness language belongs to a later milestone, and until
-then the page shows the instant and no adjective.
+age is computed here. The page shows the instant and no adjective, because an
+adjective would be a judgement this tool has no basis for.
 
 All three are ISO 8601 with an offset. A local time with no offset cannot be
 compared to another and is refused.

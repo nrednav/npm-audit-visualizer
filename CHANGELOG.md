@@ -8,10 +8,10 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [v1.0.0-alpha.13] - 2026-11-27
 
-Milestone M2, honest triage. Every number on the page counts the population it
-names, every remediation word is npm's own, and a reader can reach the evidence
-behind a claim without leaving the row. The payload version does not change: this
-release makes the interface agree with a contract that already existed.
+Honest triage: every number on the page counts the population it names, every
+remediation word is npm's own, and a reader can reach the evidence behind a claim
+without leaving the row. The payload version does not change; this release makes
+the interface agree with a contract that already existed.
 
 ### Added
 
@@ -63,9 +63,8 @@ release makes the interface agree with a contract that already existed.
 
 ## [v1.0.0-alpha.12] - 2026-11-26
 
-Milestone M1, the versioned evidence and provenance contract. The payload moved
-from version 1 to version 6, and each move is refused by name rather than read
-approximately.
+The versioned evidence and provenance contract. The payload moved from version 1
+to version 6, and each move is refused by name rather than read approximately.
 
 ### Added
 
