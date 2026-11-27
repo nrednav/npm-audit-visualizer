@@ -122,15 +122,53 @@ export const COLORS = {
   low: SEVERITY_META.low.color,
   info: SEVERITY_META.info.color,
   affectedBy: "#2f5aa8",
+  /**
+   * The relation hue. It sits outside the severity ramp so a traced edge can
+   * never be misread as a severity level, and it stays on the cool side of the
+   * two-family split.
+   */
+  violet: "#6d28d9",
 };
 
 /**
  * A package reached through a chain may carry no finding of its own. It gets a
- * neutral mark so it is never read as a severity level.
+ * neutral mark so it is never read as a severity level. Both values clear the
+ * 3:1 floor a meaningful non-text mark needs, because a package that is present
+ * must not look absent.
  */
 export const NEUTRAL_NODE = {
-  color: "#9aa5a0",
-  onDark: "#5b6a62",
+  color: "#828a82",
+  onDark: "#7a8a80",
+} as const;
+
+/**
+ * A package unrelated to the current selection is held back, not erased. Below
+ * the 3:1 mark floor it stops reading as present, which overstates what the
+ * report does not contain.
+ */
+export const DIMMED_NODE = {
+  light: "#878f87",
+  dark: "#5f7265",
+} as const;
+
+/**
+ * The graph label is the only text drawn over the WebGL layer, and Sigma fills
+ * every property a reducer omits from its own defaults: a #000 glyph, the
+ * generic `sans-serif` family, a 12 px size, 6 px padding, and a 12 px shadow at
+ * 50% black. All of them are stated here. A partial object is how an unreadable
+ * pair reached a shipped view once already.
+ */
+export const GRAPH_LABEL = {
+  surface: { light: "#ffffff", dark: "#24312a" },
+  glyph: { light: "#17211b", dark: "#e6ece7" },
+  /**
+   * Sigma parses a leading numeric weight out of this string, then treats the
+   * rest as the family list, so the annotation keeps the page's own stack.
+   */
+  font: "500 Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+  size: 11,
+  padding: 8,
+  cornerRadius: 4,
 } as const;
 
 export const SEVERITY_COLOR_MAP: Record<string, string> = {
@@ -144,8 +182,12 @@ export const SEVERITY_COLOR_MAP: Record<string, string> = {
 export const RELATIONSHIP_META = {
   affects: {
     label: "affects",
-    color: COLORS.teal,
-    darkColor: "#5eead4",
+    /**
+     * Violet, not teal. Teal is the low-severity mark on this same canvas, and
+     * two meanings for one hue in one view is an ambiguity, not a shorthand.
+     */
+    color: COLORS.violet,
+    darkColor: "#c4b5fd",
     cssColor: "var(--relationship-affects)",
     description: "Incoming to the selected package",
   },

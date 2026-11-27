@@ -41,7 +41,7 @@
     --severity-info: #334155;
     --severity-info-surface: #edf0f2;
     --severity-info-border: #d9dfe3;
-    --relationship-affects: #0b6b5c;
+    --relationship-affects: #6d28d9;
     --relationship-affected-by: #2f5aa8;
     color-scheme: light;
   }
@@ -74,7 +74,7 @@
     --severity-info: #cbd5e1;
     --severity-info-surface: #29343e;
     --severity-info-border: #485665;
-    --relationship-affects: #5eead4;
+    --relationship-affects: #c4b5fd;
     --relationship-affected-by: #93b4ff;
     color-scheme: dark;
   }

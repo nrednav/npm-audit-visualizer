@@ -80,69 +80,72 @@ const ReportContext = (props: ReportContextProps) => {
   return (
     <section
       aria-labelledby="scope-heading"
-      className="mt-5 flex flex-col gap-3 border-y border-line/80 py-3 lg:flex-row lg:items-center lg:justify-between lg:gap-8"
+      className="mt-5 border-y border-line/80 py-3"
     >
-      <h2 id="scope-heading" className="eyebrow shrink-0 text-ink-muted">
-        Report scope
-      </h2>
+      {/* Two stacked rows, both top-aligned: how large the report is, and then
+          which report it is. Centring a heading against a seven-row column put
+          it in the middle of empty space. */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-baseline lg:gap-8">
+        <h2 id="scope-heading" className="eyebrow shrink-0 text-ink-muted">
+          Report scope
+        </h2>
 
-      <dl className="grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3 lg:flex lg:items-baseline lg:gap-8">
-        {entries.map(([key, value]) => (
-          <div key={key} className="flex items-baseline gap-2">
-            <dt className="text-xs text-ink-muted">
-              {DEPENDENCY_LABELS[key] ?? key}
-            </dt>
-            <dd className="num text-sm font-semibold">{value}</dd>
+        <dl className="grid grid-cols-2 gap-x-5 gap-y-2 sm:grid-cols-3 lg:flex lg:items-baseline lg:gap-8">
+          {entries.map(([key, value]) => (
+            <div key={key} className="flex items-baseline gap-2">
+              <dt className="text-xs text-ink-muted">
+                {DEPENDENCY_LABELS[key] ?? key}
+              </dt>
+              <dd className="num text-sm font-semibold">{value}</dd>
+            </div>
+          ))}
+          <div className="flex items-baseline gap-2 lg:border-l lg:border-line lg:pl-8">
+            <dt className="text-xs text-ink-muted">Total</dt>
+            <dd className="num text-sm font-semibold">
+              {metadata.dependencies.total.toLocaleString("en-US")}
+            </dd>
           </div>
-        ))}
-        <div className="flex items-baseline gap-2 lg:border-l lg:border-line lg:pl-8">
-          <dt className="text-xs text-ink-muted">Total</dt>
-          <dd className="num text-sm font-semibold">
-            {metadata.dependencies.total.toLocaleString("en-US")}
-          </dd>
-        </div>
-      </dl>
+        </dl>
+      </div>
 
       {source === undefined ? null : (
-        <dl className="flex flex-wrap items-baseline gap-x-5 gap-y-2 lg:border-l lg:border-line lg:pl-8">
-          <div className="flex items-baseline gap-2">
-            <dt className="text-xs text-ink-muted">Source</dt>
+        /* Seven pairs are read in parallel, not as a sequence, so the field is
+           three columns of structure instead of a seven-row column. */
+        <dl className="mt-3 grid gap-x-5 gap-y-3 border-t border-line/60 pt-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-1">
+            <dt className="eyebrow text-ink-muted">Source</dt>
             <dd className="max-w-[22ch] truncate text-sm font-semibold">
               {source.label}
             </dd>
           </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-xs text-ink-muted">Produced by</dt>
+          <div className="flex flex-col gap-1">
+            <dt className="eyebrow text-ink-muted">Produced by</dt>
             <dd className="text-sm">{producerText(source)}</dd>
           </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-xs text-ink-muted">Identity</dt>
+          <div className="flex flex-col gap-1">
+            <dt className="eyebrow text-ink-muted">Identity</dt>
             <dd className="num text-sm" title={source.digest}>
               {digestText(source.digest)}
             </dd>
           </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-xs text-ink-muted">Artifact created</dt>
+          <div className="flex flex-col gap-1">
+            <dt className="eyebrow text-ink-muted">Artifact created</dt>
             <dd className="text-sm">
               {/* A time the report never stated stays unsaid, never guessed. */}
               {createdText(source)}
             </dd>
           </div>
           {/* Each of these is a different instant, so each keeps its own name. */}
-          <div className="flex items-baseline gap-2">
-            <dt className="text-xs text-ink-muted">Audit time</dt>
-            <dd className="max-w-[30ch] text-sm">
-              {timeText(timestamps.auditTime)}
-            </dd>
+          <div className="flex flex-col gap-1">
+            <dt className="eyebrow text-ink-muted">Audit time</dt>
+            <dd className="text-sm">{timeText(timestamps.auditTime)}</dd>
           </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-xs text-ink-muted">Observed</dt>
-            <dd className="max-w-[30ch] text-sm">
-              {timeText(timestamps.observedAt)}
-            </dd>
+          <div className="flex flex-col gap-1">
+            <dt className="eyebrow text-ink-muted">Observed</dt>
+            <dd className="text-sm">{timeText(timestamps.observedAt)}</dd>
           </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-xs text-ink-muted">Payload built</dt>
+          <div className="flex flex-col gap-1">
+            <dt className="eyebrow text-ink-muted">Payload built</dt>
             <dd className="text-sm">{timestamps.builtAt}</dd>
           </div>
         </dl>
