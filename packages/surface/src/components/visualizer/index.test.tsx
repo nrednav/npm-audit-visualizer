@@ -421,6 +421,21 @@ describe("Visualizer", () => {
     expect(occurrences).toBe(2);
   });
 
+  it("reserves the digits of a chip's number, not the whole phrase", () => {
+    renderVisualizer();
+
+    const counts = document.querySelectorAll("[data-chip-count]");
+
+    expect(counts.length).toBeGreaterThan(0);
+
+    for (const count of counts) {
+      // The reserved box must hold digits only. Parentheses in the box would
+      // make the reservation one character short at the first two-digit count.
+      expect(count.textContent).toMatch(/^\d+$/);
+      expect(count.className).toContain("min-w-[2ch]");
+    }
+  });
+
   it("does not repeat the briefing's advice in the bar", () => {
     renderVisualizer();
 

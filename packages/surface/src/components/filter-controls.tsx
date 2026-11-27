@@ -64,15 +64,19 @@ export const FilterChoiceChips = <T extends string>(
             )}
           >
             {option.label}
-            {/* Two digits are reserved, so a number crossing ten cannot
-                change the chip's width and re-wrap the row. */}
-            <span
-              className={clsx(
-                "num min-w-[2ch] text-right text-xs",
-                !pressed && "text-ink-muted",
-              )}
-            >
-              ({counts[option.id]})
+            {/* The parentheses are static and the digits sit in a reserved
+                box, so a number crossing ten cannot change the chip's width and
+                re-wrap the row. Reserving the whole `(N)` would need a box for
+                every digit the count can reach; reserving the digits needs two. */}
+            <span className={clsx("text-xs", !pressed && "text-ink-muted")}>
+              {"("}
+              <span
+                data-chip-count=""
+                className="num inline-block min-w-[2ch] text-right"
+              >
+                {counts[option.id]}
+              </span>
+              {")"}
             </span>
           </button>
         );
