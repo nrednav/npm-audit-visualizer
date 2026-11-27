@@ -118,6 +118,7 @@ describe("Visualizer", () => {
       "high",
     ] as const;
     const names = ["alpha", "beta", "gamma", "delta", "epsilon"];
+    const placements = [true, true, false, false, true];
 
     const remediationFor = (
       state: RemediationState,
@@ -141,6 +142,7 @@ describe("Visualizer", () => {
       id: name,
       name,
       severity: severities[index],
+      direct: placements[index],
       remediation: remediationFor(states[index]),
     }));
 
@@ -255,6 +257,8 @@ describe("Visualizer", () => {
           /^major change/i,
           /^no target named/i,
           /^no fix reported/i,
+          /^direct/i,
+          /^transitive/i,
         ]) {
           const active = chip(label);
           if (active.getAttribute("aria-pressed") === "true") {
@@ -297,6 +301,34 @@ describe("Visualizer", () => {
 
       expect(none).toHaveAttribute("aria-pressed", "false");
       expect(rowNames()).toEqual(names);
+    });
+
+    it("isolates the two placements npm distinguishes", async () => {
+      const user = userEvent.setup();
+      renderWith();
+
+      expect(chipNumber(/^direct/i)).toBe(3);
+      expect(chipNumber(/^transitive/i)).toBe(2);
+
+      await user.click(chip(/^direct/i));
+      expect(rowNames()).toEqual(["alpha", "beta", "epsilon"]);
+
+      await user.click(chip(/^transitive/i));
+      expect(rowNames()).toEqual(["gamma", "delta"]);
+    });
+
+    it("combines a placement with a reported change", async () => {
+      const user = userEvent.setup();
+      renderWith();
+
+      await user.click(chip(/^major change/i));
+      expect(chipNumber(/^direct/i)).toBe(1);
+      expect(chipNumber(/^transitive/i)).toBe(1);
+
+      await user.click(chip(/^transitive/i));
+
+      expect(rowNames()).toEqual(["gamma"]);
+      expect(summaryText()).toContain("1 of 5 findings");
     });
 
     it("clears its own filters and asks the caller for the severity", async () => {

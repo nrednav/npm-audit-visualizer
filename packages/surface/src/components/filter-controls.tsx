@@ -1,8 +1,4 @@
 import clsx from "clsx";
-import {
-  REMEDIATION_OPTIONS,
-  type RemediationChoice,
-} from "src/components/remediation-filter";
 import type { Severity } from "src/constants";
 import { SEVERITY_META } from "src/constants";
 
@@ -35,19 +31,23 @@ export const SeverityChip = (props: SeverityChipProps) => {
   );
 };
 
-type RemediationFilterChipsProps = {
-  active: RemediationChoice | null;
-  counts: Record<RemediationChoice, number>;
-  onChoose: (choice: RemediationChoice) => void;
+type FilterChoiceChipsProps<T extends string> = {
+  label: string;
+  options: readonly { id: T; label: string }[];
+  active: T | null;
+  counts: Record<T, number>;
+  onChoose: (choice: T) => void;
 };
 
-export const RemediationFilterChips = (props: RemediationFilterChipsProps) => {
-  const { active, counts, onChoose } = props;
+export const FilterChoiceChips = <T extends string>(
+  props: FilterChoiceChipsProps<T>,
+) => {
+  const { label, options, active, counts, onChoose } = props;
 
   return (
     <fieldset className="m-0 flex flex-wrap items-center gap-2 border-0 p-0">
-      <legend className="sr-only">Reported change</legend>
-      {REMEDIATION_OPTIONS.map((option) => {
+      <legend className="sr-only">{label}</legend>
+      {options.map((option) => {
         const pressed = active === option.id;
 
         return (

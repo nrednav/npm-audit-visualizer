@@ -1,7 +1,7 @@
 import type { DependencyGraph, Finding } from "@npm-audit-visualizer/contract";
 import { useMemo, useState } from "react";
 import {
-  RemediationFilterChips,
+  FilterChoiceChips,
   SeverityChip,
 } from "src/components/filter-controls";
 import {
@@ -11,8 +11,15 @@ import {
   TableIcon,
 } from "src/components/icons";
 import {
+  matchesPositionChoice,
+  POSITION_CHOICES,
+  POSITION_OPTIONS,
+  type PositionChoice,
+} from "src/components/position-filter";
+import {
   matchesRemediationChoice,
   REMEDIATION_CHOICES,
+  REMEDIATION_OPTIONS,
   type RemediationChoice,
 } from "src/components/remediation-filter";
 import { TabList } from "src/components/tab-list";
@@ -47,8 +54,9 @@ const searchText = (finding: Finding): string => {
 };
 
 /**
- * The constraints that are not the remediation axis. The filter and the chip
- * numbers both call this, so a number states what the same click would show.
+ * The constraints that are not one of the two choosable axes. The filter and
+ * every chip number call this, so a number states what the same click would
+ * show rather than a report total.
  */
 const passesOtherFilters = (
   finding: Finding,
@@ -66,21 +74,31 @@ const Visualizer = (props: VisualizerProps) => {
   const [query, setQuery] = useState("");
   const [remediationChoice, setRemediationChoice] =
     useState<RemediationChoice | null>(null);
+  const [positionChoice, setPositionChoice] = useState<PositionChoice | null>(
+    null,
+  );
 
   const normalizedQuery = query.trim().toLowerCase();
 
-  const filteredTable = useMemo(() => {
-    return table.filter((finding) => {
-      return (
-        passesOtherFilters(finding, severityFilter, normalizedQuery) &&
-        matchesRemediationChoice(finding.remediation.state, remediationChoice)
-      );
-    });
-  }, [table, severityFilter, remediationChoice, normalizedQuery]);
-
-  const choiceCounts = useMemo(() => {
-    const candidates = table.filter((finding) =>
+  const inScope = useMemo(() => {
+    return table.filter((finding) =>
       passesOtherFilters(finding, severityFilter, normalizedQuery),
+    );
+  }, [table, severityFilter, normalizedQuery]);
+
+  const filteredTable = useMemo(() => {
+    return inScope.filter(
+      (finding) =>
+        matchesRemediationChoice(
+          finding.remediation.state,
+          remediationChoice,
+        ) && matchesPositionChoice(finding.direct, positionChoice),
+    );
+  }, [inScope, remediationChoice, positionChoice]);
+
+  const remediationCounts = useMemo(() => {
+    const candidates = inScope.filter((finding) =>
+      matchesPositionChoice(finding.direct, positionChoice),
     );
 
     return REMEDIATION_CHOICES.reduce(
@@ -92,17 +110,35 @@ const Visualizer = (props: VisualizerProps) => {
       },
       {} as Record<RemediationChoice, number>,
     );
-  }, [table, severityFilter, normalizedQuery]);
+  }, [inScope, positionChoice]);
+
+  const positionCounts = useMemo(() => {
+    const candidates = inScope.filter((finding) =>
+      matchesRemediationChoice(finding.remediation.state, remediationChoice),
+    );
+
+    return POSITION_CHOICES.reduce(
+      (counts, choice) => {
+        counts[choice] = candidates.filter((finding) =>
+          matchesPositionChoice(finding.direct, choice),
+        ).length;
+        return counts;
+      },
+      {} as Record<PositionChoice, number>,
+    );
+  }, [inScope, remediationChoice]);
 
   const filtersActive =
     severityFilter !== null ||
     remediationChoice !== null ||
+    positionChoice !== null ||
     normalizedQuery.length > 0;
 
   const resetAll = () => {
     onClearSeverity();
     setQuery("");
     setRemediationChoice(null);
+    setPositionChoice(null);
   };
 
   const tabs = [
@@ -181,11 +217,24 @@ const Visualizer = (props: VisualizerProps) => {
           {severityFilter && (
             <SeverityChip severity={severityFilter} onClear={onClearSeverity} />
           )}
-          <RemediationFilterChips
+          <FilterChoiceChips
+            label="Reported change"
+            options={REMEDIATION_OPTIONS}
             active={remediationChoice}
-            counts={choiceCounts}
+            counts={remediationCounts}
             onChoose={(choice) =>
               setRemediationChoice((current) =>
+                current === choice ? null : choice,
+              )
+            }
+          />
+          <FilterChoiceChips
+            label="Dependency position"
+            options={POSITION_OPTIONS}
+            active={positionChoice}
+            counts={positionCounts}
+            onChoose={(choice) =>
+              setPositionChoice((current) =>
                 current === choice ? null : choice,
               )
             }
@@ -225,7 +274,7 @@ const Visualizer = (props: VisualizerProps) => {
           <VulnerabilityTableComponent
             data={filteredTable}
             totalCount={table.length}
-            resetKey={`${severityFilter ?? "all"}|${normalizedQuery}|${remediationChoice ?? "any"}`}
+            resetKey={`${severityFilter ?? "all"}|${normalizedQuery}|${remediationChoice ?? "any"}|${positionChoice ?? "both"}`}
             onResetAll={resetAll}
           />
         ) : (
