@@ -186,6 +186,35 @@ describe("the triage flow", () => {
     expect(screen.getByText(/select a level to filter/i)).toBeVisible();
   });
 
+  it("keeps the report's own counts while a view filter is active", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const briefing = () =>
+      screen.getByText(
+        (_, element) =>
+          element?.tagName === "P" &&
+          element.textContent?.trim() ===
+            "1 of 3 findings carry a reported fix",
+      );
+    const criticalButton = () =>
+      screen.getByRole("button", { name: /^critical:/i }).textContent;
+
+    const briefingBefore = briefing().textContent;
+    const criticalBefore = criticalButton();
+
+    await user.click(screen.getByRole("button", { name: /no fix reported/i }));
+
+    expect(rowNames()).toHaveLength(2);
+    expect(briefing().textContent).toBe(briefingBefore);
+    expect(criticalButton()).toBe(criticalBefore);
+
+    await user.click(screen.getByRole("button", { name: /clear all/i }));
+
+    expect(rowNames()).toHaveLength(3);
+    expect(summary()).toContain("3 of 3 findings");
+  });
+
   it("keeps the restriction derived, so selecting the same level twice clears it", async () => {
     const user = userEvent.setup();
     render(<App />);

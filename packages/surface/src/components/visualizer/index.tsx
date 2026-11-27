@@ -1,16 +1,20 @@
-import {
-  type DependencyGraph,
-  type Finding,
-  reportsChange,
-} from "@npm-audit-visualizer/contract";
+import type { DependencyGraph, Finding } from "@npm-audit-visualizer/contract";
 import { useMemo, useState } from "react";
-import { FixableToggle, SeverityChip } from "src/components/filter-controls";
+import {
+  RemediationFilterChips,
+  SeverityChip,
+} from "src/components/filter-controls";
 import {
   GraphIcon,
   ResetIcon,
   SearchIcon,
   TableIcon,
 } from "src/components/icons";
+import {
+  matchesRemediationChoice,
+  REMEDIATION_CHOICES,
+  type RemediationChoice,
+} from "src/components/remediation-filter";
 import { TabList } from "src/components/tab-list";
 import VulnerabilityGraphComponent from "src/components/visualizer/vulnerability-graph";
 import VulnerabilityTableComponent from "src/components/visualizer/vulnerability-table";
@@ -23,54 +27,82 @@ type VisualizerProps = {
   onClearSeverity: () => void;
 };
 
+const searchText = (finding: Finding): string => {
+  return [
+    finding.name,
+    finding.range,
+    ...finding.paths,
+    ...finding.via,
+    ...finding.effects,
+    ...finding.advisories.flatMap((advisory) => [
+      advisory.title,
+      advisory.url,
+      ...advisory.cwe,
+    ]),
+    finding.remediation.target?.name ?? "",
+    finding.remediation.target?.version ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+};
+
+/**
+ * The constraints that are not the remediation axis. The filter and the chip
+ * numbers both call this, so a number states what the same click would show.
+ */
+const passesOtherFilters = (
+  finding: Finding,
+  severity: Severity | null,
+  query: string,
+): boolean => {
+  if (severity && finding.severity !== severity) return false;
+  if (!query) return true;
+  return searchText(finding).includes(query);
+};
+
 const Visualizer = (props: VisualizerProps) => {
   const { findings: table, graph, severityFilter, onClearSeverity } = props;
   const [selectedTab, setSelectedTab] = useState(0);
   const [query, setQuery] = useState("");
-  const [fixableOnly, setFixableOnly] = useState(false);
+  const [remediationChoice, setRemediationChoice] =
+    useState<RemediationChoice | null>(null);
 
   const normalizedQuery = query.trim().toLowerCase();
 
   const filteredTable = useMemo(() => {
-    return table.filter((vulnerability) => {
-      if (severityFilter && vulnerability.severity !== severityFilter) {
-        return false;
-      }
-
-      if (fixableOnly && !reportsChange(vulnerability.remediation.state)) {
-        return false;
-      }
-
-      if (!normalizedQuery) return true;
-
-      const haystack = [
-        vulnerability.name,
-        vulnerability.range,
-        ...vulnerability.paths,
-        ...vulnerability.via,
-        ...vulnerability.effects,
-        ...vulnerability.advisories.flatMap((advisory) => [
-          advisory.title,
-          advisory.url,
-          ...advisory.cwe,
-        ]),
-        vulnerability.remediation.target?.name ?? "",
-        vulnerability.remediation.target?.version ?? "",
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(normalizedQuery);
+    return table.filter((finding) => {
+      return (
+        passesOtherFilters(finding, severityFilter, normalizedQuery) &&
+        matchesRemediationChoice(finding.remediation.state, remediationChoice)
+      );
     });
-  }, [table, severityFilter, fixableOnly, normalizedQuery]);
+  }, [table, severityFilter, remediationChoice, normalizedQuery]);
+
+  const choiceCounts = useMemo(() => {
+    const candidates = table.filter((finding) =>
+      passesOtherFilters(finding, severityFilter, normalizedQuery),
+    );
+
+    return REMEDIATION_CHOICES.reduce(
+      (counts, choice) => {
+        counts[choice] = candidates.filter((finding) =>
+          matchesRemediationChoice(finding.remediation.state, choice),
+        ).length;
+        return counts;
+      },
+      {} as Record<RemediationChoice, number>,
+    );
+  }, [table, severityFilter, normalizedQuery]);
 
   const filtersActive =
-    severityFilter !== null || fixableOnly || normalizedQuery.length > 0;
+    severityFilter !== null ||
+    remediationChoice !== null ||
+    normalizedQuery.length > 0;
 
   const resetAll = () => {
     onClearSeverity();
     setQuery("");
-    setFixableOnly(false);
+    setRemediationChoice(null);
   };
 
   const tabs = [
@@ -149,9 +181,14 @@ const Visualizer = (props: VisualizerProps) => {
           {severityFilter && (
             <SeverityChip severity={severityFilter} onClear={onClearSeverity} />
           )}
-          <FixableToggle
-            active={fixableOnly}
-            onClick={() => setFixableOnly((value) => !value)}
+          <RemediationFilterChips
+            active={remediationChoice}
+            counts={choiceCounts}
+            onChoose={(choice) =>
+              setRemediationChoice((current) =>
+                current === choice ? null : choice,
+              )
+            }
           />
         </div>
 
@@ -188,7 +225,7 @@ const Visualizer = (props: VisualizerProps) => {
           <VulnerabilityTableComponent
             data={filteredTable}
             totalCount={table.length}
-            resetKey={`${severityFilter ?? "all"}|${normalizedQuery}|${fixableOnly}`}
+            resetKey={`${severityFilter ?? "all"}|${normalizedQuery}|${remediationChoice ?? "any"}`}
             onResetAll={resetAll}
           />
         ) : (

@@ -1,4 +1,8 @@
 import clsx from "clsx";
+import {
+  REMEDIATION_OPTIONS,
+  type RemediationChoice,
+} from "src/components/remediation-filter";
 import type { Severity } from "src/constants";
 import { SEVERITY_META } from "src/constants";
 
@@ -31,47 +35,41 @@ export const SeverityChip = (props: SeverityChipProps) => {
   );
 };
 
-type FilterToggleProps = {
-  active: boolean;
-  onClick: () => void;
+type RemediationFilterChipsProps = {
+  active: RemediationChoice | null;
+  counts: Record<RemediationChoice, number>;
+  onChoose: (choice: RemediationChoice) => void;
 };
 
-export const FixableToggle = (props: FilterToggleProps) => {
-  const { active, onClick } = props;
+export const RemediationFilterChips = (props: RemediationFilterChipsProps) => {
+  const { active, counts, onChoose } = props;
 
   return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={clsx(
-        "inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors",
-        active
-          ? "border-teal/30 bg-teal-soft text-teal"
-          : "border-line bg-surface text-ink-muted hover:border-ink/25 hover:text-ink",
-      )}
-    >
-      <span
-        aria-hidden="true"
-        className={clsx(
-          "flex h-3.5 w-3.5 items-center justify-center rounded-[4px] border",
-          active ? "border-teal bg-teal text-onink" : "border-ink/25",
-        )}
-      >
-        {active && (
-          <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" aria-hidden="true">
-            <path
-              d="M1.5 5.2 4 7.5 8.5 2.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </span>
-      Reported fix
-    </button>
+    <fieldset className="m-0 flex flex-wrap items-center gap-2 border-0 p-0">
+      <legend className="sr-only">Reported change</legend>
+      {REMEDIATION_OPTIONS.map((option) => {
+        const pressed = active === option.id;
+
+        return (
+          <button
+            key={option.id}
+            type="button"
+            aria-pressed={pressed}
+            onClick={() => onChoose(option.id)}
+            className={clsx(
+              "inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors",
+              pressed
+                ? "border-teal/30 bg-teal-soft text-teal"
+                : "border-line bg-surface text-ink-muted hover:border-ink/25 hover:text-ink",
+            )}
+          >
+            {option.label}
+            <span className={clsx("num text-xs", !pressed && "text-ink-muted")}>
+              ({counts[option.id]})
+            </span>
+          </button>
+        );
+      })}
+    </fieldset>
   );
 };

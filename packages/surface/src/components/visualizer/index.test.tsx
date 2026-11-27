@@ -1,6 +1,11 @@
-import { PayloadSchema } from "@npm-audit-visualizer/contract";
+import {
+  type Finding,
+  PayloadSchema,
+  type RemediationState,
+} from "@npm-audit-visualizer/contract";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { Severity } from "src/constants";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import parsedReportFixture from "../../../../contract/test/fixtures/parsed-report.json";
 import Visualizer from "./index";
@@ -93,6 +98,232 @@ describe("Visualizer", () => {
     await user.click(screen.getByRole("button", { name: /clear all/i }));
 
     expect(onClearSeverity).toHaveBeenCalledOnce();
+  });
+
+  describe("the remediation filters", () => {
+    const base = payload.findings[0] as Finding;
+
+    const states: RemediationState[] = [
+      "major-change-reported",
+      "change-reported",
+      "major-change-reported",
+      "no-reported-change",
+      "change-target-incomplete",
+    ];
+    const severities = [
+      "critical",
+      "critical",
+      "moderate",
+      "moderate",
+      "high",
+    ] as const;
+    const names = ["alpha", "beta", "gamma", "delta", "epsilon"];
+
+    const remediationFor = (
+      state: RemediationState,
+    ): Finding["remediation"] => {
+      if (state === "major-change-reported") {
+        return {
+          state,
+          target: { name: "react-scripts", version: "5.0.1" },
+        };
+      }
+
+      if (state === "change-reported") {
+        return { state, target: { name: "semver", version: "7.5.2" } };
+      }
+
+      return { state, target: null };
+    };
+
+    const findings: Finding[] = names.map((name, index) => ({
+      ...base,
+      id: name,
+      name,
+      severity: severities[index],
+      remediation: remediationFor(states[index]),
+    }));
+
+    const renderWith = (
+      severity: Severity | null = null,
+      data: Finding[] = findings,
+    ) => {
+      render(
+        <Visualizer
+          findings={data}
+          graph={payload.graph}
+          severityFilter={severity}
+          onClearSeverity={() => undefined}
+        />,
+      );
+    };
+
+    const rowNames = (): string[] =>
+      screen
+        .queryAllByRole("rowheader")
+        .map((row) => row.textContent ?? "")
+        .map((text) => names.find((name) => text.includes(name)) ?? text);
+
+    const chip = (label: RegExp) => screen.getByRole("button", { name: label });
+
+    const chipNumber = (label: RegExp): number => {
+      const match = chip(label).textContent?.match(/\((\d+)\)/);
+      return Number(match?.[1]);
+    };
+
+    it("offers four choices, each with the number the report gives it", () => {
+      renderWith();
+
+      expect(chipNumber(/^reported fix/i)).toBe(4);
+      expect(chipNumber(/^major change/i)).toBe(2);
+      expect(chipNumber(/^no target named/i)).toBe(1);
+      expect(chipNumber(/^no fix reported/i)).toBe(1);
+    });
+
+    it("shows exactly the findings the choice names", async () => {
+      const user = userEvent.setup();
+      renderWith();
+
+      await user.click(chip(/^major change/i));
+      expect(rowNames()).toEqual(["alpha", "gamma"]);
+
+      await user.click(chip(/^no fix reported/i));
+      expect(rowNames()).toEqual(["delta"]);
+
+      await user.click(chip(/^no target named/i));
+      expect(rowNames()).toEqual(["epsilon"]);
+    });
+
+    it("combines a choice with a severity", async () => {
+      const user = userEvent.setup();
+      renderWith("critical");
+
+      expect(chipNumber(/^reported fix/i)).toBe(2);
+      expect(chipNumber(/^major change/i)).toBe(1);
+      expect(chipNumber(/^no target named/i)).toBe(0);
+
+      await user.click(chip(/^major change/i));
+
+      expect(rowNames()).toEqual(["alpha"]);
+      expect(summaryText()).toContain("1 of 5 findings");
+    });
+
+    it("combines a choice with the search", async () => {
+      const user = userEvent.setup();
+      renderWith();
+
+      await user.type(
+        screen.getByRole("searchbox", { name: /search findings/i }),
+        "gamma",
+      );
+
+      expect(chipNumber(/^major change/i)).toBe(1);
+      expect(chipNumber(/^reported fix/i)).toBe(1);
+      expect(chipNumber(/^no fix reported/i)).toBe(0);
+
+      await user.click(chip(/^major change/i));
+
+      expect(rowNames()).toEqual(["gamma"]);
+    });
+
+    it("states the number the click will show, under the other constraints", async () => {
+      const user = userEvent.setup();
+
+      for (const setup of [
+        "no constraints",
+        "a severity",
+        "a search",
+      ] as const) {
+        const view = render(
+          <Visualizer
+            findings={findings}
+            graph={payload.graph}
+            severityFilter={setup === "a severity" ? "critical" : null}
+            onClearSeverity={() => undefined}
+          />,
+        );
+
+        if (setup === "a search") {
+          await user.type(
+            screen.getByRole("searchbox", { name: /search findings/i }),
+            "a",
+          );
+        }
+
+        for (const label of [
+          /^reported fix/i,
+          /^major change/i,
+          /^no target named/i,
+          /^no fix reported/i,
+        ]) {
+          const active = chip(label);
+          if (active.getAttribute("aria-pressed") === "true") {
+            await user.click(active);
+          }
+
+          const stated = chipNumber(label);
+
+          await user.click(chip(label));
+
+          expect(
+            screen.queryAllByRole("rowheader").length,
+            `${setup}: ${label} states ${stated}`,
+          ).toBe(stated);
+
+          await user.click(chip(label));
+        }
+
+        view.unmount();
+      }
+    });
+
+    it("replaces the choice and clears it when chosen twice", async () => {
+      const user = userEvent.setup();
+      renderWith();
+
+      const major = chip(/^major change/i);
+      const none = chip(/^no fix reported/i);
+
+      await user.click(major);
+      expect(major).toHaveAttribute("aria-pressed", "true");
+
+      await user.click(none);
+
+      expect(major).toHaveAttribute("aria-pressed", "false");
+      expect(none).toHaveAttribute("aria-pressed", "true");
+      expect(rowNames()).toEqual(["delta"]);
+
+      await user.click(none);
+
+      expect(none).toHaveAttribute("aria-pressed", "false");
+      expect(rowNames()).toEqual(names);
+    });
+
+    it("clears its own filters and asks the caller for the severity", async () => {
+      const user = userEvent.setup();
+      const onClearSeverity = vi.fn();
+
+      render(
+        <Visualizer
+          findings={findings}
+          graph={payload.graph}
+          severityFilter="critical"
+          onClearSeverity={onClearSeverity}
+        />,
+      );
+
+      await user.click(chip(/^major change/i));
+      expect(rowNames()).toEqual(["alpha"]);
+
+      await user.click(screen.getByRole("button", { name: /clear all/i }));
+
+      expect(onClearSeverity).toHaveBeenCalledTimes(1);
+      // The severity is the caller's, so the stub cannot restore it here; the
+      // explorer's own two filters are gone, which is all it owns.
+      expect(rowNames()).toEqual(["alpha", "beta"]);
+      expect(chip(/^major change/i)).toHaveAttribute("aria-pressed", "false");
+      expect(summaryText()).toContain("2 of 5 findings");
+    });
   });
 
   it("states the graph's basis and what it leaves out", async () => {

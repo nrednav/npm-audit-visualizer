@@ -76,7 +76,13 @@ To act on a finding, open it in the explorer and read its reported install
 locations and remediation state.
 
 1. Select a severity in the ledger to narrow the list. Select it again, or use
-   the reset control, to clear the filter.
+   the reset control, to clear the filter. The four controls beside the search
+   narrow by what npm reported about a change: `Reported fix` keeps every
+   finding with one, `Major change` keeps the findings npm flagged semver-major,
+   `No target named` keeps the findings whose change has no target, and
+   `No fix reported` keeps the rest. One is active at a time, and the number
+   beside each is the number of findings that control would show with the other
+   filters applied. The severity, the search, and this control combine.
 2. Open a finding's row to see its advisories, vulnerable range, and the install
    locations npm reported.
 3. Read the install locations. A nested location such as
