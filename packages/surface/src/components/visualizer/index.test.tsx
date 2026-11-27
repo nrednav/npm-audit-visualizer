@@ -5,6 +5,11 @@ import {
 } from "@npm-audit-visualizer/contract";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {
+  CHANGE_COST_NOTE,
+  EMPTY_STATE_HINT,
+  TRIAGE_DEFAULT,
+} from "src/components/guidance";
 import type { Severity } from "src/constants";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import parsedReportFixture from "../../../../contract/test/fixtures/parsed-report.json";
@@ -358,7 +363,7 @@ describe("Visualizer", () => {
     });
   });
 
-  it("keeps the bar's two rows and its reset slot whatever is active", async () => {
+  it("keeps the bar's rows and its reset slot whatever is active", async () => {
     const user = userEvent.setup();
     renderVisualizer();
 
@@ -368,13 +373,16 @@ describe("Visualizer", () => {
       document.querySelector("[data-reset-slot]") as HTMLElement;
     const buttonsInSlot = () => slot().querySelectorAll("button").length;
 
-    expect(bar().children).toHaveLength(2);
+    // The row count is the invariant, not a literal: a caption may join the bar,
+    // but no filter may add or remove a row.
+    const rows = bar().children.length;
+    expect(rows).toBeGreaterThanOrEqual(3);
     expect(slot().className).toContain("min-w-");
     expect(buttonsInSlot()).toBe(0);
 
     await user.click(screen.getByRole("button", { name: /^major change/i }));
 
-    expect(bar().children).toHaveLength(2);
+    expect(bar().children).toHaveLength(rows);
     expect(buttonsInSlot()).toBe(1);
 
     await user.type(
@@ -382,13 +390,42 @@ describe("Visualizer", () => {
       "a",
     );
 
-    expect(bar().children).toHaveLength(2);
+    expect(bar().children).toHaveLength(rows);
     expect(buttonsInSlot()).toBe(1);
 
     await user.click(screen.getByRole("button", { name: /^direct/i }));
 
-    expect(bar().children).toHaveLength(2);
+    expect(bar().children).toHaveLength(rows);
     expect(buttonsInSlot()).toBe(1);
+  });
+
+  it("explains what raises a change cost, beside the axis that reports it", () => {
+    renderVisualizer();
+
+    expect(screen.getByText(CHANGE_COST_NOTE)).toBeVisible();
+  });
+
+  it("names every constraint in the empty state, and only once in the page", async () => {
+    const user = userEvent.setup();
+    renderVisualizer();
+
+    await user.type(
+      screen.getByRole("searchbox", { name: /search findings/i }),
+      "nothing matches this",
+    );
+
+    expect(screen.getByText(EMPTY_STATE_HINT)).toBeVisible();
+
+    const occurrences =
+      document.body.textContent?.split(EMPTY_STATE_HINT).length;
+    expect(occurrences).toBe(2);
+  });
+
+  it("does not repeat the briefing's advice in the bar", () => {
+    renderVisualizer();
+
+    const occurrences = document.body.textContent?.split(TRIAGE_DEFAULT).length;
+    expect(occurrences).toBe(1);
   });
 
   it("states the graph's basis and what it leaves out", async () => {

@@ -4,6 +4,7 @@ import {
   FilterChoiceChips,
   SeverityChip,
 } from "src/components/filter-controls";
+import { CHANGE_COST_NOTE } from "src/components/guidance";
 import {
   GraphIcon,
   ResetIcon,
@@ -276,6 +277,8 @@ const Visualizer = (props: VisualizerProps) => {
             }
           />
         </div>
+
+        <p className="text-xs text-ink-muted">{CHANGE_COST_NOTE}</p>
       </div>
 
       <div
