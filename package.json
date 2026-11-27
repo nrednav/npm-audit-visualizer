@@ -1,6 +1,6 @@
 {
   "name": "npm-audit-visualizer-workspace",
-  "version": "1.0.0-alpha.12",
+  "version": "1.0.0-alpha.13",
   "private": true,
   "description": "Workspace for npm-audit-visualizer",
   "type": "module",

@@ -6,6 +6,61 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0-alpha.13] - 2026-11-27
+
+Milestone M2, honest triage. Every number on the page counts the population it
+names, every remediation word is npm's own, and a reader can reach the evidence
+behind a claim without leaving the row. The payload version does not change: this
+release makes the interface agree with a contract that already existed.
+
+### Added
+
+- Four remediation states read from npm's three `fixAvailable` shapes. `true` and an
+  empty name or version name a change without naming a target, so they are their own
+  state rather than a fix with a blank beside it.
+- Two filter axes and six choices: reported fix, major change, no target named, no
+  fix reported, direct, and transitive. One choice per axis, because the reported
+  union cannot be combined with its own refinement into an empty request.
+- A number on each choice that is computed over the findings passing every other
+  constraint, so a chip's number is the click it forecasts and the table cannot
+  disagree with it.
+- A change-cost definition beside the axis it belongs to, and an empty state that
+  names all four constraints which can hide a row.
+- Every field of the contract's finding and advisory reachable from the row: the
+  CVSS vector beside its score, and an advisory's dependency when it differs from
+  the finding's name.
+- A matrix fixture crossing npm's shapes with dependency position, a committed
+  payload beside it, and a guard that fails when the model stops producing it.
+
+### Changed
+
+- The severity ledger counts findings, so its number equals its click.
+- The briefing states the advisory total as its own unit, and names a disagreement
+  when npm's metadata and its own findings differ.
+- Both the wide table and the narrow list read one description per state, and one
+  evidence panel, so a field cannot exist at one width and not the other.
+- The table declares a fixed layout and six column widths, because an automatic
+  layout let an opened row redistribute every column.
+
+### Fixed
+
+- The filter bar re-flowed under the pointer: the reset control moved into a
+  reserved slot, the severity chip left the wrapping row, and the bar became two
+  rows that cannot flip a line break.
+- A chip's width reservation measured two characters on a string of three, so it
+  never applied. The parentheses are static now and the digits sit in the box.
+- A row's key carried its page offset and index, so a finding's identity was its
+  position. It is the finding's id now, and a test reverses the list to prove it.
+- Opening any row moved every column by up to 29 pixels, measured in a browser.
+
+### Known
+
+- No report from a real project has been rendered. Every measurement is against a
+  committed fixture shaped like `npm audit --json` output.
+- Runtime behaviour is observed at three viewport widths, not on a slow device, and
+  accessible structure is inspected in an accessibility tree rather than read by a
+  screen reader.
+
 ## [v1.0.0-alpha.12] - 2026-11-26
 
 Milestone M1, the versioned evidence and provenance contract. The payload moved

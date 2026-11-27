@@ -1,6 +1,6 @@
 {
   "name": "@npm-audit-visualizer/surface",
-  "version": "1.0.0-alpha.12",
+  "version": "1.0.0-alpha.13",
   "private": true,
   "description": "The browser application that renders an audit report",
   "type": "module",
@@ -11,7 +11,7 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@npm-audit-visualizer/contract": "1.0.0-alpha.12",
+    "@npm-audit-visualizer/contract": "1.0.0-alpha.13",
     "@react-sigma/core": "6.0.0",
     "clsx": "2.1.1",
     "graphology": "0.26.0",
