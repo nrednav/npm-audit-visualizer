@@ -64,7 +64,14 @@ export const FilterChoiceChips = <T extends string>(
             )}
           >
             {option.label}
-            <span className={clsx("num text-xs", !pressed && "text-ink-muted")}>
+            {/* Two digits are reserved, so a number crossing ten cannot
+                change the chip's width and re-wrap the row. */}
+            <span
+              className={clsx(
+                "num min-w-[2ch] text-right text-xs",
+                !pressed && "text-ink-muted",
+              )}
+            >
               ({counts[option.id]})
             </span>
           </button>

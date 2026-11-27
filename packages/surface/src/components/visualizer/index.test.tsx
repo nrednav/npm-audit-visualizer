@@ -358,6 +358,39 @@ describe("Visualizer", () => {
     });
   });
 
+  it("keeps the bar's two rows and its reset slot whatever is active", async () => {
+    const user = userEvent.setup();
+    renderVisualizer();
+
+    const bar = () =>
+      document.querySelector("[data-filter-bar]") as HTMLElement;
+    const slot = () =>
+      document.querySelector("[data-reset-slot]") as HTMLElement;
+    const buttonsInSlot = () => slot().querySelectorAll("button").length;
+
+    expect(bar().children).toHaveLength(2);
+    expect(slot().className).toContain("min-w-");
+    expect(buttonsInSlot()).toBe(0);
+
+    await user.click(screen.getByRole("button", { name: /^major change/i }));
+
+    expect(bar().children).toHaveLength(2);
+    expect(buttonsInSlot()).toBe(1);
+
+    await user.type(
+      screen.getByRole("searchbox", { name: /search findings/i }),
+      "a",
+    );
+
+    expect(bar().children).toHaveLength(2);
+    expect(buttonsInSlot()).toBe(1);
+
+    await user.click(screen.getByRole("button", { name: /^direct/i }));
+
+    expect(bar().children).toHaveLength(2);
+    expect(buttonsInSlot()).toBe(1);
+  });
+
   it("states the graph's basis and what it leaves out", async () => {
     renderVisualizer();
 

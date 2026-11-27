@@ -185,32 +185,68 @@ const Visualizer = (props: VisualizerProps) => {
         />
       </div>
 
-      <div className="mt-5 flex flex-col gap-3 rounded-xl border border-line bg-surface p-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <div className="relative min-w-0 flex-1 sm:max-w-sm">
-          <label htmlFor="finding-search" className="sr-only">
-            Search findings
-          </label>
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-          <input
-            id="finding-search"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search package, install location, or advisory"
-            className="h-10 w-full rounded-lg border border-line bg-surface pl-8 pr-8 text-sm text-ink placeholder:text-ink-muted focus:border-teal/50 focus-visible:ring-2 focus-visible:ring-teal/20"
-          />
-          {query.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-ink-muted hover:bg-ink/[0.05] hover:text-ink"
+      <div
+        data-filter-bar=""
+        className="mt-5 grid gap-3 rounded-xl border border-line bg-surface p-3"
+      >
+        <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
+          <div className="relative min-w-0 flex-1 sm:max-w-sm">
+            <label htmlFor="finding-search" className="sr-only">
+              Search findings
+            </label>
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+            <input
+              id="finding-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search package, install location, or advisory"
+              className="h-10 w-full rounded-lg border border-line bg-surface pl-8 pr-8 text-sm text-ink placeholder:text-ink-muted focus:border-teal/50 focus-visible:ring-2 focus-visible:ring-teal/20"
+            />
+            {query.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-ink-muted hover:bg-ink/[0.05] hover:text-ink"
+              >
+                <span aria-hidden="true" className="text-base leading-none">
+                  ×
+                </span>
+                <span className="sr-only">Clear search</span>
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 sm:ml-auto">
+            <p
+              className="text-xs text-ink-muted"
+              aria-live="polite"
+              aria-atomic="true"
             >
-              <span aria-hidden="true" className="text-base leading-none">
-                ×
-              </span>
-              <span className="sr-only">Clear search</span>
-            </button>
-          )}
+              <span className="num font-semibold text-ink">
+                {filteredTable.length}
+              </span>{" "}
+              of <span className="num">{table.length}</span> findings
+            </p>
+            {/* The slot holds its width whether or not the control is there, so
+                the row above the table never changes height as filters come and
+                go. */}
+            <span
+              data-reset-slot=""
+              className="inline-flex min-w-[5.5rem] justify-end"
+            >
+              {filtersActive && (
+                <button
+                  type="button"
+                  onClick={resetAll}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-teal underline decoration-teal/30 underline-offset-4 hover:decoration-teal"
+                >
+                  <ResetIcon className="h-3.5 w-3.5" />
+                  Clear all
+                </button>
+              )}
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -239,29 +275,6 @@ const Visualizer = (props: VisualizerProps) => {
               )
             }
           />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
-          <p
-            className="text-xs text-ink-muted"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            <span className="num font-semibold text-ink">
-              {filteredTable.length}
-            </span>{" "}
-            of <span className="num">{table.length}</span> findings
-          </p>
-          {filtersActive && (
-            <button
-              type="button"
-              onClick={resetAll}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-teal underline decoration-teal/30 underline-offset-4 hover:decoration-teal"
-            >
-              <ResetIcon className="h-3.5 w-3.5" />
-              Clear all
-            </button>
-          )}
         </div>
       </div>
 
